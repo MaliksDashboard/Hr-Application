@@ -1,0 +1,813 @@
+@import url('https://fonts.googleapis.com/css2?family=Exo:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+
+* {
+    * {
+        box-sizing: border-box;
+        padding: 0;
+        margin: 0;
+        transition: all 0.4s ease-in-out;
+    }
+}
+
+:root {
+    --primary-color: #1C212D;
+    --second-color: #657084;
+    --third-color: #FFD831;
+    --light-color: #c7ced68e;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    font-family: "Exo", sans-serif;
+}
+
+svg {
+    width: 20px;
+}
+
+section {
+    display: flex;
+    width: 100%;
+}
+
+main {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 100%;
+}
+
+nav {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--primary-color);
+    height: 100vh;
+    position: fixed;
+    width: 100%;
+    max-width: 250px;
+    transition: max-width 0.5s ease-in-out, padding 0.5s ease-in-out, background-color 0.5s ease-in-out;
+}
+
+nav.collapsed {
+    max-width: 80px;
+}
+
+nav article {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    justify-content: flex-start;
+    width: 100%;
+    height: 100%;
+}
+
+nav article .container {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    width: 100%;
+    padding: 20px;
+}
+
+nav article .container .seperator {
+    color: var(--second-color);
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 14px;
+    position: relative;
+}
+
+nav article .container .seperator::after {
+    transition: .4s ease-in-out;
+}
+
+
+nav.collapsed article .container .seperator::after {
+    content: '';
+    display: block;
+    width: 100%;
+    height: 2px;
+    background-color: var(--light-color);
+    position: absolute;
+    right: 0;
+    bottom: 0;
+}
+
+nav article .container .logo {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 15px;
+}
+
+nav.collapsed article .container .logo p {
+    display: none;
+}
+
+nav article .container .logo svg {
+    fill: var(--third-color);
+    width: 40px;
+}
+
+nav article .container .logo p {
+    color: white;
+    font-weight: bold;
+    font-size: 28px;
+    opacity: 1;
+}
+
+nav article .container .main-tools {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 20px;
+    width: 100%;
+}
+
+nav article .container .tool {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 15px;
+    cursor: pointer;
+    background-color: transparent;
+    transition: .4s ease;
+    width: 100%;
+    padding: 10px;
+    border-radius: 3px;
+}
+
+nav article .container .tool:hover {
+    background-color: var(--second-color);
+}
+
+nav article .container .tool:hover svg {
+    fill: white;
+}
+
+nav article .container .tool:hover p {
+    font-weight: bold;
+}
+
+nav article .container .tool svg {
+    fill: var(--second-color);
+}
+
+nav.collapsed article .container .tool p {
+    display: none;
+}
+
+nav article .container .tool p {
+    color: white;
+}
+
+nav article .container .tool.active {
+    background-color: var(--third-color);
+}
+
+nav article .container .tool.active p {
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+nav article .container .tool.active svg {
+    fill: var(--primary-color);
+}
+
+nav article .container .org-tools {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 20px;
+    width: 100%;
+    margin-top: -20px;
+}
+
+nav article .container .help {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    cursor: pointer;
+}
+
+nav article .container .help p {
+    color: var(--second-color);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+nav article .container .help small {
+    color: white;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+nav article .container .help svg {
+    fill: var(--second-color);
+    width: 40px;
+    padding: 5px;
+}
+
+body:has(nav.collapsed) header {
+    margin-left: 80px;
+    width: calc(100% - 80px);
+    transition: margin-left 0.5s ease-in-out, width 0.5s ease-in-out;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    transition: .4s ease-in;
+    padding: 20px;
+    background-color: white;
+    height: 80px;
+    box-shadow: 0px 0px 5px 0px var(--second-color);
+    gap: 30px;
+    width: calc(100% - 250px);
+    position: fixed;
+    z-index: 10000;
+}
+
+.body {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    margin-left: 250px;
+    transition: .4s ease-in-out;
+}
+
+body:has(nav.collapsed) .body {
+    margin-left: 0px;
+}
+
+header .right {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+}
+
+header .right .icon {
+    position: relative;
+    padding-right: 10px;
+    cursor: pointer;
+}
+
+header .right .icon::after {
+    content: '';
+    display: block;
+    width: 1px;
+    background-color: var(--light-color);
+    height: 100%;
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+header .right .icon svg {
+    fill: var(--light-color);
+    width: 40px;
+}
+
+header .right .search {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+
+header .right .search input {
+    width: 100%;
+    height: 50px;
+    border: none;
+    font-size: 18px;
+    color: var(--primary-color);
+}
+
+header .right .search input:focus {
+    border: none;
+    outline: none;
+}
+
+header .right .search svg {
+    width: 25px;
+    fill: var(--second-color);
+}
+
+header .left {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+header .left svg {
+    padding: 15px;
+    border-radius: 50%;
+    width: 50px;
+    background-color: var(--light-color);
+    fill: var(--primary-color);
+    cursor: pointer;
+}
+
+header .left img {
+    width: 50px;
+    border-radius: 50%;
+    aspect-ratio: 1/1;
+    object-fit: cover;
+    border: 2px solid var(--light-color);
+}
+
+.main {
+    margin-left: 250px;
+    padding: 20px;
+    transition: .4s ease-in-out;
+    background-color: rgba(233, 227, 227, 0.336);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-top: 75px;
+    transition: margin-left 0.5s ease-in-out, padding 0.5s ease-in-out, background-color 0.5s ease-in-out;
+}
+
+body:has(nav.collapsed) .main {
+    margin-left: 80px;
+}
+
+.main .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+
+}
+
+.main .header .count {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.main .header .count p {
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--primary-color);
+}
+
+.main .header .count button {
+    border: 1px solid var(--light-color);
+    background-color: white;
+    padding: 10px;
+    border-radius: 3px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    font-weight: bold;
+    color: var(--second-color);
+    transition: .2s ease-in-out;
+}
+
+.main .header .count button:hover {
+    background-color: var(--light-color);
+}
+
+.main .header .count button svg {
+    fill: var(--second-color);
+}
+
+.main .header .actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+    max-width: 700px;
+}
+
+.main .header .actions .actions-first {
+    display: flex;
+    justify-content: end;
+    align-items: center;
+    gap: 15px;
+    position: relative;
+    padding-right: 20px;
+    width: 100%;
+    max-width: 200px;
+}
+
+.main .header .actions .actions-first::after {
+    content: '';
+    display: block;
+    width: 1px;
+    height: 100%;
+    background-color: var(--second-color);
+    top: 0;
+    right: 0;
+    position: absolute;
+}
+
+.main .header .actions form svg {
+    fill: var(--second-color);
+    background-color: white;
+    padding: 5px;
+    width: 35px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: .2s ease-in-out;
+    border: 2px solid var(--light-color);
+}
+
+.main .header .actions form svg:hover {
+    background-color: var(--light-color);
+}
+
+.main .header .actions button {
+    background-color: var(--second-color);
+    border: none;
+    width: 35px;
+    height: 35px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: .2s ease-in-out;
+}
+
+.main .header .actions button:hover {
+    background-color: var(--light-color);
+}
+
+.main .header .actions button:hover svg {
+    fill: var(--primary-color);
+}
+
+.main .header .actions button svg {
+    fill: white;
+    transition: .2s ease-in-out;
+}
+
+.main .header .actions .actions-second {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-left: 10px;
+}
+
+.add-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-decoration: none;
+    padding: 6px;
+    border: 2px solid rgb(0, 75, 0);
+    background-color: transparent;
+    padding-inline: 25px;
+    color: rgb(0, 75, 0);
+    font-weight: bold;
+    gap: 10px;
+    border-radius: 3px;
+    transition: .2s ease-in-out;
+}
+
+.add-btn svg {
+    fill: rgb(0, 75, 0);
+    transition: .2s ease-in-out;
+}
+
+.add-btn:hover {
+    background-color: rgb(0, 75, 0);
+    color: white;
+    box-shadow: 1px 0px 5px 1px rgb(0, 75, 0);
+}
+
+.add-btn:hover svg {
+    fill: white;
+}
+
+.cards {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    border-radius: 3px;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    gap: 20px;
+}
+
+.cards .card {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    width: 300px;
+    background-color: white;
+    height: 400px;
+    padding: 10px;
+    gap: 15px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px 5px var(--light-color);
+    transition: width 0.5s ease-in-out, gap 0.5s ease-in-out, padding 0.5s ease-in-out, box-shadow 0.5s ease-in-out;
+}
+
+body:has(nav.collapsed) .cards .card {
+    width: 340px;
+    box-shadow: 0px 0px 15px 7px var(--light-color);
+}
+
+.cards .card .card-header {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    align-items: center;
+}
+
+.cards .card .card-header input {
+    cursor: pointer;
+    background-color: var(--light-color);
+    border-radius: 2px solid var(--primary-color);
+    transform: scale(1.5);
+    margin-left: 5px;
+}
+
+.cards .card .card-header .card-header-right {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.cards .card .card-header .card-header-right svg {
+    width: 30px;
+    cursor: pointer;
+    fill: var(--primary-color);
+}
+
+.cards .card .card-header .card-header-right .active-style {
+    color: rgb(0, 150, 0);
+    font-weight: bold;
+    font-size: 12px;
+    border: 2px solid rgb(0, 150, 0);
+    padding: 3px;
+    box-shadow: 1px 0px 5px 0px rgb(0, 150, 0);
+    border-radius: 4px;
+    width: 70px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.cards .card .card-header .card-header-right .unactive-style {
+    color: rgb(150, 0, 0);
+    font-weight: bold;
+    font-size: 12px;
+    border: 2px solid rgb(150, 0, 0);
+    padding: 3px;
+    box-shadow: 1px 0px 5px 0px rgb(150, 0, 0);
+    width: 70px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+.card-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    margin-top: 15px;
+}
+
+.card-info img {
+    width: 100px;
+    border-radius: 50%;
+    aspect-ratio: 1/1;
+    object-fit: cover;
+}
+
+.card-info b {
+    font-size: 23px;
+    color: var(--primary-color);
+}
+
+.card-info p {
+    color: var(--second-color);
+    margin-top: -10px;
+}
+
+.details {
+    background-color: #F3F8FC;
+    padding: 10px;
+    width: 100%;
+    border-radius: 5px;
+    border: 1px solid var(--second-color);
+    gap: 20px;
+    display: flex;
+    flex-direction: column;
+    margin-top: 15px;
+}
+
+.details .details-header {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.details .details-header p {
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--second-color);
+}
+
+.details .details-second {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: -10px;
+}
+
+.details .details-second p {
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.details-call {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.details-call .call {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    color: var(--primary-color);
+}
+
+.details-call .call svg {
+    fill: var(--primary-color);
+}
+
+
+.hire-alert {
+    font-size: 14px;
+    font-weight: bold;
+    padding: 5px;
+    border-radius: 5px;
+    background-color: var(--light-color);
+    color: var(--second-color);
+}
+
+.more-actions {
+    position: absolute;
+    background-color: white;
+    padding: 10px;
+    width: 100%;
+    max-width: 300px;
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    justify-content: center;
+    align-items: flex-start;
+    top: 50px;
+    border-radius: 10px;
+    box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.3);
+    z-index: 100;
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+.more-actions::before {
+    content: '▲';
+    color: white;
+    font-size: 18px;
+    top: -15px;
+    right: 10px;
+    display: block;
+    position: absolute;
+}
+
+.more-actions div {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    gap: 20px;
+    cursor: pointer;
+    transition: .4s ease-in-out;
+    color: var(--primary-color);
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid white;
+}
+
+.more-actions div:hover {
+    border: 1px solid var(--primary-color);
+}
+
+.more-actions div svg {
+    width: 18px;
+    fill: var(--primary-color);
+}
+
+.box-hidden {
+    display: none;
+}
+
+.box-visible {
+    display: flex;
+}
+
+.filter-box {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 10px;
+    background-color: white;
+    max-width: 300px;
+    gap: 5px;
+    top: 50px;
+    border-radius: 10px;
+    box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.3);
+    position: absolute;
+    padding: 10px;
+    z-index: 1000;
+    right: -120px;
+    top: 60px;
+}
+
+.filter-box::before {
+    content: '▲';
+    color: white;
+    font-size: 18px;
+    top: -15px;
+    display: block;
+    position: absolute;
+}
+
+.filter-box input {
+    background-color: transparent;
+    border: 1px solid var(--primary-color);
+    padding: 10px;
+    border-radius: 5px;
+    color: var(--primary-color);
+}
+
+.filter-box .filter-text {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+    height: 100px;
+    overflow: hidden;
+    overflow-y: auto;
+    width: 100%;
+    scrollbar-width: thin;
+}
+
+
+.filter-box p {
+    font-size: 16px !important;
+    transition: .1s ease-in;
+    color: var(--second-color) !important;
+    cursor: pointer;
+}
+
+.filter-box p:hover {
+    color: var(--primary-color) !important;
+    font-weight: bold !important;
+}
+
+.show-box {
+    display: flex;
+}
+
+.hide-box {
+    display: none;
+}
