@@ -9,6 +9,6 @@ class AppServiceProvider extends ServiceProvider
 {
     public function boot()
     {
-        Schema::defaultStringLength(191); // Fix for older MySQL versions
+        Schema::defaultStringLength(191); 
     }
 }

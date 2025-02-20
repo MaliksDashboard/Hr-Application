@@ -27,13 +27,15 @@
                             placeholder="Search by Branch or Job..." class="search-input">
 
                     </div>
-                    <a href="{{ route('vacancies.create') }} ">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" xml:space="preserve">
-                            <path
-                                d="M256 0C114.6 0 0 114.6 0 256s114.6 256 256 256 256-114.6 256-256S397.4 0 256 0m149.3 277.3c0 11.8-9.5 21.3-21.3 21.3h-85.3V384c0 11.8-9.5 21.3-21.3 21.3h-42.7c-11.8 0-21.3-9.6-21.3-21.3v-85.3H128c-11.8 0-21.3-9.6-21.3-21.3v-42.7c0-11.8 9.5-21.3 21.3-21.3h85.3V128c0-11.8 9.5-21.3 21.3-21.3h42.7c11.8 0 21.3 9.6 21.3 21.3v85.3H384c11.8 0 21.3 9.6 21.3 21.3z" />
-                        </svg>
-                        Add Vacancy
-                    </a>
+                    @can('Create')
+                        <a href="{{ route('vacancies.create') }} ">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" xml:space="preserve">
+                                <path
+                                    d="M256 0C114.6 0 0 114.6 0 256s114.6 256 256 256 256-114.6 256-256S397.4 0 256 0m149.3 277.3c0 11.8-9.5 21.3-21.3 21.3h-85.3V384c0 11.8-9.5 21.3-21.3 21.3h-42.7c-11.8 0-21.3-9.6-21.3-21.3v-85.3H128c-11.8 0-21.3-9.6-21.3-21.3v-42.7c0-11.8 9.5-21.3 21.3-21.3h85.3V128c0-11.8 9.5-21.3 21.3-21.3h42.7c11.8 0 21.3 9.6 21.3 21.3v85.3H384c11.8 0 21.3 9.6 21.3 21.3z" />
+                            </svg>
+                            Add Vacancy
+                        </a>
+                    @endcan
                 </div>
 
                 <div class="row-left-container">
@@ -63,26 +65,32 @@
                             </div>
 
                             <div class="record-action">
-                                <button>
-                                    <a href="{{ route('vacancies.edit', $vacancy->id) }}">
-                                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path
-                                                d="M20.989 4.285 19.64 2.93c-1.236-1.241-3.146-1.241-4.382 0L13.011 5.3l5.73 5.754 2.36-2.37A3.1 3.1 0 0 0 22 6.542c0-.79-.45-1.693-1.011-2.257m-4.719 6.657L11.775 6.43 2.9 15.343c-.563.564-.9 1.354-.9 2.256v3.498c0 .452.337.903.899.903h3.595c.787 0 1.573-.338 2.248-.903l8.876-8.914z" />
-                                        </svg>
-                                    </a>
-                                </button>
 
-                                <form action="{{ route('vacancies.destroy', $vacancy->id) }}" method="POST"
-                                    class="delete-form">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="button" class="delete-button">
-                                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path
-                                                d="M7 4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2h4a1 1 0 1 1 0 2h-1.069l-.867 12.142A2 2 0 0 1 17.069 22H6.93a2 2 0 0 1-1.995-1.858L4.07 8H3a1 1 0 0 1 0-2h4zm2 2h6V4H9zM6.074 8l.857 12H17.07l.857-12zM10 10a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1m4 0a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1" />
-                                        </svg>
+                                @can('Edit')
+                                    <button>
+                                        <a href="{{ route('vacancies.edit', $vacancy->id) }}">
+                                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path
+                                                    d="M20.989 4.285 19.64 2.93c-1.236-1.241-3.146-1.241-4.382 0L13.011 5.3l5.73 5.754 2.36-2.37A3.1 3.1 0 0 0 22 6.542c0-.79-.45-1.693-1.011-2.257m-4.719 6.657L11.775 6.43 2.9 15.343c-.563.564-.9 1.354-.9 2.256v3.498c0 .452.337.903.899.903h3.595c.787 0 1.573-.338 2.248-.903l8.876-8.914z" />
+                                            </svg>
+                                        </a>
                                     </button>
-                                </form>
+                                @endcan
+
+
+                                @can('Delete')
+                                    <form action="{{ route('vacancies.destroy', $vacancy->id) }}" method="POST"
+                                        class="delete-form">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="button" class="delete-button">
+                                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path
+                                                    d="M7 4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2h4a1 1 0 1 1 0 2h-1.069l-.867 12.142A2 2 0 0 1 17.069 22H6.93a2 2 0 0 1-1.995-1.858L4.07 8H3a1 1 0 0 1 0-2h4zm2 2h6V4H9zM6.074 8l.857 12H17.07l.857-12zM10 10a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1m4 0a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1" />
+                                            </svg>
+                                        </button>
+                                    </form>
+                                @endcan
 
                             </div>
                         </div>

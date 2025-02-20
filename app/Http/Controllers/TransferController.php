@@ -187,7 +187,7 @@ class TransferController extends Controller
                 Log::info('Rotation reminder notification created for the user.');
 
                 // Notify admins about the rotation, excluding the current logged-in admin
-                $adminUsers = User::where('role_name', 'Admin')->get();
+                $adminUsers = User::role('Admin')->get();
                 foreach ($adminUsers as $admin) {
                     // Skip sending notification to the logged-in admin
                     if ($admin->id == Auth::id()) {
@@ -215,7 +215,7 @@ class TransferController extends Controller
             $currentUserId = Auth::id();
 
             // Create a notification for admins based on the action type
-            $adminUsers = User::where('role_name', 'Admin')->get();
+            $adminUsers = User::role('Admin')->get();
 
             foreach ($adminUsers as $admin) {
                 // Skip the current admin if they are the one who created the action
@@ -404,7 +404,7 @@ class TransferController extends Controller
             $transfer->update(['type' => 'Transfer']);
 
             // 1. Notify all admins except the creator
-            $adminUsers = User::where('role_name', 'Admin')->get();
+            $adminUsers = User::role('Admin')->get();
             foreach ($adminUsers as $admin) {
                 // Skip the creator to avoid sending a notification to them
                 if ($admin->id !== $creator->id) {

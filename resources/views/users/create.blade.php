@@ -88,10 +88,3 @@
         </div>
     </div>
 @endsection
-
-<script>
-    //Check the role:
-    document.addEventListener('DOMContentLoaded', function() {
-        checkUserRole();
-    });
-</script>

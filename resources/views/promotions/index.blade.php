@@ -22,10 +22,12 @@
         @endif
         <div class="promo-header">
             <h1>Promotions</h1>
-            <a href="{{ route('promotions.create') }}" class="instructor" href="{{ route('promotions.create') }}"><svg
-                    viewBox="-60 0 512 512" xmlns="http://www.w3.org/2000/svg">
-                    <path d="m64 96 264 160L64 416z" />
-                </svg> Apply Promotion</a>
+            @can('Create')
+                <a href="{{ route('promotions.create') }}" class="instructor" href="{{ route('promotions.create') }}"><svg
+                        viewBox="-60 0 512 512" xmlns="http://www.w3.org/2000/svg">
+                        <path d="m64 96 264 160L64 416z" />
+                    </svg> Apply Promotion</a>
+            @endcan
         </div>
 
         <div class="promo-overview">
@@ -70,170 +72,138 @@
             </div>
         </div>
 
-        <div id="promo-data" class="promo-data">
+        <div id="promo-table"></div> <!-- Grid.js will render here -->
 
-        </div>
-        <button id="load-more-button" style="display: block; margin: 20px auto;">Load More</button>
-        <div id="loader" style="display: none; text-align: center;">Loading...</div>
     </div>
 
 @endsection
 
+@php
+    $canDelete = auth()->user()->can('Delete'); // Check if user can delete
+@endphp
+
+<script>
+    const canDelete = @json($canDelete); // Pass the value to JavaScript
+</script>
+
+
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const promoData = document.getElementById('promo-data');
-        const loadMoreButton = document.getElementById('load-more-button');
-        const loader = document.getElementById('loader');
-        const searchBox = document.getElementById('search-box');
-        const statsContainer = document.getElementById('promotion-stats');
-        let offset = 10; // Initial offset
-        let isFetching = false; // Prevent multiple simultaneous fetches
-        let query = ''; // Store the current search query
+        const promoTable = document.getElementById('promo-table');
+        let allData = []; // 🔥 Declare allData globally to store promotions
 
-        function truncateName(name, maxLength) {
-            if (name.length > maxLength) {
-                return name.slice(0, maxLength - 5) + '...'; // Truncate and add ellipsis
-            }
-            return name;
+        function formatDate(dateString) {
+            if (!dateString) return 'No Date';
+            const date = new Date(dateString);
+            if (isNaN(date)) return 'Invalid Date';
+            return `${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${date.getFullYear()}`;
         }
 
-        // Fetch more promotions
-        const fetchMorePromotions = () => {
-            if (isFetching) return;
-            isFetching = true;
-            loader.style.display = 'block';
-            loadMoreButton.style.display = 'none';
-
-            const formatDate = (dateString) => {
-                if (!dateString) return 'No Date';
-                const date = new Date(dateString);
-                if (isNaN(date)) return 'Invalid Date';
-                const day = String(date.getDate()).padStart(2, '0');
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const year = date.getFullYear();
-                return `${day}-${month}-${year}`;
-            };
-
-            fetch(`/load-more-promotions?offset=${offset}&query=${query}`)
+        function fetchAllPromotions() {
+            fetch(`/getAllPromo`)
                 .then(response => response.json())
                 .then(data => {
-                    console.log("🔍 Debug - More Promotions Data:", data);
+                    console.log("🔍 Debug - All Promotions Data:", data);
 
-                    if (data.length === 0) {
-                        loadMoreButton.style.display = 'none';
-                        loader.style.display = 'none';
+                    allData = data; // 🔥 Store data globally so delete buttons can access it
+
+                    if (!data.length) return;
+
+                    const gridData = data.map(promotion => [
+                        gridjs.html(`
+                        <div style="display: flex; align-items: center; gap:10px;">
+                            <img src="storage/${promotion.image_path || '/default-image.jpg'}"
+                                 alt="${promotion.employee_name || 'No Name'}"
+                                 style="width:40px;height:40px;border-radius:5px;border:3px solid var(--text-light-color);">
+                            <span>${promotion.employee_name || 'N/A'}</span>
+                        </div>
+                    `),
+                        promotion.new_title || 'No Title',
+                        formatDate(promotion.promotion_date),
+                        gridjs.html(`
+                        <button class="down-promo" data-id="${promotion.id}">
+                             Download PDF
+                        </button>
+                        ${canDelete ? `
+                        <button class="delete-promo" data-id="${promotion.id}" style="color:red;">
+                            Delete
+                        </button>` : ''}
+                    `)
+                    ]);
+
+                    // Clear the previous table before re-rendering
+                    promoTable.innerHTML = '';
+
+                    new gridjs.Grid({
+                        columns: ['Employee', 'New Title', 'Promotion Date', 'Actions'],
+                        data: gridData,
+                        pagination: true,
+                        search: true,
+                        sort: true
+                    }).render(promoTable);
+
+                    setTimeout(attachEventListeners, 500); // Attach event listeners after rendering
+                })
+                .catch(error => console.error('❌ Fetch Error:', error));
+        }
+
+        function attachEventListeners() {
+            console.log("🔗 Attaching Event Listeners...");
+
+            document.querySelectorAll('.down-promo').forEach(button => {
+                button.addEventListener('click', event => {
+                    const promotionId = event.target.dataset.id;
+                    console.log("⬇️ Downloading PDF for Promotion ID:", promotionId);
+                    window.location.href = `/promotions/${promotionId}/download`;
+                });
+            });
+
+            document.querySelectorAll('.delete-promo').forEach(button => {
+                button.addEventListener('click', event => {
+                    const buttonElement = event.target.closest(
+                        '.delete-promo'); // Ensure correct element
+                    const promotionId = buttonElement.dataset.id;
+
+                    // 🔥 Find the correct promotion in allData
+                    const promotion = allData.find(p => p.id == promotionId);
+                    if (!promotion) {
+                        console.error("❌ Error: Promotion data not found for ID:", promotionId);
                         return;
                     }
 
-                    data.forEach(promotion => {
-                        console.log("🚀 Promotion Object:", promotion);
+                    const employeeId = promotion.employee_id; // ✅ Get employee_id
+                    const oldTitle = promotion.old_title; // ✅ Get old_title
 
-                        const promoCard = document.createElement('div');
-                        promoCard.classList.add('promo-data-card');
-                        promoCard.setAttribute('data-id', promotion.id);
-
-                        promoCard.innerHTML = `
-                    <img style="border:4px solid var(--text-light-color)" 
-                         src="storage/${promotion.image_path || '/default-image.jpg'}" 
-                         alt="${promotion.employee_name || 'No Name'}">
-                    <div class="promo-data-name">
-                        <div style="display:flex; justify-content:space-between; align-items: center; width:100%">
-                            <p class="name">${truncateName(promotion.employee_name || 'Unknown Employee', 15)}</p>
-                            <div>
-                                <button class="down-promo"><svg viewBox="-5 -5 24 24" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin" class="jam jam-download"><path d="m8 6.641 1.121-1.12a1 1 0 0 1 1.415 1.413L7.707 9.763a.997.997 0 0 1-1.414 0L3.464 6.934A1 1 0 1 1 4.88 5.52L6 6.641V1a1 1 0 1 1 2 0zM1 12h12a1 1 0 0 1 0 2H1a1 1 0 0 1 0-2"/></svg></button>
-                                <button class="delete-promo"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2h4a1 1 0 1 1 0 2h-1.069l-.867 12.142A2 2 0 0 1 17.069 22H6.93a2 2 0 0 1-1.995-1.858L4.07 8H3a1 1 0 0 1 0-2h4zm2 2h6V4H9zM6.074 8l.857 12H17.07l.857-12zM10 10a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1m4 0a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1" /></svg></button>
-                            </div>
-                        </div>
-                        <small class="title">
-                            ${promotion.new_title || 'No Title'}: 
-                            ${formatDate(promotion.promotion_date)}
-                        </small>
-                    </div>
-                `;
-
-                        const downloadButton = promoCard.querySelector(".down-promo");
-                        downloadButton.addEventListener("click", () => {
-                            console.log("⬇️ Downloading PDF for Promotion ID:",
-                                promotion.id);
-                            window.location.href =
-                                `/promotions/${promotion.id}/download`;
-                        });
-
-
-                        const deleteButton = promoCard.querySelector(".delete-promo");
-                        deleteButton.addEventListener("click", () => {
-                            console.log("🔥 Calling deletePromotion with:");
-                            console.log("  ➡ Promotion ID:", promotion.id);
-                            console.log("  ➡ Employee ID:", promotion.employee_id ||
-                                "❌ MISSING");
-                            console.log("  ➡ Old Title:", promotion.old_title);
-
-                            if (!promotion.employee_id || isNaN(promotion
-                                    .employee_id)) {
-                                console.error(
-                                    "❌ Error: Employee ID is missing or invalid:",
-                                    promotion.employee_id);
-                                Swal.fire("Error!",
-                                    "Employee ID is missing. Cannot delete promotion.",
-                                    "error");
-                                return;
-                            }
-
-                            deletePromotion(promotion.id, promotion.employee_id,
-                                promotion.employee_name,
-                                promotion.old_title);
-                        });
-
-                        promoData.appendChild(promoCard);
-                    });
-
-                    offset += data.length;
-
-                    loadMoreButton.style.display = data.length < 10 ? 'none' : 'block';
-                })
-                .catch(error => console.error('❌ Fetch Error:', error))
-                .finally(() => {
-                    isFetching = false;
-                    loader.style.display = 'none';
+                    console.log(
+                        `🔥 Deleting Promotion ID: ${promotionId}, Employee ID: ${employeeId}, Old Title: ${oldTitle}`
+                    );
+                    deletePromotion(promotionId, employeeId, oldTitle);
                 });
-        };
+            });
+        }
 
-
-        // Function to delete a promotion
-        function deletePromotion(promotionId, employeeId, employeeName, oldTitle) {
-            console.log("🔍 Debug - Sending DELETE Request");
-            console.log("📌 Promotion ID:", promotionId);
-            console.log("📌 Employee ID:", employeeId);
-            console.log("📌 Old Title:", oldTitle);
-
-            if (!employeeId || isNaN(employeeId)) {
-                console.error("❌ Error: Invalid employee_id:", employeeId);
-                return Swal.fire("Error!", "Invalid employee ID received.", "error");
-            }
-
+        function deletePromotion(promotionId, employeeId, oldTitle) {
             Swal.fire({
                 title: "Are you sure?",
-                html: `You are about to cancel this promotion and reset the title of <b>${employeeName}</b> to <b>${oldTitle}</b>.`,
+                text: "This action cannot be undone!",
                 icon: "warning",
                 showCancelButton: true,
                 confirmButtonColor: "#d33",
                 cancelButtonColor: "#3085d6",
-                confirmButtonText: "Yes, reset it!",
-                cancelButtonText: "No, cancel"
+                confirmButtonText: "Yes, delete it!",
             }).then((result) => {
                 if (result.isConfirmed) {
                     fetch(`/promotions/${promotionId}`, {
                             method: 'DELETE',
                             headers: {
                                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
-                                    .getAttribute('content'),
+                                    .content,
                                 'Content-Type': 'application/json',
                                 'Accept': 'application/json'
                             },
                             body: JSON.stringify({
-                                employee_id: Number(
-                                    employeeId),
-                                old_title: oldTitle
+                                employee_id: employeeId, // 🔥 Required for Laravel validation
+                                old_title: oldTitle // 🔥 Required for resetting the title
                             })
                         })
                         .then(response => response.json())
@@ -241,142 +211,22 @@
                             console.log("🔍 Debug - Server Response:", data);
 
                             if (data.success) {
-                                Swal.fire("Deleted!", data.message, "success");
-                                document.querySelector(`[data-id='${promotionId}']`)?.remove();
+                                Swal.fire("Deleted!", "Promotion deleted successfully.", "success");
+                                fetchAllPromotions(); // Reload table
                             } else {
-                                Swal.fire("Error!", data.message, "error");
+                                Swal.fire("Error!", data.message || "Failed to delete promotion.",
+                                    "error");
                             }
                         })
                         .catch(error => {
-                            console.error('❌ Fetch Error:', error);
-                            Swal.fire("Error!", "Something went wrong!", "error");
+                            console.error("❌ Fetch Error:", error);
+                            Swal.fire("Error!", "An unexpected error occurred.", "error");
                         });
                 }
             });
         }
 
-        // Function to fetch and display search results
-        const fetchSearchResults = () => {
-            offset = 0; // Reset the offset
-            promoData.innerHTML = ''; // Clear existing promotions
-            loadMoreButton.style.display = 'none'; // Hide the button until new results are fetched
-            loader.style.display = 'block';
-
-            const formatDate = (dateString) => {
-                if (!dateString) return 'No Date';
-                const date = new Date(dateString);
-                if (isNaN(date)) return 'Invalid Date';
-                const day = String(date.getDate()).padStart(2, '0');
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const year = date.getFullYear();
-                return `${day}-${month}-${year}`;
-            };
-
-            fetch(`/load-more-promotions?offset=${offset}&query=${query}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.length === 0) {
-                        promoData.innerHTML = '<p>No promotions found.</p>';
-                        loader.style.display = 'none';
-                        return;
-                    }
-
-                    // Create a container to append new content efficiently
-                    const fragment = document.createDocumentFragment();
-
-                    data.forEach(promotion => {
-                        const promoCard = document.createElement('div');
-                        promoCard.classList.add('promo-data-card');
-                        promoCard.setAttribute('data-id', promotion.id);
-
-                        promoCard.innerHTML = `
-                    <img style="border:4px solid var(--text-light-color)" src="storage/${promotion.image_path || '/default-image.jpg'}" 
-                         alt="${promotion.employee_name || 'No Name'}">
-                    <div class="promo-data-name">
-                        <div style="display:flex; justify-content:space-between; align-items: center; width:100%">
-                            <p class="name">${truncateName(promotion.employee_name || 'Unknown Employee', 15)}</p>
-                            <div>
-                                <button class="down-promo"><svg viewBox="-5 -5 24 24" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin" class="jam jam-download"><path d="m8 6.641 1.121-1.12a1 1 0 0 1 1.415 1.413L7.707 9.763a.997.997 0 0 1-1.414 0L3.464 6.934A1 1 0 1 1 4.88 5.52L6 6.641V1a1 1 0 1 1 2 0zM1 12h12a1 1 0 0 1 0 2H1a1 1 0 0 1 0-2"/></svg></button>
-                                <button class="delete-promo"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2h4a1 1 0 1 1 0 2h-1.069l-.867 12.142A2 2 0 0 1 17.069 22H6.93a2 2 0 0 1-1.995-1.858L4.07 8H3a1 1 0 0 1 0-2h4zm2 2h6V4H9zM6.074 8l.857 12H17.07l.857-12zM10 10a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1m4 0a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1" /></svg></button>
-                            </div>
-                        </div>
-                        <small class="title">
-                            ${promotion.new_title || 'No Title'}: 
-                            ${formatDate(promotion.promotion_date)}
-                        </small>
-                    </div>
-                `;
-
-                        const downloadButton = promoCard.querySelector(".down-promo");
-                        downloadButton.addEventListener("click", () => {
-                            console.log("⬇️ Downloading PDF for Promotion ID:",
-                                promotion.id);
-                            window.location.href =
-                                `/promotions/${promotion.id}/download`;
-                        });
-
-
-                        // Attach event listener for delete button
-                        promoCard.querySelector(".delete-promo").addEventListener("click",
-                            () => {
-                                deletePromotion(promotion.id, promotion.employee_id,
-                                    promotion.employee_name,
-                                    promotion.old_title);
-                            });
-
-
-                        // Append to the fragment
-                        fragment.appendChild(promoCard);
-                    });
-
-                    // Append all elements at once to optimize DOM updates
-                    promoData.appendChild(fragment);
-
-                    offset = data.length;
-                    loadMoreButton.style.display = data.length < 10 ? 'none' : 'block';
-                })
-                .catch(error => console.error('Error fetching search results:', error))
-                .finally(() => {
-                    loader.style.display = 'none';
-                });
-        };
-
-        // Fetch and render stats
-        const fetchStats = () => {
-            fetch('/promotion-stats')
-                .then(response => response.json())
-                .then(data => {
-                    statsContainer.innerHTML = '';
-
-                    data.forEach(item => {
-                        const percentage = (item.total / 400) *
-                            100; // Adjust denominator if needed
-                        statsContainer.innerHTML += `
-                            <div class="bar">
-                                <span class="bar-label">${item.new_title}</span>
-                                <div class="bar-fill-container">
-                                    <div class="bar-fill" style="width: ${percentage}%;"></div>
-                                </div>
-                                <span class="bar-value">${item.total}</span>
-                            </div>
-                        `;
-                    });
-                })
-                .catch(error => console.error('Error fetching promotion stats:', error));
-        };
-
-        // Attach event listener to "Load More" button
-        loadMoreButton.addEventListener('click', fetchMorePromotions);
-
-        // Attach event listener to search box
-        searchBox.addEventListener('input', (e) => {
-            query = e.target.value.trim();
-            fetchSearchResults();
-        });
-
-        // Initial fetch
-        fetchStats(); // Fetch and display stats
-        fetchSearchResults(); // Fetch initial promotions
+        fetchAllPromotions(); // Initial load
     });
 </script>
 
@@ -468,5 +318,17 @@
         color: #333;
         min-width: 30px;
         text-align: right;
+    }
+
+    input.gridjs-input {
+        width: 100%;
+    }
+
+    #show-rows {
+        padding: 10px;
+        background-color: white;
+        border-radius: 10px;
+        cursor: pointer;
+        border: 1px solid var(--light-color);
     }
 </style>

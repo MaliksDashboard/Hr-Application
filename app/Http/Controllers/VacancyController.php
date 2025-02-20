@@ -47,18 +47,18 @@ class VacancyController extends Controller
                 'status' => 'required|in:low,medium,high',
                 'asked_date' => 'required|date',
             ]);
-
+    
             // Create the vacancy
             $vacancy = Vacancy::create($validated);
-
+    
             // Get the user who created the vacancy
             $creator = Auth::user(); // The user who created the vacancy
-
+    
             // Get the branch name
             $branchName = $vacancy->branch->branch_name ?? 'N/A'; // Using optional chaining to handle null values
-
+    
             // Notify all admins about the new vacancy except the creator
-            $adminUsers = User::where('role_name', 'Admin')->get();
+            $adminUsers = User::role('Admin')->get(); // ✅ Fetch admins using Spatie roles
             foreach ($adminUsers as $admin) {
                 // Skip the creator of the vacancy
                 if ($admin->id !== $creator->id) {
@@ -72,7 +72,7 @@ class VacancyController extends Controller
                     ]);
                 }
             }
-
+    
             // Return success response
             return redirect()->route('vacancies.index')->with('success', 'Vacancy created successfully!');
         } catch (\Exception $e) {
@@ -130,16 +130,16 @@ class VacancyController extends Controller
         try {
             // Find the vacancy by ID
             $vacancy = Vacancy::findOrFail($id);
-
+    
             // Get the authenticated user (the one performing the action)
             $creator = Auth::user();
-
+    
             // Get the job and branch details for the notification
             $job = $vacancy->job;
             $branchName = $vacancy->branch->branch_name ?? 'N/A';
-
+    
             // Notify all admins about the deletion except the user who performed the action
-            $adminUsers = User::where('role_name', 'Admin')->get();
+            $adminUsers = User::role('Admin')->get(); // ✅ Fetch admins using Spatie roles
             foreach ($adminUsers as $admin) {
                 if ($admin->id !== $creator->id) {
                     // Skip the creator
@@ -153,10 +153,10 @@ class VacancyController extends Controller
                     ]);
                 }
             }
-
+    
             // Delete the vacancy
             $vacancy->delete();
-
+    
             // Return success response
             return redirect()->route('vacancies.index')->with('success', 'Vacancy deleted successfully!');
         } catch (\Exception $e) {
@@ -165,6 +165,7 @@ class VacancyController extends Controller
             return redirect()->route('vacancies.index')->with('error', 'Failed to delete vacancy.');
         }
     }
+    
 
     public function fetch(Request $request)
     {

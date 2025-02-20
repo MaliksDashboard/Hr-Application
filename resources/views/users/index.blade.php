@@ -132,11 +132,6 @@
         // Initial table rendering
         fetchAndRender();
     });
-
-    //Check the role:
-    document.addEventListener('DOMContentLoaded', function() {
-        checkUserRole();
-    });
 </script>
 
 <style>

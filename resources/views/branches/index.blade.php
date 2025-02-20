@@ -36,25 +36,31 @@
             </div>
 
             <div class="right" style="display: flex; gap: 15px; align-items: center; width: 100%; justify-content: end">
-                <form id="bulk-delete-form" action="{{ route('employees.bulkDelete') }}" method="POST">
-                    @csrf
-                    @method('DELETE')
-                    <input type="hidden" name="selected_ids" id="selected_ids">
-                    <button type="button" class="bulk-delete-btn">
-                        <svg class="dlt" viewBox="0 0 24 24" fill="" xmlns="http://www.w3.org/2000/svg">
-                            <path
-                                d="M7 4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2h4a1 1 0 1 1 0 2h-1.069l-.867 12.142A2 2 0 0 1 17.069 22H6.93a2 2 0 0 1-1.995-1.858L4.07 8H3a1 1 0 0 1 0-2h4zm2 2h6V4H9zM6.074 8l.857 12H17.07l.857-12zM10 10a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1m4 0a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1" />
-                        </svg>
-                    </button>
-                </form>
 
-                <a class="add-btn" href="{{ route('branches.create') }}">
-                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path
-                            d="M18 10h-4V6a2 2 0 0 0-4 0l.071 4H6a2 2 0 0 0 0 4l4.071-.071L10 18a2 2 0 0 0 4 0v-4.071L18 14a2 2 0 0 0 0-4" />
-                    </svg>
-                    Add Branch
-                </a>
+                @can('Delete')
+                    <form id="bulk-delete-form" action="{{ route('employees.bulkDelete') }}" method="POST">
+                        @csrf
+                        @method('DELETE')
+                        <input type="hidden" name="selected_ids" id="selected_ids">
+                        <button type="button" class="bulk-delete-btn">
+                            <svg class="dlt" viewBox="0 0 24 24" fill="" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M7 4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2h4a1 1 0 1 1 0 2h-1.069l-.867 12.142A2 2 0 0 1 17.069 22H6.93a2 2 0 0 1-1.995-1.858L4.07 8H3a1 1 0 0 1 0-2h4zm2 2h6V4H9zM6.074 8l.857 12H17.07l.857-12zM10 10a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1m4 0a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1" />
+                            </svg>
+                        </button>
+                    </form>
+                @endcan
+
+                @can('Create')
+                    <a class="add-btn" href="{{ route('branches.create') }}">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M18 10h-4V6a2 2 0 0 0-4 0l.071 4H6a2 2 0 0 0 0 4l4.071-.071L10 18a2 2 0 0 0 4 0v-4.071L18 14a2 2 0 0 0 0-4" />
+                        </svg>
+                        Add Branch
+                    </a>
+                @endcan
+
             </div>
         </div>
 
@@ -130,9 +136,13 @@
             `
         }
 
+        let canDelete = @json(auth()->user()->can('Delete'));
+        let canEdit = @json(auth()->user()->can('Edit'));
+
         function actionsColumn(branchId) {
             return `
-              <div class="table-svg" style="display:flex; justify-content:center; align-items:center; gap:10px;">
+        <div class="table-svg" style="display:flex; justify-content:center; align-items:center; gap:10px;">
+            ${canDelete ? `
             <form action="/branches/${branchId}" method="POST" class="delete-form" style="display:inline;">
                 <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').getAttribute('content')}">
                 <input type="hidden" name="_method" value="DELETE">
@@ -141,24 +151,26 @@
                         <path d="M7 4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2h4a1 1 0 1 1 0 2h-1.069l-.867 12.142A2 2 0 0 1 17.069 22H6.93a2 2 0 0 1-1.995-1.858L4.07 8H3a1 1 0 0 1 0-2h4zm2 2h6V4H9zM6.074 8l.857 12H17.07l.857-12zM10 10a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1m4 0a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1" fill="#0D0D0D" />
                     </svg>
                 </button>
-            </form>
-
+            </form>` : ''}
+            
+            ${canEdit ? `
             <a href="/branches/${branchId}/edit" style="background-color:transparent; border:none; cursor:pointer;" class="edit-btn" data-id="${branchId}">
-                <svg style="fill:var(--primary-color);" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+               <svg style="fill:var(--primary-color);" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
                     <path class="clr-i-solid clr-i-solid-path-1" d="m4.22 23.2-1.9 8.2a2.06 2.06 0 0 0 2 2.5 2 2 0 0 0 .43 0L13 32l15.84-15.78L20 7.4Z" />
                     <path class="clr-i-solid clr-i-solid-path-2" d="m33.82 8.32-5.9-5.9a2.07 2.07 0 0 0-2.92 0L21.72 5.7l8.83 8.83 3.28-3.28a2.07 2.07 0 0 0-.01-2.93" />
                     <path fill="none" d="M0 0h36v36H0z" />
                 </svg>
-            </a>
+            </a>` : ''}
 
             <button style="background-color:transparent; border:none; cursor:pointer;" class="edit-btn view-report-btn" data-branch-id="${branchId}">
                 <svg style="fill:var(--primary-color);" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42" xml:space="preserve">
                     <path d="M15.3 20.1c0 3.1 2.6 5.7 5.7 5.7s5.7-2.6 5.7-5.7-2.6-5.7-5.7-5.7-5.7 2.6-5.7 5.7m8.1 12.3C30.1 30.9 40.5 22 40.5 22s-7.7-12-18-13.3c-.6-.1-2.6-.1-3-.1-10 1-18 13.7-18 13.7s8.7 8.6 17 9.9c.9.4 3.9.4 4.9.2M11.1 20.7c0-5.2 4.4-9.4 9.9-9.4s9.9 4.2 9.9 9.4S26.5 30 21 30s-9.9-4.2-9.9-9.3" />
                 </svg>
             </button>
-         </div>
-            `
+        </div>
+    `;
         }
+
 
         fetchBranches().then(branches => {
             const grid = new gridjs.Grid({

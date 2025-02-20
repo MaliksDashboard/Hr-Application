@@ -5,10 +5,12 @@
     <div class="main">
         <div class="dashboard-header">
             <h1>Transfers & Rotation Management</h1>
-            <a class="instructor" href="{{ route('transfers.create') }}"><svg viewBox="-60 0 512 512"
-                    xmlns="http://www.w3.org/2000/svg">
-                    <path d="m64 96 264 160L64 416z" />
-                </svg> Add New Trasnfer</a>
+            @can('Create')
+                <a class="instructor" href="{{ route('transfers.create') }}"><svg viewBox="-60 0 512 512"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path d="m64 96 264 160L64 416z" />
+                    </svg> Add New Trasnfer</a>
+            @endcan
         </div>
 
         <!-- First Row: Summary Cards -->
@@ -111,14 +113,12 @@
                     "{{ $transfer->transfer_start_date ? \Carbon\Carbon::parse($transfer->transfer_start_date)->format('d-m-Y') : 'N/A' }}",
                     "{{ $transfer->created_by_name ?? 'N/A' }}", // Created by
                     `<button onclick="downloadPDF({{ $transfer->id }})" class="btn btn-primary">Download PDF</button>` +
-                    @if (auth()->user()->hasRole('Admin'))
-                        `<button data-id="{{ $transfer->id }}" style="margin-left:10px;" class="btn btn-danger cancel-transfer">Cancel</button>
-                     @if ($transfer->type === 'Rotation')
-                         <button data-id="{{ $transfer->id }}" style="margin-left:10px;" class="btn btn-warning change-action-type">Make Transfer</button>
-                     @endif`
-                    @else
-                        ''
-                    @endif
+                    `@can('Delete')
+                <button data-id="{{ $transfer->id }}" style="margin-left:10px;" class="btn btn-danger cancel-transfer">Cancel</button>
+                @if ($transfer->type === 'Rotation')
+                    <button data-id="{{ $transfer->id }}" style="margin-left:10px;" class="btn btn-warning change-action-type">Make Transfer</button>
+                @endif
+            @endcan`
                 ],
             @endforeach
         ];

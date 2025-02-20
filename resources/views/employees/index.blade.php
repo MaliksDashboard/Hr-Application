@@ -39,18 +39,21 @@
 
                     <div id="count-select">
                     </div>
-                    <form id="bulk-delete-form" action="{{ route('employees.bulkDelete') }}" method="POST">
-                        @csrf
-                        @method('DELETE')
-                        <input type="hidden" name="selected_ids" id="selected_ids">
-                        <button type="button" class="bulk-delete-btn">
-                            <svg class="dlt" viewBox="0 0 24 24" fill="" xmlns="http://www.w3.org/2000/svg">
-                                <path
-                                    d="M7 4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2h4a1 1 0 1 1 0 2h-1.069l-.867 12.142A2 2 0 0 1 17.069 22H6.93a2 2 0 0 1-1.995-1.858L4.07 8H3a1 1 0 0 1 0-2h4zm2 2h6V4H9zM6.074 8l.857 12H17.07l.857-12zM10 10a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1m4 0a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1" />
-                            </svg>
-                        </button>
-                    </form>
+                    <input type="hidden" name="selected_ids" id="selected_ids">
 
+                    @can('Delete')
+                        <form id="bulk-delete-form" action="{{ route('employees.bulkDelete') }}" method="POST">
+                            @csrf
+                            @method('DELETE')
+
+                            <button type="button" class="bulk-delete-btn">
+                                <svg class="dlt" viewBox="0 0 24 24" fill="" xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M7 4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2h4a1 1 0 1 1 0 2h-1.069l-.867 12.142A2 2 0 0 1 17.069 22H6.93a2 2 0 0 1-1.995-1.858L4.07 8H3a1 1 0 0 1 0-2h4zm2 2h6V4H9zM6.074 8l.857 12H17.07l.857-12zM10 10a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1m4 0a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1" />
+                                </svg>
+                            </button>
+                        </form>
+                    @endcan
 
                     <button style="display: none" id="moreActions">
                         <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -156,12 +159,14 @@
 
                 </div>
 
-                <a class="add-btn" href="{{ route('employees.create') }}"> <svg viewBox="0 0 24 24" version="1.2"
-                        baseProfile="tiny" xmlns="http://www.w3.org/2000/svg">
-                        <path
-                            d="M18 10h-4V6a2 2 0 0 0-4 0l.071 4H6a2 2 0 0 0 0 4l4.071-.071L10 18a2 2 0 0 0 4 0v-4.071L18 14a2 2 0 0 0 0-4" />
-                    </svg>Add Candidate
-                </a>
+                @can('Create')
+                    <a class="add-btn" href="{{ route('employees.create') }}"> <svg viewBox="0 0 24 24" version="1.2"
+                            baseProfile="tiny" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M18 10h-4V6a2 2 0 0 0-4 0l.071 4H6a2 2 0 0 0 0 4l4.071-.071L10 18a2 2 0 0 0 4 0v-4.071L18 14a2 2 0 0 0 0-4" />
+                        </svg>Add Candidate
+                    </a>
+                @endcan
             </div>
         </div>
 
@@ -293,27 +298,31 @@
                             </svg> View
                         </div>
 
-                        <a href="{{ route('employees.edit', ['employee' => $employee->id]) }}" class="card-more-action">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" xml:space="preserve"
-                                aria-hidden="true" focusable="false">
-                                <path
-                                    d="M29.586 9.414 26 13l-7-7 3.586-3.586a2.005 2.005 0 0 1 2.828 0l4.172 4.172c.778.778.778 2.05 0 2.828M18 7l7 7-14.293 14.293C10.318 28.682 9.55 29 9 29H4c-.55 0-1-.45-1-1v-5c0-.55.318-1.318.707-1.707zM8.464 26.293l-2.757-2.757c-.389-.389-.707-.258-.707.292V26c0 .55.45 1 1 1h2.172c.55 0 .681-.318.292-.707" />
-                            </svg>
-                            Edit
-                        </a>
-
-                        <form action="{{ route('employees.destroy', $employee->id) }}" method="POST"
-                            class="card-more-action">
-                            @csrf
-                            @method('DELETE')
-                            <button type="button" class="delete-btn">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" xml:space="preserve">
+                        @can('Edit')
+                            <a href="{{ route('employees.edit', ['employee' => $employee->id]) }}" class="card-more-action">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" xml:space="preserve"
+                                    aria-hidden="true" focusable="false">
                                     <path
-                                        d="M42.7 469.3c0 23.5 19.1 42.7 42.7 42.7h341.3c23.5 0 42.7-19.1 42.7-42.7V192H42.7zm320-213.3h42.7v192h-42.7zm-128 0h42.7v192h-42.7zm-128 0h42.7v192h-42.7zm384-170.7h-128V42.7C362.7 19.1 343.5 0 320 0H192c-23.5 0-42.7 19.1-42.7 42.7v42.7h-128C9.5 85.3 0 94.9 0 106.7V128c0 11.8 9.5 21.3 21.3 21.3h469.3c11.8 0 21.3-9.5 21.3-21.3v-21.3c.1-11.8-9.4-21.4-21.2-21.4m-170.7 0H192V42.7h128z" />
+                                        d="M29.586 9.414 26 13l-7-7 3.586-3.586a2.005 2.005 0 0 1 2.828 0l4.172 4.172c.778.778.778 2.05 0 2.828M18 7l7 7-14.293 14.293C10.318 28.682 9.55 29 9 29H4c-.55 0-1-.45-1-1v-5c0-.55.318-1.318.707-1.707zM8.464 26.293l-2.757-2.757c-.389-.389-.707-.258-.707.292V26c0 .55.45 1 1 1h2.172c.55 0 .681-.318.292-.707" />
                                 </svg>
-                                Delete
-                            </button>
-                        </form>
+                                Edit
+                            </a>
+                        @endcan
+
+                        @can('Delete')
+                            <form action="{{ route('employees.destroy', $employee->id) }}" method="POST"
+                                class="card-more-action">
+                                @csrf
+                                @method('DELETE')
+                                <button type="button" class="delete-btn">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" xml:space="preserve">
+                                        <path
+                                            d="M42.7 469.3c0 23.5 19.1 42.7 42.7 42.7h341.3c23.5 0 42.7-19.1 42.7-42.7V192H42.7zm320-213.3h42.7v192h-42.7zm-128 0h42.7v192h-42.7zm-128 0h42.7v192h-42.7zm384-170.7h-128V42.7C362.7 19.1 343.5 0 320 0H192c-23.5 0-42.7 19.1-42.7 42.7v42.7h-128C9.5 85.3 0 94.9 0 106.7V128c0 11.8 9.5 21.3 21.3 21.3h469.3c11.8 0 21.3-9.5 21.3-21.3v-21.3c.1-11.8-9.4-21.4-21.2-21.4m-170.7 0H192V42.7h128z" />
+                                    </svg>
+                                    Delete
+                                </button>
+                            </form>
+                        @endcan
                     </div>
                     <p style="position: absolute; color: red; font-weight: 500;">
                         {{ $employee->left_date ? ' Left: ' . \Carbon\Carbon::parse($employee->left_date)->format('d-m-Y') : '' }}

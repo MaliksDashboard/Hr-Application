@@ -53,11 +53,12 @@
                         <select name="role_name" id="role_name" required>
                             @foreach ($roles as $role)
                                 <option value="{{ $role->name }}"
-                                    {{ old('role_name', $user->role_name) == $role->name ? 'selected' : '' }}>
+                                    {{ old('role_name', $userRole) == $role->name ? 'selected' : '' }}>
                                     {{ $role->name }}
                                 </option>
                             @endforeach
                         </select>
+
                         @error('role_name')
                             <span class="error-message" style="color:red;">{{ $message }}</span>
                         @enderror
@@ -90,10 +91,3 @@
         </div>
     </div>
 @endsection
-
-<script>
-    //Check the role:
-    document.addEventListener('DOMContentLoaded', function() {
-        checkUserRole();
-    });
-</script>

@@ -115,7 +115,7 @@ class EmployeesController extends Controller
         $creator = Auth::user();
 
         // Notify all admins about the new employee except the creator
-        $adminUsers = User::where('role_name', 'Admin')->get();
+        $adminUsers = User::role('Admin')->get();
         foreach ($adminUsers as $admin) {
             if ($admin->id !== $creator->id) {
                 Notification::create([
@@ -255,7 +255,7 @@ class EmployeesController extends Controller
         $job = $employee->job ?? 'N/A';
         $branchName = $employee->branch->branch_name ?? 'N/A';
 
-        $adminUsers = User::where('role_name', 'Admin')->get();
+        $adminUsers = User::role('Admin')->get();
         foreach ($adminUsers as $admin) {
             if ($admin->id !== $creator->id) {
                 Notification::create([
