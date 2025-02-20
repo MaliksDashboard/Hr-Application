@@ -7,8 +7,17 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "barryvdh/laravel-dompdf": "^3.1",
+        "google/apiclient": "^2.12",
+        "guzzlehttp/guzzle": "^7.9",
+        "intervention/image": "^3.11",
         "laravel/framework": "^11.31",
-        "laravel/tinker": "^2.9"
+        "laravel/tinker": "^2.9",
+        "maatwebsite/excel": "^3.1",
+        "milon/barcode": "^11.0",
+        "munafio/chatify": "^1.6",
+        "pusher/pusher-php-server": "^7.2",
+        "spatie/laravel-permission": "^6.15"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -52,11 +61,14 @@
             "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite"
         ]
     },
-    "extra": {
-        "laravel": {
-            "dont-discover": []
+"extra": {
+    "laravel": {
+        "dont-discover": [],
+        "aliases": {
+            "Image": "Intervention\\Image\\Facades\\Image"
         }
-    },
+    }
+},
     "config": {
         "optimize-autoloader": true,
         "preferred-install": "dist",
@@ -68,4 +80,5 @@
     },
     "minimum-stability": "stable",
     "prefer-stable": true
+    
 }

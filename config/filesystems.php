@@ -40,7 +40,7 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => env('APP_URL').'/storage',
+            'url' => env('APP_URL') . '/storage',
             'visibility' => 'public',
             'throw' => false,
         ],
@@ -57,7 +57,16 @@ return [
             'throw' => false,
         ],
 
+        'google' => [
+            'driver' => 'google',
+            'clientId' => env('GOOGLE_CLIENT_ID'),
+            'clientSecret' => env('GOOGLE_CLIENT_SECRET'),
+            'refreshToken' => env('GOOGLE_REFRESH_TOKEN'),
+            'folderId' => env('GOOGLE_DRIVE_FOLDER_ID'), // Optional
+        ],
     ],
+
+
 
     /*
     |--------------------------------------------------------------------------
