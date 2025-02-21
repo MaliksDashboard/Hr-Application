@@ -6,8 +6,11 @@ use Illuminate\Http\Request;
 use App\Models\NewJoinerProgress;
 use App\Models\NewJoiner;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\log;
 use App\Models\TrainingSteps;
+use App\Models\Notification;
+use App\Models\User;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class NewJoinerProgressController extends Controller
 {
@@ -19,12 +22,11 @@ class NewJoinerProgressController extends Controller
             ->with('step') // ✅ Load step relationship
             ->get()
             ->sortBy('step.step_order') // ✅ Sort the results based on step_order
-    
+
             ->values(); // ✅ Reset array keys to prevent issues
-    
+
         return response()->json($progress);
     }
-    
 
     // Mark a step as completed
     public function completeStep(Request $request)
@@ -76,6 +78,27 @@ class NewJoinerProgressController extends Controller
                     'status' => 'completed',
                     'completed_at' => $request->completion_date,
                     'remarks' => $request->remarks,
+                ]);
+            }
+
+            // ✅ Fetch the NewJoiner instance to use in the notification
+            $newJoiner = NewJoiner::findOrFail($request->new_joiner_id);
+
+            $adminUsers = User::role('Admin')->get();
+            foreach ($adminUsers as $admin) {
+                // Skip sending notification to the logged-in admin
+                if ($admin->id == Auth::id()) {
+                    continue;
+                }
+
+                Log::info("Creating admin notification for {$admin->name}");
+                Notification::create([
+                    'user_id' => $admin->id,
+                    'type' => 'admin_alert',
+                    'message' => Auth::user()->name . " has marked step '{$selectedStep->name}' as completed for {$newJoiner->name}.",
+                    'notified_at' => now(),
+                    'is_read' => false,
+                    'user_image' => Auth::user()->image,
                 ]);
             }
 

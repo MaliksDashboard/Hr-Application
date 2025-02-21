@@ -9,6 +9,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\EmployeePhaseProgress;
 use App\Models\TrainingSteps;
+use App\Models\Notification;
+use App\Models\User;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+
 
 class NewJoinerController extends Controller
 {
@@ -38,6 +43,24 @@ class NewJoinerController extends Controller
 
         // Create the new joiner record
         $newJoiner = NewJoiner::create($validated);
+
+        $adminUsers = User::role('Admin')->get();
+        foreach ($adminUsers as $admin) {
+            // Skip sending notification to the logged-in admin
+            if ($admin->id == Auth::id()) {
+                continue; // Skip the current admin
+            }
+
+            Log::info("Creating admin notification for {$admin->name}");
+            Notification::create([
+                'user_id' => $admin->id,
+                'type' => 'admin_alert',
+                'message' =>  Auth::user()->name . " has added {$newJoiner->name} as a New Joiner Employee.",
+                'notified_at' => now(),
+                'is_read' => false,
+                'user_image' => Auth::user()->image,
+            ]);
+        }
 
         // Initialize progress for the new joiner (Assign all steps)
         app(NewJoinerProgressController::class)->initializeProgress($newJoiner->id);
@@ -76,6 +99,25 @@ class NewJoinerController extends Controller
 
         // Delete progress records related to this joiner
         $newJoiner->progress()->delete();
+
+
+        $adminUsers = User::role('Admin')->get();
+        foreach ($adminUsers as $admin) {
+            // Skip sending notification to the logged-in admin
+            if ($admin->id == Auth::id()) {
+                continue; // Skip the current admin
+            }
+
+            Log::info("Creating admin notification for {$admin->name}");
+            Notification::create([
+                'user_id' => $admin->id,
+                'type' => 'admin_alert',
+                'message' =>  Auth::user()->name . " has deleted {$newJoiner->name} From the New Joiner List.",
+                'notified_at' => now(),
+                'is_read' => false,
+                'user_image' => Auth::user()->image,
+            ]);
+        }
 
         // Delete the new joiner
         $newJoiner->delete();
