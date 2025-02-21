@@ -111,14 +111,15 @@
 
                     const gridData = data.map(promotion => [
                         gridjs.html(`
-                        <div style="display: flex; align-items: center; gap:10px;">
+                        <div style="display: flex; align-items: center; gap:30px;">
                             <img src="storage/${promotion.image_path || '/default-image.jpg'}"
                                  alt="${promotion.employee_name || 'No Name'}"
-                                 style="width:40px;height:40px;border-radius:5px;border:3px solid var(--text-light-color);">
-                            <span>${promotion.employee_name || 'N/A'}</span>
+                                 style="width:50px;height:50px;border-radius:5px;border:3px solid var(--primary-color);">
+                            <span style=" ">${promotion.employee_name || 'N/A'}</span>
                         </div>
                     `),
                         promotion.new_title || 'No Title',
+                        promotion.old_title || 'No Title',
                         formatDate(promotion.promotion_date),
                         gridjs.html(`
                         <button class="down-promo" data-id="${promotion.id}">
@@ -135,7 +136,9 @@
                     promoTable.innerHTML = '';
 
                     new gridjs.Grid({
-                        columns: ['Employee', 'New Title', 'Promotion Date', 'Actions'],
+                        columns: ['Employee', 'New Title', 'Old Title', 'Promotion Date',
+                            'Actions'
+                        ],
                         data: gridData,
                         pagination: true,
                         search: true,

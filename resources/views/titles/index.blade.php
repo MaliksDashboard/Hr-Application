@@ -150,7 +150,7 @@
                         li.innerHTML = `
                     <span>${data.title.name} (${data.title.category})</span>
                     <div style="display: flex; gap: 5px;">
- <button class="edit-btn" data-id="{{ $title->id }}"><svg
+                        <button class="edit-btn" data-id="{{ $title->id }}"><svg
                                     viewBox="0 0 24 24" version="1.2" baseProfile="tiny"
                                     xmlns="http://www.w3.org/2000/svg">
                                     <path

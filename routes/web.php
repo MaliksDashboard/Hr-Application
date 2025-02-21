@@ -14,7 +14,9 @@ use Illuminate\Http\Request;
 
 Route::middleware('auth')->group(function () {
     //route for the Main Page
-    Route::get('/', [DashboardController::class, 'index'])->name('dashboard')->middleware('permission:Dashboard');
+    Route::get('/', [DashboardController::class, 'index'])
+        ->name('dashboard')
+        ->middleware('permission:Dashboard');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     //Users Routes
@@ -91,13 +93,17 @@ Route::middleware('auth')->group(function () {
     //Promotions routes
     Route::delete('/promotions/{promotion}', [PromotionController::class, 'destroy'])->name('promotions.destroy');
     Route::resource('promotions', PromotionController::class)->middleware('permission:Promotions');
-    Route::get('/getAllPromo',[PromotionController::class,'getAllPromo']);
+    Route::get('/getAllPromo', [PromotionController::class, 'getAllPromo']);
     Route::get('/promotion-stats', [PromotionController::class, 'getPromotionStats']);
     Route::get('/promotions/{id}/download', [PromotionController::class, 'downloadPromotionLetter'])->name('promotions.download');
 
     //Barcode Routes
-    Route::get('/badge', [BadgeController::class, 'index'])->name('badge.index')->middleware('permission:Badge Maker');
-    Route::post('/badge/generate', [BadgeController::class, 'generateBadge'])->name('badge.generate')->middleware('permission:Badge Maker');
+    Route::get('/badge', [BadgeController::class, 'index'])
+        ->name('badge.index')
+        ->middleware('permission:Badge Maker');
+    Route::post('/badge/generate', [BadgeController::class, 'generateBadge'])
+        ->name('badge.generate')
+        ->middleware('permission:Badge Maker');
     Route::get('/getEmployeesByBranch/{branchId}', [BadgeController::class, 'getEmployeesByBranch'])->middleware('permission:Badge Maker');
 
     //New Joiners System Routes
@@ -105,17 +111,27 @@ Route::middleware('auth')->group(function () {
     Route::get('/new-joiners-data', [NewJoinerController::class, 'getNewJoinersData']);
     Route::resource('new-joiners', NewJoinerController::class)->middleware('permission:New Joiners');
     Route::post('/save-phase-progress', [NewJoinerController::class, 'savePhaseProgress']);
+    Route::get('/progress/{newJoinerId}', [NewJoinerProgressController::class, 'showProgress']);
+    Route::post('/progress/complete', [NewJoinerProgressController::class, 'completeStep']);
+    Route::post('/progress/init/{newJoinerId}', [NewJoinerProgressController::class, 'initializeProgress']);
+    Route::get('/new-joiners/filter/{stepId}', [NewJoinerController::class, 'filterByStep']);
+    Route::delete('/new-joiners/{id}', [NewJoinerController::class, 'destroy']);
+
 
     //Notification System
     Route::get('/notifications', [NotificationController::class, 'fetchNotifications']);
     Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
+
+    //Training Steps API
+    Route::resource('steps', TrainingStepsController::class);
+    Route::get('/getSteps', [TrainingStepsController::class, 'getStepData']);
+    Route::post('/steps/update-ranks', [TrainingStepsController::class, 'updateRanks'])->name('steps.updateRanks');
 
     //Roles And Permissions API:
     Route::get('add-permission', [RolesAndPermissionController::class, 'addPermissions']);
     Route::resource('roles', RolesAndPermissionController::class)->middleware('permission:Role And Permission');
     Route::get('/getroles', [RolesAndPermissionController::class, 'getRoles']);
     Route::put('/roles/{id}', [RolesAndPermissionController::class, 'update'])->name('roles.update');
-
 });
 
 //Route for getting the user role

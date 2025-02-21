@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class NewJoiner extends Model
 {
-
     use HasFactory;
 
     protected $table = 'new_joiner';
@@ -15,14 +14,13 @@ class NewJoiner extends Model
     protected $fillable = [
         'name',
         'mode',
-        'date_mode',
+        'start_date',
         'job',
-        'current_branch',
-        'remarks'
     ];
 
-    public function phaseProgress()
+    // Relationship: A new joiner has many progress records (each step)
+    public function progress()
     {
-        return $this->hasMany(EmployeePhaseProgress::class, 'employee_id');
+        return $this->hasMany(NewJoinerProgress::class, 'new_joiner_id');
     }
 }
