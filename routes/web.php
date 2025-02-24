@@ -18,6 +18,7 @@ Route::middleware('auth')->group(function () {
         ->name('dashboard')
         ->middleware('permission:Dashboard');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('permission:Dashboard');
+    Route::get('/getVaccanciesData',[DashboardController::class,'getVaccanciesData']);
 
     //Users Routes
     Route::get('/users/profile', [UserController::class, 'profile'])->name('users.profile')->middleware('permission:Users');

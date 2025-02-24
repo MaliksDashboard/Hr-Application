@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Employee;
+use App\Models\Notification;
+use App\Models\Vacancy;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -56,7 +58,53 @@ class DashboardController extends Controller
             }
         }
 
+        $notifications = Notification::where('type', 'admin_alert')
+        ->orderBy('notified_at', 'desc')
+        ->take(10)
+        ->with('user:id,name') 
+        ->get();
+
+        $today = Carbon::now();
+        $tomorrow = Carbon::now()->addDay();
+    
+        // Fetch employees whose anniversary is in the current month
+        $workAnniversaries = Employee::whereMonth('date_hired', $today->month)
+            ->select('id', 'name', 'date_hired', 'image_path')
+            ->get()
+            ->map(function ($employee) use ($today) {
+                $years = $today->year - Carbon::parse($employee->date_hired)->year;
+    
+                // Only include employees with at least 1 year of work
+                if ($years < 1) {
+                    return null;
+                }
+    
+                return [
+                    'name' => $employee->name,
+                    'image_path' => $employee->image_path,
+                    'years' => $years,
+                    'anniversary_date' => Carbon::parse($employee->date_hired)->format('F d'),
+                    'sort_date' => Carbon::parse($employee->date_hired)->day,
+                ];
+            })
+            ->filter() // Removes null values (employees with < 1 year)
+            ->sortByDesc(function ($emp) use ($today, $tomorrow) {
+                return ($emp['sort_date'] == $tomorrow->day ? 1000 : $emp['sort_date']);
+            });
+
+
         // Pass data to the view
-        return view('dashboard', compact('data'));
+        return view('dashboard', compact('data','notifications','workAnniversaries'));
     }
+
+    public function getVaccanciesData()
+    {
+        $vaccancies = Vacancy::where('is_finished', '0')->get();
+    
+        $jobCounts = $vaccancies->groupBy('job')
+            ->map(fn($group) => $group->count());
+    
+        return response()->json($jobCounts);
+    }
+
 }

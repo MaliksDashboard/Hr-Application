@@ -9,7 +9,7 @@
 
 @section('main')
 
-    <div class="main">
+    <div class="main dashboard">
 
         <div class="dashboard-header">
             <h1>Dashboard</h1>
@@ -69,12 +69,71 @@
                             <li><span class="legend-box" style="background-color: #AA5486;"></span> Services 54</li>
                             <li><span class="legend-box" style="background-color: #FC8F54;"></span> Stationery 14</li>
                             <li><span class="legend-box" style="background-color: #FDE7BB;"></span> Computer 51</li>
+                            <li><span class="legend-box" style="background-color: #FDE7BB;"></span> Computer 51</li>
                             <li><span class="legend-box" style="background-color: #FBF4DB;"></span> Cashiers 26</li>
                         </ul>
                     </div>
                 </div>
             </div>
+
+            <div class="third-card">
+                <div class="second-card-header">
+                    <h2>Action System</h2>
+                    <small>(This will show you the latest aciton made by the users)</small>
+                </div>
+
+                <div class="third-card-container">
+                    @foreach ($notifications as $action)
+                        <div class="third-card-container-action">
+                            <img src="storage/{{ $action->user_image }}" alt="{{ $action->type }}">
+                            <div class="aciton-info">
+                                <span>{{ $action->message }}</span>
+                                <small>Action</small>
+                            </div>
+                        </div>
+                    @endforeach
+
+                </div>
+            </div>
+
+            <div class="fourth-card">
+                <div class="second-card-header">
+                    <h2>🎖️ Work Anniversaries</h2>
+                    <small>(Celebrate your colleagues! 🎊)</small>
+                </div>
+
+                @if ($workAnniversaries->isEmpty())
+                    <p class="no-anniversaries">No work anniversaries this month.</p>
+                @else
+                    <div class="anniversary-list">
+                        @foreach ($workAnniversaries as $emp)
+                            <div
+                                class="anniversary-card {{ Carbon\Carbon::now()->addDay()->format('F d') == $emp['anniversary_date'] ? 'highlight' : '' }}">
+                                <div class="avatar">
+                                    <img src="{{ asset('storage/' . $emp['image_path']) }}" alt="{{ $emp['name'] }}">
+                                </div>
+                                <div class="info">
+                                    <h3>{{ $emp['name'] }} -
+                                        {{ $emp['years'] }} Year{{ $emp['years'] > 1 ? 's' : '' }}
+
+                                    </h3>
+                                    <p class="anniversary-date">Since {{ $emp['anniversary_date'] }}</p>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+            </div>
+
+            <div class="fifth-card">
+                <div class="second-card-header">
+                    <h2>🎖️ Birthday Celebrations</h2>
+                    <small>(Celebrate your colleagues! 🎊)</small>
+                </div>
+            </div>
+
         </div>
+
 
     </div>
 
@@ -83,52 +142,62 @@
 
 <script>
     //Donut chart
-    document.addEventListener('DOMContentLoaded', function() {
-        // Random data for missing jobs
-        const missingJobs = {
-            Services: Math.floor(Math.random() * 50 + 10),
-            Stationery: Math.floor(Math.random() * 50 + 10),
-            ComputerOperators: Math.floor(Math.random() * 50 + 10),
-            Cashiers: Math.floor(Math.random() * 50 + 10),
-        };
+    document.addEventListener('DOMContentLoaded', async function() {
+        try {
+            // Fetch data from API
+            const response = await fetch('/getVaccanciesData');
+            const jobData = await response.json();
 
-        // Chart colors (darker, vintage tones)
-        const chartColors = [
-            '#AA5486', // Dark vintage green
-            '#FC8F54', // Olive green
-            '#FDE7BB', // Slate blue
-            '#FBF4DB', // Charcoal blue
-        ];
+            // Extract labels and values from API response
+            const jobLabels = Object.keys(jobData);
+            const jobCounts = Object.values(jobData);
 
-        // Create the chart
-        const ctx = document.getElementById('jobDonutChart').getContext('2d');
-        const totalEmployees = 39; // Example total (12 + 19 + 3 + 5)
+            // Chart colors (you can change or add more if needed)
+            const chartColors = ['#AA5486', '#FC8F54', '#FDE7BB', '#FBF4DB'];
 
-        new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: Object.keys(missingJobs), // Section labels
-                datasets: [{
-                    data: Object.values(missingJobs), // Random values
-                    backgroundColor: chartColors, // Vintage colors
-                    borderWidth: 2,
-                }],
-            },
-            options: {
-                plugins: {
-                    legend: {
-                        display: false, // Disable default legend
+            // Create the chart
+            const ctx = document.getElementById('jobDonutChart').getContext('2d');
+
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: jobLabels, // Dynamic section labels
+                    datasets: [{
+                        data: jobCounts, // Dynamic values from API
+                        backgroundColor: chartColors.slice(0, jobLabels
+                            .length), // Assign colors dynamically
+                        borderWidth: 2,
+                    }],
+                },
+                options: {
+                    plugins: {
+                        legend: {
+                            display: false, // Hide default legend
+                        },
+                    },
+                    responsive: true,
+                    cutout: '80%', // Make the chart thinner
+                    layout: {
+                        padding: {
+                            right: 20, // Space for the labels
+                        },
                     },
                 },
-                responsive: true,
-                cutout: '80%', // Make the chart thinner
-                layout: {
-                    padding: {
-                        right: 20, // Space for the labels
-                    },
-                },
-            },
-        });
+            });
 
+            // Update the legend dynamically
+            const legendContainer = document.querySelector('.custom-legend');
+            legendContainer.innerHTML = ''; // Clear existing legend
+
+            jobLabels.forEach((job, index) => {
+                const legendItem = document.createElement('li');
+                legendItem.innerHTML =
+                    `<span class="legend-box" style="background-color: ${chartColors[index]};"></span> ${job}: ${jobCounts[index]}`;
+                legendContainer.appendChild(legendItem);
+            });
+
+        } catch (error) {
+            console.error("Error fetching vacancy data:", error);
+        }
     });
 </script>

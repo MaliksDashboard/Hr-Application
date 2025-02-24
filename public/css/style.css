@@ -2271,6 +2271,10 @@ td.gridjs-td {
     align-items: center;
 }
 
+.dashboard {
+    width: calc(100%-250px);
+}
+
 .dashboard-header {
     display: flex;
     width: 100%;
@@ -2310,10 +2314,11 @@ td.gridjs-td {
 
 .first-row {
     display: flex;
-    justify-content: center;
+    justify-content: start;
     align-items: center;
     width: 100%;
     gap: 20px;
+    flex-wrap: wrap;
 }
 
 .first-row .first-card {
@@ -2325,7 +2330,7 @@ td.gridjs-td {
     padding: 10px;
     border-radius: 8px;
     border: 1px solid var(--light-color);
-    width: 70%;
+    width: 68%;
     height: 400px;
     position: relative;
 }
@@ -2393,6 +2398,258 @@ td.gridjs-td {
 .second-card .second-card-header h2 {
     color: var(--primary-color);
     font-size: 18px;
+}
+
+.third-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: start;
+    background-color: white;
+    position: relative;
+    border-radius: 10px;
+    border: 1px solid var(--light-color);
+    width: 30%;
+    height: 550px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+.third-card .second-card-header {
+    display: flex;
+    justify-content: flex-start;
+    align-items: end;
+    width: 100%;
+    padding: 20px;
+    position: sticky;
+    top: 0;
+    background-color: rgba(255, 255, 255, 0.8);
+    z-index: 1000;
+    border-bottom: 1px solid #ddd;
+    backdrop-filter: blur(10px);
+    gap: 10px;
+}
+
+.third-card .second-card-header h2 {
+    font-size: 18px;
+    margin: 0;
+    color: var(--primary-color);
+}
+
+.third-card .second-card-header small {
+    color: var(--text-light-color);
+}
+
+.third-card-container {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    padding: 20px;
+}
+
+.third-card-container .third-card-container-action {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 20px;
+    position: relative;
+}
+
+.third-card-container .third-card-container-action::after {
+    content: "";
+    display: block;
+    width: 1px;
+    height: 100px;
+    background-color: var(--text-light-color);
+    position: absolute;
+    left: 25px;
+    top: 10px;
+    z-index: 1;
+}
+
+.third-card-container .third-card-container-action:last-child::after {
+    display: none;
+}
+
+.third-card-container .third-card-container-action img {
+    width: 50px;
+    height: 50px;
+    aspect-ratio: 1/1;
+    border-radius: 50%;
+    z-index: 2;
+    filter: brightness(1.2);
+    box-shadow: 1px 2px 10px 0px rgba(0, 0, 0, 0.5);
+}
+
+.third-card-container .third-card-container-action .aciton-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: start;
+}
+
+.third-card-container .third-card-container-action .aciton-info span {
+    color: var(--primary-color);
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.third-card-container .third-card-container-action .aciton-info small {
+    font-size: 12px;
+    color: var(--text-light-color);
+}
+
+.fourth-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: start;
+    background-color: white;
+    position: relative;
+    border-radius: 10px;
+    border: 1px solid var(--light-color);
+    width: 30%;
+    height: 550px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+.fourth-card .second-card-header {
+    display: flex;
+    justify-content: flex-start;
+    align-items: end;
+    width: 100%;
+    padding: 20px;
+    position: sticky;
+    top: 0;
+    background-color: rgba(255, 255, 255, 0.8);
+    z-index: 1000;
+    border-bottom: 1px solid #ddd;
+    backdrop-filter: blur(10px);
+    gap: 10px;
+}
+
+.fourth-card .second-card-header h2 {
+    font-size: 18px;
+    margin: 0;
+    color: var(--primary-color);
+}
+
+.fourth-card .second-card-header small {
+    color: var(--text-light-color);
+}
+
+.fourth-card {
+    background: #f4f4f4;
+    border-radius: 8px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* List Container */
+.anniversary-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 20px;
+}
+
+/* Anniversary Card */
+.anniversary-card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: white;
+    padding: 12px;
+    width: 250px !important;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    border-left: 4px solid var(--third-color); /* Professional blue accent */
+    transition: all 0.2s ease-in-out;
+}
+
+.anniversary-card.highlight {
+    border-left: 4px solid #ffd700; /* Gold highlight for tomorrow */
+}
+
+/* Profile Image */
+.avatar img {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    border: 2px solid var(--primary-color);
+    object-fit: cover;
+}
+
+/* Anniversary Info */
+.info h3 {
+    margin: 0;
+    font-size: 16px;
+    color: #333;
+    font-weight: bold;
+}
+
+.anniversary-date {
+    font-size: 14px;
+    color: #666;
+}
+
+.years-badge {
+    color: var(--text-light-color);
+    font-size: 12px;
+    text-align: start;
+    font-weight: bold;
+}
+
+.congrats-btn {
+    background: #1f618d;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.3s;
+}
+
+.congrats-btn:hover {
+    background: #154360;
+}
+
+.no-anniversaries {
+    text-align: center;
+    color: #777;
+    font-size: 14px;
+    padding: 20px;
+}
+
+.fifth-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: start;
+    background-color: white;
+    position: relative;
+    border-radius: 10px;
+    border: 1px solid var(--light-color);
+    width: 37%;
+    height: 550px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+.fifth-card .second-card-header {
+    display: flex;
+    justify-content: flex-start;
+    align-items: end;
+    width: 100%;
+    padding: 20px;
+    position: sticky;
+    top: 0;
+    background-color: rgba(255, 255, 255, 0.8);
+    z-index: 1000;
+    border-bottom: 1px solid #ddd;
+    backdrop-filter: blur(10px);
+    gap: 10px;
 }
 
 .row-even {
@@ -5236,4 +5493,7 @@ textarea:focus {
     .print-btn {
         display: none !important;
     }
+}
+
+@media (max-width: 1024px) {
 }
