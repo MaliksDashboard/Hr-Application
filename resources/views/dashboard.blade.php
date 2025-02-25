@@ -45,7 +45,7 @@
                                     @foreach ($categories as $category => $count)
                                         <td
                                             class="{{ $count > 0 ? 'category-' . strtolower(str_replace(' ', '-', $category)) : 'empty' }}">
-                                            {{ $count > 0 ? $count . ' Employee' . ($count > 1 ? 's' : '') : '-' }}
+                                            {{ $count }}
                                         </td>
                                     @endforeach
                                 </tr>
@@ -62,7 +62,8 @@
                 </div>
                 <div class="line"></div>
 
-                <div style="display: flex; align-items: center; justify-content: center;margin-top:30px">
+                <div class="donut-chart"
+                    style="display: flex; align-items: center; justify-content: center;margin-top:30px">
                     <canvas id="jobDonutChart" width="200" height="200"></canvas>
                     <div class="chart-legend">
                         <ul class="custom-legend">

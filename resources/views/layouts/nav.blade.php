@@ -211,6 +211,13 @@
         </article>
     </nav>
 
+    <!-- Burger Icon -->
+    <div id="burger-menu" class="burger">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+
     @if (session('success'))
         <script>
             document.addEventListener('DOMContentLoaded', function() {
@@ -734,5 +741,23 @@
     document.addEventListener("DOMContentLoaded", () => {
         fetchNotifications();
         setInterval(fetchNotifications, 10000); // Auto-refresh every 10 seconds
+    });
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const burger = document.getElementById("burger-menu");
+        const nav = document.getElementById("nav");
+
+        burger.addEventListener("click", function() {
+            nav.classList.toggle("show");
+            burger.classList.toggle("active");
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener("click", function(event) {
+            if (!nav.contains(event.target) && !burger.contains(event.target)) {
+                nav.classList.remove("show");
+                burger.classList.remove("active");
+            }
+        });
     });
 </script>

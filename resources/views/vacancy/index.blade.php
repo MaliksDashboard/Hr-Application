@@ -6,7 +6,20 @@
 
     <div class="main vacancy">
 
+        <div class="dashboard-header">
+            <h1>Vacacnies Managment</h1>
+            @can('Create')
+                <a class="add-vac" href="{{ route('vacancies.create') }} ">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" xml:space="preserve">
+                        <path
+                            d="M256 0C114.6 0 0 114.6 0 256s114.6 256 256 256 256-114.6 256-256S397.4 0 256 0m149.3 277.3c0 11.8-9.5 21.3-21.3 21.3h-85.3V384c0 11.8-9.5 21.3-21.3 21.3h-42.7c-11.8 0-21.3-9.6-21.3-21.3v-85.3H128c-11.8 0-21.3-9.6-21.3-21.3v-42.7c0-11.8 9.5-21.3 21.3-21.3h85.3V128c0-11.8 9.5-21.3 21.3-21.3h42.7c11.8 0 21.3 9.6 21.3 21.3v85.3H384c11.8 0 21.3 9.6 21.3 21.3z" />
+                    </svg>
+                    Add Vacancy
+                </a>
+            @endcan
+        </div>
         <div class="row">
+
             <div class="row-left">
                 <div class="row-left-controller">
                     <strong>Vacancies</strong>
@@ -14,10 +27,10 @@
                         <p class="active">To Do</p>
                         <p>Completed</p>
                     </div>
-                    <div
+                    <div class="input-search"
                         style="display: flex; gap: 10px; align-items: center; justify-content: center; border: 1px solid #a2a5b9; padding:0px 5px; border-radius: 5px;">
-                        <svg style="width: 18px" viewBox="0 0 24 24" data-name="Line Color" xmlns="http://www.w3.org/2000/svg"
-                            class="icon line-color">
+                        <svg style="width: 18px" viewBox="0 0 24 24" data-name="Line Color"
+                            xmlns="http://www.w3.org/2000/svg" class="icon line-color">
                             <path style="fill:none;stroke:#a2a5b9;stroke-linecap:round;stroke-linejoin:round;stroke-width:2"
                                 d="m21 21-6-6" />
                             <circle cx="10" cy="10" r="7"
@@ -27,15 +40,7 @@
                             placeholder="Search by Branch or Job..." class="search-input">
 
                     </div>
-                    @can('Create')
-                        <a href="{{ route('vacancies.create') }} ">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" xml:space="preserve">
-                                <path
-                                    d="M256 0C114.6 0 0 114.6 0 256s114.6 256 256 256 256-114.6 256-256S397.4 0 256 0m149.3 277.3c0 11.8-9.5 21.3-21.3 21.3h-85.3V384c0 11.8-9.5 21.3-21.3 21.3h-42.7c-11.8 0-21.3-9.6-21.3-21.3v-85.3H128c-11.8 0-21.3-9.6-21.3-21.3v-42.7c0-11.8 9.5-21.3 21.3-21.3h85.3V128c0-11.8 9.5-21.3 21.3-21.3h42.7c11.8 0 21.3 9.6 21.3 21.3v85.3H384c11.8 0 21.3 9.6 21.3 21.3z" />
-                            </svg>
-                            Add Vacancy
-                        </a>
-                    @endcan
+
                 </div>
 
                 <div class="row-left-container">
@@ -150,27 +155,24 @@
 
             </div>
 
-            <div class="row-right">
-                <div class="row-right-top">
-                    <h2>Vacancies Graph</h2>
-                    <span class="line"></span>
-                    <div class="coming-soon">
-                        <p>Coming Soon</p>
-                        <div class="coming-soon-spinner"></div>
-                    </div>
+            <div class="row-right-top item-1">
+                <h2>Vacancies Graph</h2>
+                <span class="line"></span>
+                <div class="coming-soon">
+                    <p>Coming Soon</p>
+                    <div class="coming-soon-spinner"></div>
                 </div>
-
-                <div class="row-right-top">
-                    <h2>Vacancies Graph</h2>
-                    <span class="line"></span>
-                    <div class="coming-soon">
-                        <p>Coming Soon</p>
-                        <div class="coming-soon-spinner"></div>
-                    </div>
-                </div>
-
-
             </div>
+
+            <div class="row-right-top item-2">
+                <h2>Vacancies Graph</h2>
+                <span class="line"></span>
+                <div class="coming-soon">
+                    <p>Coming Soon</p>
+                    <div class="coming-soon-spinner"></div>
+                </div>
+            </div>
+
         </div>
 
     </div>

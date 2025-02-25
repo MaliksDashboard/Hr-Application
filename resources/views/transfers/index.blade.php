@@ -2,7 +2,7 @@
 @section('title', 'Transfers Management')
 
 @section('main')
-    <div class="main">
+    <div class="main transfers">
         <div class="dashboard-header">
             <h1>Transfers & Rotation Management</h1>
             @can('Create')
@@ -112,13 +112,15 @@
                     "{{ $transfer->rotation_duration ? \Carbon\Carbon::parse($transfer->rotation_duration)->format('d-m-Y') : 'N/A' }}",
                     "{{ $transfer->transfer_start_date ? \Carbon\Carbon::parse($transfer->transfer_start_date)->format('d-m-Y') : 'N/A' }}",
                     "{{ $transfer->created_by_name ?? 'N/A' }}", // Created by
-                    `<button onclick="downloadPDF({{ $transfer->id }})" class="btn btn-primary">Download PDF</button>` +
+                    `<div class="btns-trans">
+                    <button onclick="downloadPDF({{ $transfer->id }})" class="btn btn-primary down-btn-transfer">Download PDF</button>` +
                     `@can('Delete')
-                <button data-id="{{ $transfer->id }}" style="margin-left:10px;" class="btn btn-danger cancel-transfer">Cancel</button>
+                <button  data-id="{{ $transfer->id }}" style="margin-left:10px;" class="btn btn-danger cancel-transfer">Cancel</button>
                 @if ($transfer->type === 'Rotation')
                     <button data-id="{{ $transfer->id }}" style="margin-left:10px;" class="btn btn-warning change-action-type">Make Transfer</button>
                 @endif
-            @endcan`
+            @endcan
+            </div>`
                 ],
             @endforeach
         ];
@@ -285,102 +287,7 @@
 
 
 <style>
-    .table-container {
-        flex-direction: column;
-        padding: 0 !important;
-
-        height: 40px !important;
-    }
-
     body {
         color: var(--primary-color);
-    }
-
-    .summary-cards {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 20px;
-        margin-bottom: 20px;
-    }
-
-    .card {
-        display: flex;
-        flex-direction: column;
-        padding: 20px;
-        gap: 20px;
-        background-color: #fff;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        text-align: center;
-        width: 100%;
-        max-width: 250px;
-        height: 150px;
-        position: relative;
-        border-top: 5px solid var(--border-color, black);
-    }
-
-
-
-    .card h2 {
-        font-size: 24px;
-    }
-
-    .card li {
-        margin-top: 10px;
-        bottom: 2;
-        position: absolute;
-        color: var(--text-light-color);
-        left: 50%;
-        transform: translatex(-50%);
-        width: 100%;
-    }
-
-    .analytics {
-        display: flex;
-        gap: 20px;
-        margin-bottom: 20px;
-    }
-
-    .chart-card {
-        flex: 1;
-        padding: 20px;
-        background-color: #f8f9fa;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        text-align: center;
-    }
-
-    .table-container {
-        margin-top: 20px;
-    }
-
-    h3 {
-        font-size: 16px;
-        text-align: start;
-    }
-
-    td.gridjs-td {
-        border: none !important;
-        border-bottom: 1px solid #ddd !important;
-        font-size: 16px;
-    }
-
-    input.gridjs-input {
-        width: 100%;
-    }
-
-    .btn {
-        padding: 5px 10px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: all 0.3s;
-        background-color: var(--primary-color);
-        font-weight: bold;
-        color: white;
-    }
-
-    .btn:hover {
-        transform: scale(1.05);
     }
 </style>

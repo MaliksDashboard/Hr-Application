@@ -999,7 +999,7 @@
                 tableDiv.style.display = 'block';
                 updateStyles(tableViewButton, cardViewButton, true);
             } else {
-                cardsDiv.style.display = 'flex';
+                cardsDiv.style.display = 'grid';
                 tableDiv.style.display = 'none';
                 updateStyles(cardViewButton, tableViewButton, false);
             }
@@ -1487,3 +1487,22 @@
         }
     });
 </script>
+
+
+<style>
+    form {
+        margin-bottom: 0 !important;
+    }
+
+    .main .header .actions .bulk-delete-btn {
+        background-color: transparent !important;
+    }
+
+    #search-file {
+        margin: 10px;
+    }
+
+    #bulk-delete-form {
+        margin-bottom: 0 !important;
+    }
+</style>

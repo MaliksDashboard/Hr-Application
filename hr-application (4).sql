@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Feb 21, 2025 at 01:46 PM
+-- Generation Time: Feb 24, 2025 at 02:47 PM
 -- Server version: 9.1.0
 -- PHP Version: 8.4.0
 
@@ -115,7 +115,7 @@ CREATE TABLE IF NOT EXISTS `cache` (
 --
 
 INSERT INTO `cache` (`key`, `value`, `expiration`) VALUES
-('spatie.permission.cache', 'a:3:{s:5:\"alias\";a:4:{s:1:\"a\";s:2:\"id\";s:1:\"b\";s:4:\"name\";s:1:\"c\";s:10:\"guard_name\";s:1:\"r\";s:5:\"roles\";}s:11:\"permissions\";a:18:{i:0;a:4:{s:1:\"a\";i:1;s:1:\"b\";s:9:\"Dashboard\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:2:{i:0;i:8;i:1;i:9;}}i:1;a:4:{s:1:\"a\";i:2;s:1:\"b\";s:5:\"Users\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:8;}}i:2;a:4:{s:1:\"a\";i:3;s:1:\"b\";s:16:\"Calendar & Tools\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:2:{i:0;i:8;i:1;i:9;}}i:3;a:4:{s:1:\"a\";i:4;s:1:\"b\";s:9:\"Vacancies\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:2:{i:0;i:8;i:1;i:9;}}i:4;a:4:{s:1:\"a\";i:5;s:1:\"b\";s:11:\"New Joiners\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:2:{i:0;i:8;i:1;i:9;}}i:5;a:4:{s:1:\"a\";i:6;s:1:\"b\";s:18:\"Trasnfers/Rotation\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:2:{i:0;i:8;i:1;i:9;}}i:6;a:4:{s:1:\"a\";i:7;s:1:\"b\";s:10:\"Promotions\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:2:{i:0;i:8;i:1;i:9;}}i:7;a:4:{s:1:\"a\";i:8;s:1:\"b\";s:11:\"Badge Maker\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:2:{i:0;i:8;i:1;i:9;}}i:8;a:4:{s:1:\"a\";i:9;s:1:\"b\";s:9:\"Employees\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:2:{i:0;i:8;i:1;i:9;}}i:9;a:4:{s:1:\"a\";i:10;s:1:\"b\";s:8:\"Branches\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:2:{i:0;i:8;i:1;i:9;}}i:10;a:4:{s:1:\"a\";i:11;s:1:\"b\";s:6:\"Titles\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:2:{i:0;i:8;i:1;i:9;}}i:11;a:4:{s:1:\"a\";i:12;s:1:\"b\";s:8:\"Settings\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:2:{i:0;i:8;i:1;i:9;}}i:12;a:4:{s:1:\"a\";i:13;s:1:\"b\";s:4:\"Edit\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:8;}}i:13;a:4:{s:1:\"a\";i:14;s:1:\"b\";s:8:\"Download\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:2:{i:0;i:8;i:1;i:9;}}i:14;a:4:{s:1:\"a\";i:15;s:1:\"b\";s:6:\"Create\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:2:{i:0;i:8;i:1;i:9;}}i:15;a:4:{s:1:\"a\";i:16;s:1:\"b\";s:6:\"Delete\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:8;}}i:16;a:4:{s:1:\"a\";i:17;s:1:\"b\";s:19:\"Role And Permission\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:8;}}i:17;a:3:{s:1:\"a\";i:18;s:1:\"b\";s:9:\"HR Member\";s:1:\"c\";s:3:\"web\";}}s:5:\"roles\";a:2:{i:0;a:3:{s:1:\"a\";i:8;s:1:\"b\";s:5:\"Admin\";s:1:\"c\";s:3:\"web\";}i:1;a:3:{s:1:\"a\";i:9;s:1:\"b\";s:14:\"HR Team Member\";s:1:\"c\";s:3:\"web\";}}}', 1740207784);
+('spatie.permission.cache', 'a:3:{s:5:\"alias\";a:4:{s:1:\"a\";s:2:\"id\";s:1:\"b\";s:4:\"name\";s:1:\"c\";s:10:\"guard_name\";s:1:\"r\";s:5:\"roles\";}s:11:\"permissions\";a:18:{i:0;a:4:{s:1:\"a\";i:1;s:1:\"b\";s:9:\"Dashboard\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:2:{i:0;i:8;i:1;i:9;}}i:1;a:4:{s:1:\"a\";i:2;s:1:\"b\";s:5:\"Users\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:8;}}i:2;a:4:{s:1:\"a\";i:3;s:1:\"b\";s:16:\"Calendar & Tools\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:2:{i:0;i:8;i:1;i:9;}}i:3;a:4:{s:1:\"a\";i:4;s:1:\"b\";s:9:\"Vacancies\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:2:{i:0;i:8;i:1;i:9;}}i:4;a:4:{s:1:\"a\";i:5;s:1:\"b\";s:11:\"New Joiners\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:2:{i:0;i:8;i:1;i:9;}}i:5;a:4:{s:1:\"a\";i:6;s:1:\"b\";s:18:\"Trasnfers/Rotation\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:2:{i:0;i:8;i:1;i:9;}}i:6;a:4:{s:1:\"a\";i:7;s:1:\"b\";s:10:\"Promotions\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:2:{i:0;i:8;i:1;i:9;}}i:7;a:4:{s:1:\"a\";i:8;s:1:\"b\";s:11:\"Badge Maker\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:2:{i:0;i:8;i:1;i:9;}}i:8;a:4:{s:1:\"a\";i:9;s:1:\"b\";s:9:\"Employees\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:2:{i:0;i:8;i:1;i:9;}}i:9;a:4:{s:1:\"a\";i:10;s:1:\"b\";s:8:\"Branches\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:2:{i:0;i:8;i:1;i:9;}}i:10;a:4:{s:1:\"a\";i:11;s:1:\"b\";s:6:\"Titles\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:2:{i:0;i:8;i:1;i:9;}}i:11;a:4:{s:1:\"a\";i:12;s:1:\"b\";s:8:\"Settings\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:2:{i:0;i:8;i:1;i:9;}}i:12;a:4:{s:1:\"a\";i:13;s:1:\"b\";s:4:\"Edit\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:8;}}i:13;a:4:{s:1:\"a\";i:14;s:1:\"b\";s:8:\"Download\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:2:{i:0;i:8;i:1;i:9;}}i:14;a:4:{s:1:\"a\";i:15;s:1:\"b\";s:6:\"Create\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:2:{i:0;i:8;i:1;i:9;}}i:15;a:4:{s:1:\"a\";i:16;s:1:\"b\";s:6:\"Delete\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:8;}}i:16;a:4:{s:1:\"a\";i:17;s:1:\"b\";s:19:\"Role And Permission\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:8;}}i:17;a:3:{s:1:\"a\";i:18;s:1:\"b\";s:9:\"HR Member\";s:1:\"c\";s:3:\"web\";}}s:5:\"roles\";a:2:{i:0;a:3:{s:1:\"a\";i:8;s:1:\"b\";s:5:\"Admin\";s:1:\"c\";s:3:\"web\";}i:1;a:3:{s:1:\"a\";i:9;s:1:\"b\";s:14:\"HR Team Member\";s:1:\"c\";s:3:\"web\";}}}', 1740493112);
 
 -- --------------------------------------------------------
 
@@ -464,7 +464,7 @@ CREATE TABLE IF NOT EXISTS `new_joiner` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `new_joiner`
@@ -472,6 +472,7 @@ CREATE TABLE IF NOT EXISTS `new_joiner` (
 
 INSERT INTO `new_joiner` (`id`, `name`, `mode`, `start_date`, `job`, `created_at`, `updated_at`) VALUES
 (24, 'Maher Labban', 'full-time', '2025-02-26', 'Stationery', '2025-02-21 11:29:51', '2025-02-21 11:29:51'),
+(25, 'Mira Mahmoud', 'part-time', '2025-02-23', 'Graphic designer', '2025-02-21 11:54:41', '2025-02-21 11:54:41'),
 (23, 'Dalia Mayassi', 'full-time', '2024-12-31', 'Stationery', '2025-02-21 11:29:42', '2025-02-21 11:29:42'),
 (22, 'Silva trayji', 'part-time', '2025-02-18', 'Stationery', '2025-02-21 11:29:29', '2025-02-21 11:29:29'),
 (21, 'Loulwa Khaddaj', 'part-time', '2025-02-12', 'Joker', '2025-02-21 11:29:16', '2025-02-21 11:29:16'),
@@ -497,13 +498,14 @@ CREATE TABLE IF NOT EXISTS `new_joiner_progress` (
   PRIMARY KEY (`id`),
   KEY `new_joiner_progress_new_joiner_id_foreign` (`new_joiner_id`),
   KEY `new_joiner_progress_step_id_foreign` (`step_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=133 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=140 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `new_joiner_progress`
 --
 
 INSERT INTO `new_joiner_progress` (`id`, `new_joiner_id`, `step_id`, `status`, `remarks`, `completed_at`, `created_at`, `updated_at`) VALUES
+(135, 25, 6, 'pending', NULL, NULL, '2025-02-21 11:54:41', '2025-02-21 11:54:41'),
 (131, 24, 7, 'pending', NULL, NULL, '2025-02-21 11:29:51', '2025-02-21 11:29:51'),
 (118, 22, 9, 'pending', NULL, NULL, '2025-02-21 11:29:30', '2025-02-21 11:29:30'),
 (117, 22, 7, 'pending', NULL, NULL, '2025-02-21 11:29:30', '2025-02-21 11:29:30'),
@@ -533,9 +535,15 @@ INSERT INTO `new_joiner_progress` (`id`, `new_joiner_id`, `step_id`, `status`, `
 (93, 19, 6, 'completed', NULL, '2025-02-20 22:00:00', '2025-02-21 10:05:53', '2025-02-21 10:06:53'),
 (92, 19, 2, 'completed', NULL, '2025-02-20 22:00:00', '2025-02-21 10:05:53', '2025-02-21 10:06:51'),
 (91, 19, 1, 'completed', NULL, '2025-02-20 22:00:00', '2025-02-21 10:05:53', '2025-02-21 10:06:03'),
+(136, 25, 8, 'pending', NULL, NULL, '2025-02-21 11:54:41', '2025-02-21 11:54:41'),
+(137, 25, 5, 'pending', NULL, NULL, '2025-02-21 11:54:41', '2025-02-21 11:54:41'),
+(138, 25, 7, 'pending', NULL, NULL, '2025-02-21 11:54:41', '2025-02-21 11:54:41'),
+(139, 25, 9, 'pending', NULL, NULL, '2025-02-21 11:54:41', '2025-02-21 11:54:41'),
+(133, 25, 1, 'pending', NULL, NULL, '2025-02-21 11:54:41', '2025-02-21 11:54:41'),
+(134, 25, 2, 'pending', NULL, NULL, '2025-02-21 11:54:41', '2025-02-21 11:54:41'),
 (132, 24, 9, 'pending', NULL, NULL, '2025-02-21 11:29:51', '2025-02-21 11:29:51'),
 (119, 23, 1, 'completed', NULL, '2025-02-20 22:00:00', '2025-02-21 11:29:42', '2025-02-21 11:30:02'),
-(120, 23, 2, 'pending', NULL, NULL, '2025-02-21 11:29:42', '2025-02-21 11:29:42'),
+(120, 23, 2, 'completed', NULL, '2025-02-20 22:00:00', '2025-02-21 11:29:42', '2025-02-21 11:57:41'),
 (121, 23, 6, 'pending', NULL, NULL, '2025-02-21 11:29:42', '2025-02-21 11:29:42'),
 (122, 23, 8, 'pending', NULL, NULL, '2025-02-21 11:29:42', '2025-02-21 11:29:42'),
 (123, 23, 5, 'pending', NULL, NULL, '2025-02-21 11:29:42', '2025-02-21 11:29:42'),
@@ -566,7 +574,7 @@ CREATE TABLE IF NOT EXISTS `notifications` (
   `user_image` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `notifications_user_id_foreign` (`user_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=379 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=381 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `notifications`
@@ -593,7 +601,7 @@ INSERT INTO `notifications` (`id`, `user_id`, `type`, `message`, `notified_at`, 
 (323, 1, 'admin_alert', 'Shadi Farhat IT has created a new employee named Maher Labban with the job of Services.', '2025-02-18 12:15:48', 0, '2025-02-18 12:15:48', '2025-02-18 12:15:48', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
 (319, 1, 'admin_alert', 'Shadi Farhat IT has created a transfer for Aya Al Kaissi to branch IT Department', '2025-02-17 07:48:00', 0, '2025-02-17 07:48:00', '2025-02-17 07:48:00', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
 (79, 3, 'admin_alert', ' Hadi Handam is scheduled to complete rotation on 13-02-2025.', '2025-02-13 08:15:07', 1, '2025-02-13 08:15:07', '2025-02-13 08:15:37', 'images/6784cb12e447f.jpg'),
-(320, 3, 'admin_alert', 'Shadi Farhat IT has created a transfer for Aya Al Kaissi to branch IT Department', '2025-02-17 07:48:00', 0, '2025-02-17 07:48:00', '2025-02-17 07:48:00', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
+(320, 3, 'admin_alert', 'Shadi Farhat IT has created a transfer for Aya Al Kaissi to branch IT Department', '2025-02-17 07:48:00', 1, '2025-02-17 07:48:00', '2025-02-21 11:58:04', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
 (77, 2, 'rotation_reminder', 'Reminder: The rotation for Hadi Handam at Abraj will end on 13-02-2025.', '2025-02-13 08:15:07', 1, '2025-02-13 08:15:07', '2025-02-13 08:15:43', 'images/6784cb12e447f.jpg'),
 (85, 1, 'admin_alert', 'Mira Mahmoud has created a new vacancy for the job \'Graphic designer\' at Bechara El Khoury.', '2025-02-13 08:28:03', 0, '2025-02-13 08:28:03', '2025-02-13 08:28:03', 'user-images/WmhHso1J4vhtPcbCuc3olXZGiIDOQvSkDle2TzMy.jpg'),
 (86, 3, 'admin_alert', 'Mira Mahmoud has created a new vacancy for the job \'Graphic designer\' at Bechara El Khoury.', '2025-02-13 08:28:03', 1, '2025-02-13 08:28:03', '2025-02-13 08:32:09', 'user-images/WmhHso1J4vhtPcbCuc3olXZGiIDOQvSkDle2TzMy.jpg'),
@@ -614,62 +622,64 @@ INSERT INTO `notifications` (`id`, `user_id`, `type`, `message`, `notified_at`, 
 (101, 3, 'admin_alert', 'Mira Mahmoud has deleted the promotion for Abdallah Farhat for the title of Supervisor.', '2025-02-13 10:08:00', 1, '2025-02-13 10:08:00', '2025-02-13 10:08:11', 'user-images/WmhHso1J4vhtPcbCuc3olXZGiIDOQvSkDle2TzMy.jpg'),
 (102, 1, 'admin_alert', 'Mira Mahmoud has created a new promotion for Abdallah Farhat to the position of Supervisor.', '2025-02-13 10:08:19', 0, '2025-02-13 10:08:19', '2025-02-13 10:08:19', 'user-images/WmhHso1J4vhtPcbCuc3olXZGiIDOQvSkDle2TzMy.jpg'),
 (103, 3, 'admin_alert', 'Mira Mahmoud has created a new promotion for Abdallah Farhat to the position of Supervisor.', '2025-02-13 10:08:19', 1, '2025-02-13 10:08:19', '2025-02-13 10:08:27', 'user-images/WmhHso1J4vhtPcbCuc3olXZGiIDOQvSkDle2TzMy.jpg'),
-(322, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Kifah Ghanam with the job of Back Office.', '2025-02-18 12:13:06', 0, '2025-02-18 12:13:06', '2025-02-18 12:13:06', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
+(322, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Kifah Ghanam with the job of Back Office.', '2025-02-18 12:13:06', 1, '2025-02-18 12:13:06', '2025-02-21 11:58:03', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
 (105, 3, 'admin_alert', 'Mira Mahmoud has created a new employee named Lara Malaeb with the job of Manager.', '2025-02-13 10:14:42', 1, '2025-02-13 10:14:42', '2025-02-13 10:18:10', 'user-images/WmhHso1J4vhtPcbCuc3olXZGiIDOQvSkDle2TzMy.jpg'),
-(324, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Maher Labban with the job of Services.', '2025-02-18 12:15:48', 0, '2025-02-18 12:15:48', '2025-02-18 12:15:48', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
+(324, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Maher Labban with the job of Services.', '2025-02-18 12:15:48', 1, '2025-02-18 12:15:48', '2025-02-21 11:58:03', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
 (321, 1, 'admin_alert', 'Shadi Farhat IT has created a new employee named Kifah Ghanam with the job of Back Office.', '2025-02-18 12:13:06', 0, '2025-02-18 12:13:06', '2025-02-18 12:13:06', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
 (313, 3, 'admin_alert', 'Shadi Farhat IT has created a transfer for Aya Al Kaissi to branch IT Department', '2025-02-14 12:51:51', 1, '2025-02-14 12:51:51', '2025-02-14 12:53:00', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
 (325, 1, 'admin_alert', 'Shadi Farhat IT has created a new employee named Nouhad Tabara with the job of Back Office.', '2025-02-18 12:20:07', 0, '2025-02-18 12:20:07', '2025-02-18 12:20:07', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
-(326, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Nouhad Tabara with the job of Back Office.', '2025-02-18 12:20:07', 0, '2025-02-18 12:20:07', '2025-02-18 12:20:07', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
+(326, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Nouhad Tabara with the job of Back Office.', '2025-02-18 12:20:07', 1, '2025-02-18 12:20:07', '2025-02-21 11:58:03', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
 (327, 1, 'admin_alert', 'Shadi Farhat IT has created a new employee named Jinane Wehbe with the job of Cashier.', '2025-02-18 12:48:38', 0, '2025-02-18 12:48:38', '2025-02-18 12:48:38', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
-(328, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Jinane Wehbe with the job of Cashier.', '2025-02-18 12:48:38', 0, '2025-02-18 12:48:38', '2025-02-18 12:48:38', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
+(328, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Jinane Wehbe with the job of Cashier.', '2025-02-18 12:48:38', 1, '2025-02-18 12:48:38', '2025-02-21 11:58:03', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
 (329, 1, 'admin_alert', 'Shadi Farhat IT has created a new employee named Jad Abboud with the job of Cashier.', '2025-02-18 12:49:52', 0, '2025-02-18 12:49:52', '2025-02-18 12:49:52', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
-(330, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Jad Abboud with the job of Cashier.', '2025-02-18 12:49:52', 0, '2025-02-18 12:49:52', '2025-02-18 12:49:52', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
+(330, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Jad Abboud with the job of Cashier.', '2025-02-18 12:49:52', 1, '2025-02-18 12:49:52', '2025-02-21 11:58:03', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
 (331, 1, 'admin_alert', 'Shadi Farhat IT has created a new employee named Rami Al Hakim with the job of Graphic designer.', '2025-02-18 12:51:30', 0, '2025-02-18 12:51:30', '2025-02-18 12:51:30', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
-(332, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Rami Al Hakim with the job of Graphic designer.', '2025-02-18 12:51:30', 0, '2025-02-18 12:51:30', '2025-02-18 12:51:30', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
+(332, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Rami Al Hakim with the job of Graphic designer.', '2025-02-18 12:51:30', 1, '2025-02-18 12:51:30', '2025-02-21 11:58:03', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
 (333, 1, 'admin_alert', 'Shadi Farhat IT has created a new employee named Aslan Khaddaj with the job of Graphic designer.', '2025-02-18 12:52:00', 0, '2025-02-18 12:52:00', '2025-02-18 12:52:00', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
-(334, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Aslan Khaddaj with the job of Graphic designer.', '2025-02-18 12:52:00', 0, '2025-02-18 12:52:00', '2025-02-18 12:52:00', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
+(334, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Aslan Khaddaj with the job of Graphic designer.', '2025-02-18 12:52:00', 1, '2025-02-18 12:52:00', '2025-02-21 11:58:03', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
 (335, 1, 'admin_alert', 'Shadi Farhat IT has created a new employee named Karim Hakim with the job of Graphic designer.', '2025-02-18 12:52:32', 0, '2025-02-18 12:52:32', '2025-02-18 12:52:32', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
-(336, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Karim Hakim with the job of Graphic designer.', '2025-02-18 12:52:32', 0, '2025-02-18 12:52:32', '2025-02-18 12:52:32', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
+(336, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Karim Hakim with the job of Graphic designer.', '2025-02-18 12:52:32', 1, '2025-02-18 12:52:32', '2025-02-21 11:58:02', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
 (337, 1, 'admin_alert', 'Shadi Farhat IT has created a new employee named Adam Khansa with the job of Stationery.', '2025-02-18 12:53:02', 0, '2025-02-18 12:53:02', '2025-02-18 12:53:02', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
-(338, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Adam Khansa with the job of Stationery.', '2025-02-18 12:53:02', 0, '2025-02-18 12:53:02', '2025-02-18 12:53:02', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
+(338, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Adam Khansa with the job of Stationery.', '2025-02-18 12:53:02', 1, '2025-02-18 12:53:02', '2025-02-21 11:58:02', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
 (339, 1, 'admin_alert', 'Shadi Farhat IT has created a new employee named Hadi Cheaito with the job of Stationery.', '2025-02-18 12:54:22', 0, '2025-02-18 12:54:22', '2025-02-18 12:54:22', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
-(340, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Hadi Cheaito with the job of Stationery.', '2025-02-18 12:54:22', 0, '2025-02-18 12:54:22', '2025-02-18 12:54:22', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
+(340, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Hadi Cheaito with the job of Stationery.', '2025-02-18 12:54:22', 1, '2025-02-18 12:54:22', '2025-02-21 11:58:02', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
 (341, 1, 'admin_alert', 'Shadi Farhat IT has created a new employee named Shadi Graizy with the job of Cashier.', '2025-02-18 12:55:28', 0, '2025-02-18 12:55:28', '2025-02-18 12:55:28', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
-(342, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Shadi Graizy with the job of Cashier.', '2025-02-18 12:55:28', 0, '2025-02-18 12:55:28', '2025-02-18 12:55:28', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
+(342, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Shadi Graizy with the job of Cashier.', '2025-02-18 12:55:28', 1, '2025-02-18 12:55:28', '2025-02-21 11:58:02', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
 (343, 1, 'admin_alert', 'Shadi Farhat IT has created a new employee named Ceasar Al Ahmadie with the job of Services.', '2025-02-18 12:56:26', 0, '2025-02-18 12:56:26', '2025-02-18 12:56:26', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
-(344, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Ceasar Al Ahmadie with the job of Services.', '2025-02-18 12:56:26', 0, '2025-02-18 12:56:26', '2025-02-18 12:56:26', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
+(344, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Ceasar Al Ahmadie with the job of Services.', '2025-02-18 12:56:26', 1, '2025-02-18 12:56:26', '2025-02-21 11:58:02', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
 (345, 1, 'admin_alert', 'Shadi Farhat IT has created a new employee named Ahmad Dwayre with the job of Services.', '2025-02-18 12:56:54', 0, '2025-02-18 12:56:54', '2025-02-18 12:56:54', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
-(346, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Ahmad Dwayre with the job of Services.', '2025-02-18 12:56:54', 0, '2025-02-18 12:56:54', '2025-02-18 12:56:54', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
+(346, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Ahmad Dwayre with the job of Services.', '2025-02-18 12:56:54', 1, '2025-02-18 12:56:54', '2025-02-21 11:58:01', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
 (347, 1, 'admin_alert', 'Shadi Farhat IT has created a new employee named Mariam Tohme with the job of Stationery.', '2025-02-18 12:57:21', 0, '2025-02-18 12:57:21', '2025-02-18 12:57:21', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
-(348, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Mariam Tohme with the job of Stationery.', '2025-02-18 12:57:21', 0, '2025-02-18 12:57:21', '2025-02-18 12:57:21', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
+(348, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Mariam Tohme with the job of Stationery.', '2025-02-18 12:57:21', 1, '2025-02-18 12:57:21', '2025-02-21 11:58:01', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
 (349, 1, 'admin_alert', 'Shadi Farhat IT has created a new employee named Rita Nader with the job of Stationery.', '2025-02-18 12:57:45', 0, '2025-02-18 12:57:45', '2025-02-18 12:57:45', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
-(350, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Rita Nader with the job of Stationery.', '2025-02-18 12:57:45', 0, '2025-02-18 12:57:45', '2025-02-18 12:57:45', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
+(350, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Rita Nader with the job of Stationery.', '2025-02-18 12:57:45', 1, '2025-02-18 12:57:45', '2025-02-21 11:58:01', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
 (351, 1, 'admin_alert', 'Shadi Farhat IT has created a new employee named Hasasn Awad with the job of Cashier.', '2025-02-18 12:58:27', 0, '2025-02-18 12:58:27', '2025-02-18 12:58:27', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
-(352, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Hasasn Awad with the job of Cashier.', '2025-02-18 12:58:27', 0, '2025-02-18 12:58:27', '2025-02-18 12:58:27', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
+(352, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Hasasn Awad with the job of Cashier.', '2025-02-18 12:58:27', 1, '2025-02-18 12:58:27', '2025-02-21 11:58:00', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
 (353, 1, 'admin_alert', 'Shadi Farhat IT has created a new employee named Yehya Mashakah with the job of Stationery.', '2025-02-18 12:59:04', 0, '2025-02-18 12:59:04', '2025-02-18 12:59:04', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
-(354, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Yehya Mashakah with the job of Stationery.', '2025-02-18 12:59:04', 0, '2025-02-18 12:59:04', '2025-02-18 12:59:04', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
+(354, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Yehya Mashakah with the job of Stationery.', '2025-02-18 12:59:04', 1, '2025-02-18 12:59:04', '2025-02-21 11:58:00', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
 (355, 1, 'admin_alert', 'Shadi Farhat IT has created a new employee named Georgette Tabett with the job of Typist.', '2025-02-18 12:59:37', 0, '2025-02-18 12:59:37', '2025-02-18 12:59:37', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
-(356, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Georgette Tabett with the job of Typist.', '2025-02-18 12:59:37', 0, '2025-02-18 12:59:37', '2025-02-18 12:59:37', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
+(356, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Georgette Tabett with the job of Typist.', '2025-02-18 12:59:37', 1, '2025-02-18 12:59:37', '2025-02-21 11:58:00', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
 (357, 1, 'admin_alert', 'Shadi Farhat IT has created a new employee named Ismail Al Kadi with the job of Typist.', '2025-02-18 13:00:23', 0, '2025-02-18 13:00:23', '2025-02-18 13:00:23', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
-(358, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Ismail Al Kadi with the job of Typist.', '2025-02-18 13:00:23', 0, '2025-02-18 13:00:23', '2025-02-18 13:00:23', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
+(358, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Ismail Al Kadi with the job of Typist.', '2025-02-18 13:00:23', 1, '2025-02-18 13:00:23', '2025-02-21 11:58:00', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
 (359, 1, 'admin_alert', 'Shadi Farhat IT has created a new employee named Shadi Abou Dargham with the job of Manager.', '2025-02-18 13:01:06', 0, '2025-02-18 13:01:06', '2025-02-18 13:01:06', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
-(360, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Shadi Abou Dargham with the job of Manager.', '2025-02-18 13:01:06', 0, '2025-02-18 13:01:06', '2025-02-18 13:01:06', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
+(360, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Shadi Abou Dargham with the job of Manager.', '2025-02-18 13:01:06', 1, '2025-02-18 13:01:06', '2025-02-21 11:57:59', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
 (361, 1, 'admin_alert', 'Shadi Farhat IT has created a new employee named Chirine Amar with the job of Manager.', '2025-02-18 13:01:52', 0, '2025-02-18 13:01:52', '2025-02-18 13:01:52', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
-(362, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Chirine Amar with the job of Manager.', '2025-02-18 13:01:52', 0, '2025-02-18 13:01:52', '2025-02-18 13:01:52', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
+(362, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Chirine Amar with the job of Manager.', '2025-02-18 13:01:52', 1, '2025-02-18 13:01:52', '2025-02-21 11:57:59', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
 (363, 1, 'admin_alert', 'Shadi Farhat IT has created a new employee named Saher Shammas with the job of Manager.', '2025-02-18 13:02:45', 0, '2025-02-18 13:02:45', '2025-02-18 13:02:45', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
-(364, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Saher Shammas with the job of Manager.', '2025-02-18 13:02:45', 0, '2025-02-18 13:02:45', '2025-02-18 13:02:45', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
+(364, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Saher Shammas with the job of Manager.', '2025-02-18 13:02:45', 1, '2025-02-18 13:02:45', '2025-02-21 11:57:59', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
+(380, 3, 'admin_alert', 'Shadi Farhat IT has marked step \'To Interview with The HR Manager\' as completed for Dalia Mayassi.', '2025-02-21 11:57:41', 1, '2025-02-21 11:57:41', '2025-02-21 11:57:54', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
+(379, 3, 'admin_alert', 'Shadi Farhat IT has added Mira Mahmoud as a New Joiner Employee.', '2025-02-21 11:54:41', 1, '2025-02-21 11:54:41', '2025-02-21 11:57:54', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
 (367, 1, 'admin_alert', 'Shadi Farhat IT has created a new employee named Hadi Majed with the job of Graphic designer.', '2025-02-19 07:16:17', 0, '2025-02-19 07:16:17', '2025-02-19 07:16:17', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
-(368, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Hadi Majed with the job of Graphic designer.', '2025-02-19 07:16:17', 0, '2025-02-19 07:16:17', '2025-02-19 07:16:17', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
+(368, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Hadi Majed with the job of Graphic designer.', '2025-02-19 07:16:17', 1, '2025-02-19 07:16:17', '2025-02-21 11:57:59', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
 (369, 1, 'admin_alert', 'Shadi Farhat IT has created a new employee named Nazek Baderdine with the job of Manager.', '2025-02-19 07:18:20', 0, '2025-02-19 07:18:20', '2025-02-19 07:18:20', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
-(370, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Nazek Baderdine with the job of Manager.', '2025-02-19 07:18:20', 0, '2025-02-19 07:18:20', '2025-02-19 07:18:20', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
-(371, 3, 'admin_alert', 'Shadi Farhat IT has deleted the promotion for Shadi Farhat for the title of Executive.', '2025-02-20 11:28:45', 0, '2025-02-20 11:28:45', '2025-02-20 11:28:45', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
-(372, 3, 'admin_alert', 'Shadi Farhat IT has deleted the promotion for Shadi Farhat for the title of Executive.', '2025-02-20 11:31:05', 0, '2025-02-20 11:31:05', '2025-02-20 11:31:05', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
-(373, 3, 'admin_alert', 'Shadi Farhat IT has created a new promotion for Shadi Farhat to the position of Executive.', '2025-02-20 11:31:32', 0, '2025-02-20 11:31:32', '2025-02-20 11:31:32', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
-(374, 3, 'admin_alert', 'Shadi Farhat IT has deleted the promotion for Shadi Farhat for the title of Executive.', '2025-02-20 11:31:46', 0, '2025-02-20 11:31:46', '2025-02-20 11:31:46', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
-(375, 3, 'admin_alert', 'Shadi Farhat IT has deleted the promotion for Shadi Farhat for the title of Executive.', '2025-02-20 11:31:49', 0, '2025-02-20 11:31:49', '2025-02-20 11:31:49', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
-(376, 3, 'admin_alert', 'Shadi Farhat IT has created a new promotion for Shadi Farhat to the position of Executive.', '2025-02-20 11:32:02', 0, '2025-02-20 11:32:02', '2025-02-20 11:32:02', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
-(377, 3, 'admin_alert', 'Mira Mahmoud has created a new vacancy for the job \'Cashier\' at ABC Verdun.', '2025-02-20 11:35:35', 0, '2025-02-20 11:35:35', '2025-02-20 11:35:35', 'user-images/WmhHso1J4vhtPcbCuc3olXZGiIDOQvSkDle2TzMy.jpg'),
+(370, 3, 'admin_alert', 'Shadi Farhat IT has created a new employee named Nazek Baderdine with the job of Manager.', '2025-02-19 07:18:20', 1, '2025-02-19 07:18:20', '2025-02-21 11:57:58', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
+(371, 3, 'admin_alert', 'Shadi Farhat IT has deleted the promotion for Shadi Farhat for the title of Executive.', '2025-02-20 11:28:45', 1, '2025-02-20 11:28:45', '2025-02-21 11:57:58', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
+(372, 3, 'admin_alert', 'Shadi Farhat IT has deleted the promotion for Shadi Farhat for the title of Executive.', '2025-02-20 11:31:05', 1, '2025-02-20 11:31:05', '2025-02-21 11:57:58', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
+(373, 3, 'admin_alert', 'Shadi Farhat IT has created a new promotion for Shadi Farhat to the position of Executive.', '2025-02-20 11:31:32', 1, '2025-02-20 11:31:32', '2025-02-21 11:57:57', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
+(374, 3, 'admin_alert', 'Shadi Farhat IT has deleted the promotion for Shadi Farhat for the title of Executive.', '2025-02-20 11:31:46', 1, '2025-02-20 11:31:46', '2025-02-21 11:57:56', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
+(375, 3, 'admin_alert', 'Shadi Farhat IT has deleted the promotion for Shadi Farhat for the title of Executive.', '2025-02-20 11:31:49', 1, '2025-02-20 11:31:49', '2025-02-21 11:57:56', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
+(376, 3, 'admin_alert', 'Shadi Farhat IT has created a new promotion for Shadi Farhat to the position of Executive.', '2025-02-20 11:32:02', 1, '2025-02-20 11:32:02', '2025-02-21 11:57:55', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg'),
+(377, 3, 'admin_alert', 'Mira Mahmoud has created a new vacancy for the job \'Cashier\' at ABC Verdun.', '2025-02-20 11:35:35', 1, '2025-02-20 11:35:35', '2025-02-21 11:57:54', 'user-images/WmhHso1J4vhtPcbCuc3olXZGiIDOQvSkDle2TzMy.jpg'),
 (378, 5, 'admin_alert', 'Mira Mahmoud has created a new vacancy for the job \'Cashier\' at ABC Verdun.', '2025-02-20 11:35:35', 1, '2025-02-20 11:35:35', '2025-02-20 12:23:40', 'user-images/WmhHso1J4vhtPcbCuc3olXZGiIDOQvSkDle2TzMy.jpg');
 
 -- --------------------------------------------------------
@@ -826,7 +836,7 @@ CREATE TABLE IF NOT EXISTS `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('E99MXdoAY49hUJuuiQsCY1jEb2pPNWuisZPcK1pM', 5, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoicktsZE1rWVNHY3lsZjkxQzJRRlZybFRucER0ZjZXU2k5MkhrN1FuMSI7czozOiJ1cmwiO2E6MDp7fXM6OToiX3ByZXZpb3VzIjthOjE6e3M6MzoidXJsIjtzOjM1OiJodHRwOi8vMTI3LjAuMC4xOjgwMDAvbm90aWZpY2F0aW9ucyI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjU7fQ==', 1740145566);
+('obD4CybEKOpxuzKR2NfYijlvHJeFaNZKtvsriKVD', 5, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiMTRGeHNYSzQ2VnNRc0NMVGNGZHpKM0RZWTc4djQxRGFXaGVHdTAwbSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MzU6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9ub3RpZmljYXRpb25zIjt9czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6NTt9', 1740408452);
 
 -- --------------------------------------------------------
 
@@ -1387,10 +1397,10 @@ CREATE TABLE IF NOT EXISTS `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `image`, `remember_token`, `created_at`, `updated_at`, `status`, `temp_pass`) VALUES
-(1, 'Tarek Badawi', 'services5@maliks.com', NULL, '$2y$12$hPLgBQRZjQgJL3tEt9BiQOF7BRV1DdeccAg2MYTAmQSQADz1R6jcG', 'user-images/J9eBOicIyGJ4XzYChWxNbcH6BMl2DcOYoIjlPWAz.jpg', 'fiEWorNuGioB25M5QRXyjDrSwTtjdsajXUOU1xvFTTZuMvLIqpp6FmDLUDmv', '2025-01-20 18:27:11', '2025-02-20 09:19:55', 'active', '$2y$12$acIxBRDWSlXjOMifYn204OBuaUqGVw0xKws6tQCnbcPB0LUUTEyCu'),
+(1, 'Tarek Badawi', 'services5@maliks.com', NULL, '$2y$12$hPLgBQRZjQgJL3tEt9BiQOF7BRV1DdeccAg2MYTAmQSQADz1R6jcG', 'user-images/J9eBOicIyGJ4XzYChWxNbcH6BMl2DcOYoIjlPWAz.jpg', 'Q09LbluqR29KEBDKZ3rR1g9o3IaTgttzl5lVwPUlQa8arYABE8ChidziJjYX', '2025-01-20 18:27:11', '2025-02-20 09:19:55', 'active', '$2y$12$acIxBRDWSlXjOMifYn204OBuaUqGVw0xKws6tQCnbcPB0LUUTEyCu'),
 (2, 'Mira Mahmoud', 'mira99mahmoud@gmail.com', NULL, '$2y$12$TWRcREdVMlM0HeC.s2xHxOaBDTQ1QITuIwIrkQJrUWnzuaeUlSnhe', 'user-images/WmhHso1J4vhtPcbCuc3olXZGiIDOQvSkDle2TzMy.jpg', NULL, '2025-01-20 18:29:16', '2025-02-13 08:35:42', 'active', '$2y$12$r.wtfwZQstq65DUlLDRQLOfRGRAgivyoboiGZrJUgan0gbZLl3G4O'),
 (3, 'Tania Khadaj', 'hr@maliks.com', NULL, '$2y$12$rGXX3cqxXQjVJlB3H.0JZeO.I0HxLHO4e5RLyqivHUH7wO6k70EQu', 'user-images/4sHVrZmMT4Gs7Bf3JWNT2p43X0kVXxv84CSNVkS9.jpg', NULL, '2025-01-22 05:53:08', '2025-02-13 06:58:58', 'active', NULL),
-(5, 'Shadi Farhat IT', 'it@maliks.com', NULL, '$2y$12$yxlooCHbh7/QGhk3LErwKeEViH0mtlOfglwgIALgi6DBrMAB04qr6', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg', NULL, '2025-02-13 12:49:12', '2025-02-20 08:08:36', 'active', NULL);
+(5, 'Shadi Farhat IT', 'it@maliks.com', NULL, '$2y$12$YLBF4s/PBQVEmLm./L.Olu1qFHqNkGYsIA4JbMNGfeF3rtlMu35mG', 'user-images/RbyzQssYXtH6HNnEIUFpmnfkejgXO4FiLziKQ32t.jpg', NULL, '2025-02-13 12:49:12', '2025-02-24 06:11:19', 'active', NULL);
 
 -- --------------------------------------------------------
 
