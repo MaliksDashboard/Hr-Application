@@ -179,4 +179,17 @@ class VacancyController extends Controller
 
         return response()->json(['vacancies' => $vacancies], 200);
     }
+
+    public function getBranchesWithVacancies()
+    {
+        $branches = Branch::select('id', 'branch_name', 'latitude', 'longitude')
+            ->withCount([
+                'vacancies' => function ($query) {
+                    $query->where('is_finished', 0); // Only count unfinished vacancies
+                },
+            ])
+            ->get();
+
+        return response()->json($branches); // ✅ Send JSON response
+    }
 }

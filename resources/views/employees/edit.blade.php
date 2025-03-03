@@ -1,10 +1,11 @@
 @extends('layouts.master')
 @section('title', 'Edit Employee')
+@section('custom_title', 'Edit Employee')
+
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
 @section('main')
     <div class="main add-emp">
-        <h1>Edit Employee</h1>
 
         <div class="container">
             <form id="updateForm" action="{{ route('employees.update', $employee->id) }}" method="POST"
@@ -128,8 +129,48 @@
                 <div style="display: flex; justify-content: space-between; width: 100%; gap: 20px;">
 
                     <div class="input-group">
+                        <label for="car">Car</label>
+                        <select id="car" name="car" class="form-control" required>
+                            <option value="" disabled>Select or type a car...</option>
+                            <option value="No" {{ old('car', $employee->car) == 'No' ? 'selected' : '' }}> No</option>
+                            <option value="Yes" {{ old('car', $employee->car) == 'Yes' ? 'selected' : '' }}> Yes
+                            </option>
+                            <option value="Moto" {{ old('car', $employee->car) == 'Moto' ? 'selected' : '' }}> Moto
+                            </option>
+                            <option value="Both" {{ old('car', $employee->car) == 'Both' ? 'selected' : '' }}> Both
+                            </option>
+                        </select>
+                        @error('car')
+                            <span class="error-message" style="color:red;">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="input-group">
+                        <label for="address">Address</label>
+                        <input type="text" name="address" id="address"
+                            value="{{ old('address', $employee->address) }}">
+                        @error('address')
+                            <span class="error-message" style="color:red;">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="input-group">
+                        <label for="birthday">Birthday<b style="color:red;">*</b></label>
+                        <input type="date" name="birthday" id="birthday"
+                            value="{{ old('birthday', $employee->birthday) }}">
+                        @error('birthday')
+                            <span class="error-message" style="color:red;">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                </div>
+
+                <div style="display: flex; justify-content: space-between; width: 100%; gap: 20px;">
+
+                    <div class="input-group">
                         <label for="phone">Phone</label>
-                        <input type="text" name="phone" id="phone" value="{{ old('phone', $employee->phone) }}">
+                        <input type="text" name="phone" id="phone"
+                            value="{{ old('phone', $employee->phone) }}">
                         @error('phone')
                             <span class="error-message" style="color:red;">{{ $message }}</span>
                         @enderror

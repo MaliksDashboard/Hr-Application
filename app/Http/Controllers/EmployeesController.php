@@ -8,6 +8,7 @@ use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
 use Illuminate\Support\Facades\Log;
 use App\Models\Branch;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use App\Models\Title;
@@ -21,16 +22,55 @@ use function Laravel\Prompts\table;
 
 class EmployeesController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $employees = Employee::orderBy('status', 'desc') // Order by status: 1 first, then 0
-            ->orderBy('branch_id', 'asc') // Then order by branch_id ascending
-            ->get();
+        $query = Employee::query();
+
+        // Search Filter
+        if ($request->has('search') && !empty($request->search)) {
+            $searchTerms = explode(' ', trim($request->search));
+
+            $query->where(function ($q) use ($searchTerms) {
+                foreach ($searchTerms as $term) {
+                    $q->where(function ($subQuery) use ($term) {
+                        $subQuery
+                            ->where('name', 'LIKE', "%{$term}%")
+                            ->orWhereHas('branch', function ($bQuery) use ($term) {
+                                $bQuery->where('branch_name', 'LIKE', "%{$term}%");
+                            })
+                            ->orWhere('title', 'LIKE', "%{$term}%")
+                            ->orWhere('job', 'LIKE', "%{$term}%")
+                            ->orWhere('pin_code', 'LIKE', "%{$term}%");
+                    });
+                }
+            });
+        }
+
+        // Branch Filter
+        if ($request->has('branch') && !empty($request->branch)) {
+            $query->where('branch_id', $request->branch);
+        }
+
+        // Job Filter
+        if ($request->has('job') && !empty($request->job)) {
+            $query->where('job', $request->job);
+        }
+
+        $employees = $query->orderBy('status', 'desc')->orderBy('branch_id', 'asc')->paginate(50);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'employees' => view('partials.employee_cards', compact('employees'))->render(),
+                'next_page' => $employees->nextPageUrl(),
+            ]);
+        }
 
         $branches = Branch::orderBy('branch_name', 'asc')->get();
+        $jobs = Employee::distinct()->pluck('job');
 
-        return view('employees.index', compact('employees', 'branches'));
+        return view('employees.index', compact('employees', 'branches', 'jobs'));
     }
+
     public function create()
     {
         $branches = Branch::orderBy('branch_name', 'asc')->get();
@@ -52,10 +92,13 @@ class EmployeesController extends Controller
             'status' => 'required|in:on,off',
             'date_hired' => ['required', 'date', 'before:today'],
             'pin_code' => 'required|string|max:255|unique:employee_info,pin_code',
-            'email' => 'required|email|unique:employee_info,email',
+            'email' => 'nullable|email|unique:employee_info,email',
             'phone' => 'nullable|string|max:15|unique:employee_info,phone',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'job' => 'required|string|max:255',
+            'car' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:255',
+            'birthday' => 'nullable|date',
         ]);
 
         Log::info('Validated data: ', $validatedData);
@@ -63,8 +106,23 @@ class EmployeesController extends Controller
         // Check if title exists and insert if not
         $existingTitle = DB::table('employee_info')->where('title', $request->title)->exists();
         if (!$existingTitle) {
-            DB::table('employee_info')->insert(['title' => $request->title]);
+            DB::table('employee_info')->insert([
+                'name' => $request->name, // Ensure name is included
+                'title' => $request->title,
+                'branch_id' => $request->branch_id,
+                'status' => $request->status === 'on',
+                'date_hired' => $request->date_hired,
+                'pin_code' => $request->pin_code,
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'job' => $request->job,
+                'image_path' => $request->image,
+                'car' => $request->car,
+                'address' => $request->address,
+                'birthday' => $request->birthday,
+            ]);
         }
+
 
         // Handle image upload
         $storedImagePath = null;
@@ -94,10 +152,13 @@ class EmployeesController extends Controller
             'status' => $validatedData['status'] === 'on',
             'date_hired' => $validatedData['date_hired'],
             'pin_code' => $validatedData['pin_code'],
-            'email' => $validatedData['email'],
-            'phone' => $validatedData['phone'],
+            'email' => $validatedData['email'] ?? null,
+            'phone' => $validatedData['phone'] ?? null,
             'image_path' => $storedImagePath ?? null,
             'job' => $validatedData['job'],
+            'car' => $validatedData['car'] ?? null,
+            'address' => $validatedData['address'] ?? null,
+            'birthday' => $validatedData['birthday'] ?? null,
         ]);
 
         // Create folder for employee in employees-data
@@ -147,16 +208,17 @@ class EmployeesController extends Controller
         // Log the incoming request data
         Log::info('Update method called with data: ', $request->all());
 
-        // Validate input data
+        // Ensure $employee is defined before validation (especially in update scenarios)
+
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'branch_id' => 'required|exists:branches,id',
             'title' => 'required|string|max:255',
             'status' => 'required|in:on,off',
             'date_hired' => ['required', 'date', 'before:today'],
-            'pin_code' => 'required|string|max:255|unique:employee_info,pin_code,' . $employee->id,
-            'email' => 'required|email|unique:employee_info,email,' . $employee->id,
-            'phone' => 'nullable|string|max:15|unique:employee_info,phone,' . $employee->id,
+            'pin_code' => 'required|string|max:255|unique:employee_info,pin_code,' . ($employee->id ?? 'NULL') . ',id',
+            'email' => 'nullable|email|unique:employee_info,email,' . ($employee->id ?? 'NULL') . ',id',
+            'phone' => 'nullable|string|max:15|unique:employee_info,phone,' . ($employee->id ?? 'NULL') . ',id',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'job' => 'required|string|max:255',
             'left_date' => [
@@ -164,11 +226,16 @@ class EmployeesController extends Controller
                 'date',
                 'after_or_equal:date_hired',
                 function ($attribute, $value, $fail) use ($request) {
-                    if ($request->status === 'on' && $value) {
-                        $fail("The {$attribute} field must be empty when the employee is active.");
+                    if (!isset($request->status) || $request->status === 'on') {
+                        if (!empty($value)) {
+                            $fail("The {$attribute} field must be empty when the employee is active.");
+                        }
                     }
                 },
-            ], // Validate left_date only if status is 'off'
+            ],
+            'car' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:255',
+            'birthday' => 'nullable|date',
         ]);
 
         Log::info('Validated data: ', $validatedData);
@@ -219,11 +286,14 @@ class EmployeesController extends Controller
             'status' => $validatedData['status'] === 'on',
             'date_hired' => $validatedData['date_hired'],
             'pin_code' => $validatedData['pin_code'],
-            'email' => $validatedData['email'],
-            'phone' => $validatedData['phone'],
+            'email' => $validatedData['email'] ?? null,
+            'phone' => $validatedData['phone'] ?? null,
             'image_path' => $employee->image_path,
             'job' => $validatedData['job'],
             'left_date' => $validatedData['status'] === 'on' ? null : $validatedData['left_date'], // Log left_date
+            'car' => $validatedData['car'] ?? null,
+            'address' => $validatedData['address'] ?? null,
+            'birthday' => $validatedData['birthday'] ?? null,
         ]);
 
         // Update the employee record
@@ -239,6 +309,9 @@ class EmployeesController extends Controller
             'image_path' => $employee->image_path, // This now includes the new image path if updated
             'job' => $validatedData['job'],
             'left_date' => $validatedData['status'] === 'on' ? null : $validatedData['left_date'], // Ensure left_date is included
+            'car' => $validatedData['car'],
+            'address' => $validatedData['address'],
+            'birthday' => $validatedData['birthday'],
         ]);
 
         return redirect()->route('employees.index')->with('success', 'Employee updated successfully!');
@@ -456,5 +529,42 @@ class EmployeesController extends Controller
 
         session()->flash('error', 'File not found.');
         return response()->json(['redirect' => route('employees.index')], 404);
+    }
+
+    public function countEmp(Request $request)
+    {
+        $sixMonthsAgo = Carbon::now()->subMonths(6);
+
+        $query = Employee::query();
+
+        if ($request->has('search') && !empty($request->search)) {
+            $searchTerms = explode(' ', trim($request->search));
+            $query->where(function ($q) use ($searchTerms) {
+                foreach ($searchTerms as $term) {
+                    $q->where('name', 'LIKE', "%{$term}%")
+                        ->orWhere('title', 'LIKE', "%{$term}%")
+                        ->orWhere('job', 'LIKE', "%{$term}%")
+                        ->orWhereHas('branch', function ($bQuery) use ($term) {
+                            $bQuery->where('branch_name', 'LIKE', "%{$term}%");
+                        });
+                }
+            });
+        }
+
+        if ($request->has('branch') && !empty($request->branch)) {
+            $query->where('branch_id', $request->branch);
+        }
+
+        if ($request->has('job') && !empty($request->job)) {
+            $query->where('job', $request->job);
+        }
+
+        $totalEmployees = $query->count();
+        $newJoinersCount = $query->where('date_hired', '>=', $sixMonthsAgo)->count();
+
+        return response()->json([
+            'total_employees' => $totalEmployees,
+            'new_joiners' => $newJoinersCount
+        ]);
     }
 }

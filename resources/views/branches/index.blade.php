@@ -1,5 +1,6 @@
 @extends('layouts.master')
 @section('title', 'All Branches')
+@section('custom_title', 'Branches')
 
 
 @section('main')
@@ -21,7 +22,6 @@
     @endif
 
     <div style="gap:0px" class="main">
-        <h1 style="margin-bottom: 10px; color:var(--primary-color)">Branches</h1>
         <div class="table-controls" style="display: flex; justify-content: space-between; align-items: center;">
             <div class="left" style="display: flex; gap: 20px;">
                 <label class="rowPerPage" for="rowPerPage">
@@ -76,7 +76,7 @@
 
             <div class="sheet-header">
                 <h2>Chart of Employees</h2>
-                <button id="closeSheet" class="close-btn">X</button>
+                <button id="closeSheet" class="close-btn">Close</button>
             </div>
             <div id="employeeList" class="sheet-content">
 
@@ -216,7 +216,7 @@
                     enabled: true,
                     limit: rowsPerPage,
                 },
-                search: false,
+                search: true,
                 sort: true,
                 style: {
                     table: {
@@ -225,28 +225,6 @@
                 },
             }).render(document.getElementById('branchesGrid'));
 
-            // Custom Search Functionality
-            const searchBox = document.getElementById('search-box');
-            searchBox.addEventListener('input', () => {
-                const query = searchBox.value.toLowerCase();
-                const filteredData = branches.filter(branch =>
-                    branch.branch_name.toLowerCase().includes(query) ||
-                    branch.location.toLowerCase().includes(query) ||
-                    branch.manager_name.toLowerCase().includes(query) ||
-                    branch.manager_email.toLowerCase().includes(query)
-                );
-
-                grid.updateConfig({
-                    data: filteredData.map(branch => [
-                        branch.id,
-                        branch.branch_name,
-                        branch.location,
-                        branch.manager_image,
-                        branch.manager_name,
-                        branch.manager_email,
-                    ]),
-                }).forceRender();
-            });
 
             const rowsPerPageSelector = document.getElementById('rowsPerPage');
             rowsPerPageSelector.addEventListener('change', () => {
@@ -283,7 +261,7 @@
 
         try {
             const canvas = await html2canvas(content, {
-                scale: 3, // High quality
+                scale: 2, // High quality
                 useCORS: true,
                 backgroundColor: null, // Transparent background
             });
@@ -641,27 +619,101 @@
 
         function adjustCardScaling(employees) {
             const cards = document.querySelectorAll('.container-card');
+            const chart = document.querySelector('.chart-container');
             const employeeContainers = document.querySelectorAll(
                 '.employees'); // Select all employee containers
+            const employeeMarks = document.querySelectorAll(
+                '.employees-mark-left, .employees-mark-right'); // Employee labels
+
+            let imgSize = 117; // Default image size
+            let circleSize = 144; // Default red circle size
+            let cardWidth = 160; // Default card width
+            let cardHeight = 180; // Default card height
+            let fontSize = 16; // Default font size
+            let smallFontSize = 12; // Default small font size
+            let padding = 10; // Default padding
+            let gapSize = 30; // Default gap
+            let employeesMarkTop = "420px"; // Default position
 
             if (employees.length > 16) {
-                cards.forEach(card => {
-                    card.style.transform = "scale(0.7)";
-                });
+                imgSize = 70;
+                circleSize = 90;
+                cardWidth = 100;
+                cardHeight = 150;
+                fontSize = 10;
+                smallFontSize = 8;
+                padding = 5;
+                gapSize = 5;
+                employeesMarkTop = "320px"; // Adjust mark position
 
-                employeeContainers.forEach(empContainer => {
-                    empContainer.style.gap = '0px'; // Remove spacing between employees
-                });
+                if (chart) {
+                    chart.style.marginTop = "-120px"; // Move chart up
+                }
+            } else if (employees.length >= 10) {
+                imgSize = 80;
+                circleSize = 100;
+                cardWidth = 120;
+                cardHeight = 150;
+                fontSize = 10;
+                smallFontSize = 8;
+                padding = 5;
+                gapSize = 15;
+                employeesMarkTop = "320px"; // Adjust mark position
 
+                if (chart) {
+                    chart.style.marginTop = "-100px";
+                }
             } else {
-                cards.forEach(card => {
-                    card.style.transform = "scale(1)";
-                });
+                imgSize = 100;
+                circleSize = 122;
+                cardWidth = 160;
+                cardHeight = 200;
+                fontSize = 14;
+                smallFontSize = 10;
+                padding = 8;
+                gapSize = 20;
+                employeesMarkTop = "420px"; // Default mark position
 
-                employeeContainers.forEach(empContainer => {
-                    empContainer.style.gap = '50px'; // Restore original gap
-                });
+                if (chart) {
+                    chart.style.marginTop = "-100px"; // Reset margin
+                }
             }
+
+            // Apply styles dynamically
+            cards.forEach(card => {
+                card.style.width = `${cardWidth}px`;
+                card.style.height = `${cardHeight}px`;
+                card.style.padding = `${padding}px`;
+            });
+
+            document.querySelectorAll('.container-card .manager-img img').forEach(img => {
+                img.style.width = `${imgSize}px`;
+                img.style.height = `${imgSize}px`;
+            });
+
+            document.querySelectorAll('.container-card .rec-circle').forEach(circle => {
+                circle.style.width = `${circleSize}px`;
+                circle.style.height = `${circleSize}px`;
+            });
+
+            document.querySelectorAll('.container-card .manager-info p').forEach(text => {
+                text.style.fontSize = `${fontSize}pt`;
+            });
+
+            document.querySelectorAll('.container-card .manager-info small').forEach(smallText => {
+                smallText.style.fontSize = `${smallFontSize}pt`;
+            });
+
+            employeeContainers.forEach(empContainer => {
+                empContainer.style.gap = `${gapSize}px`;
+                empContainer.style.flexWrap = "wrap"; // Ensure wrapping
+                empContainer.style.justifyContent = "center"; // Keep alignment centered
+            });
+
+            // Adjust employees-mark-left & employees-mark-right position
+            employeeMarks.forEach(mark => {
+                mark.style.top = employeesMarkTop;
+            });
         }
 
 
@@ -676,8 +728,8 @@
                 supervisorLeft.style.left = '550px';
                 supervisorRight.style.right = '550px';
             } else {
-                supervisorLeft.style.left = '350px';
-                supervisorRight.style.right = '350px';
+                supervisorLeft.style.left = '550px';
+                supervisorRight.style.right = '550px';
             }
 
             // ✅ If there are LESS THAN 6 employees, move left/right marks to 250px

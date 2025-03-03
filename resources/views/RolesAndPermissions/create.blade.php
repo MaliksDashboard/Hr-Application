@@ -1,10 +1,10 @@
 @extends('layouts.master')
 @section('title', 'Create Role')
+@section('custom_title', 'Add Role')
 
 
 @section('main')
     <div class="main add-emp">
-        <h1>Add Role</h1>
 
         <div class="container">
             <form action="{{ route('roles.store') }}" method="POST" class="container">

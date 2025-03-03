@@ -1,9 +1,10 @@
 @extends('layouts.master')
 @section('title', 'Edit User')
+@section('custom_title', 'Edit User')
+
 
 @section('main')
     <div class="main add-emp">
-        <h1>Edit User</h1>
 
         <div class="container">
             <form action="{{ route('users.update', $user->id) }}" method="POST" enctype="multipart/form-data"

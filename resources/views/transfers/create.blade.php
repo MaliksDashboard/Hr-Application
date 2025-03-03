@@ -1,9 +1,9 @@
 @extends('layouts.master')
 @section('title', 'Apply Transfer')
+@section('custom_title', 'Add Trasnfer')
 
 @section('main')
     <div class="main add-vacancy add-transfer">
-        <h1>Apply Transfer</h1>
 
         <div class="container">
             <form id="transferForm" action="{{ route('transfers.apply') }}" method="POST" enctype="multipart/form-data"

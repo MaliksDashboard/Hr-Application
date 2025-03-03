@@ -1,5 +1,7 @@
 @extends('layouts.master')
 @section('title', 'Titles')
+@section('custom_title', 'Titles Managment')
+
 <meta name="csrf-token" content="{{ csrf_token() }}">
 @can('Edit')
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
@@ -24,7 +26,6 @@
     @endif
     <div class="main">
         <div class="container titles">
-            <h1>Manage Titles</h1>
             <form id="add-title-form">
                 <input type="text" id="name" placeholder="Title Name" required>
                 <select id="category" required>

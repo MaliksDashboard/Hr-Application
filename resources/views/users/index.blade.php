@@ -1,5 +1,7 @@
 @extends('layouts.master')
 @section('title', 'Users')
+@section('custom_title', 'Users')
+
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
 @section('main')
@@ -8,7 +10,6 @@
 
 
         <div class="user-controller">
-            <h1 class="user-title">Members</h1>
             <a href="{{ url('users\create') }}">Add New</a>
             <button>Export member (Excel)</button>
         </div>

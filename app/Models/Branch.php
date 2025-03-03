@@ -17,6 +17,7 @@ class Branch extends Model
 
     public function vacancies()
     {
-        return $this->belongsTo(Branch::class, 'branch_id', 'id');
+        return $this->hasMany(Vacancy::class, 'branch_id', 'id'); 
     }
+    
 }

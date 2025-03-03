@@ -84,6 +84,8 @@ class TransferController extends Controller
             'rotation_duration' => 'nullable|date_format:Y-m-d',
         ]);
 
+        $validated['vacancy_id'] = $validated['vacancy_id'] ?? null;
+
         if (!Auth::check()) {
             return redirect()->back()->with('error', 'User not authenticated.');
         }
@@ -201,7 +203,7 @@ class TransferController extends Controller
                         'message' => " {$employee->name} is scheduled to complete rotation on {$rotationEndDate->format('d-m-Y')}.",
                         'notified_at' => $reminderDate,
                         'is_read' => false,
-                        'user_image' => $imagePath,
+                        'user_image' => $admin->$imagePath,
                     ]);
                 }
 
@@ -261,9 +263,10 @@ class TransferController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error("Transfer failed: " . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to apply transfer.',
+                'message' => 'Failed to apply transfer. Error: ' . $e->getMessage(),
             ]);
         }
     }

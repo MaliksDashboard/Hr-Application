@@ -1,10 +1,13 @@
 @extends('layouts.master')
 @section('title', 'Transfers Management')
+@section('custom_title',
+    'Transfers & Rotations
+    ')
+
 
 @section('main')
     <div class="main transfers">
         <div class="dashboard-header">
-            <h1>Transfers & Rotation Management</h1>
             @can('Create')
                 <a class="instructor" href="{{ route('transfers.create') }}"><svg viewBox="-60 0 512 512"
                         xmlns="http://www.w3.org/2000/svg">
@@ -76,7 +79,7 @@
             <!-- Transfers Table -->
             <div class="table-container">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h2 style="color: var(--primary-color); font-weight: 400;">All Transfers</h2>
+                    <h2 class="table-trans-header" style="color: var(--primary-color); font-weight: 400;">All Transfers</h2>
                     <div style="display: flex; gap: 5px;justify-content: end; align-items: center;"> <label
                             for="records-per-page" style="margin-right: 8px;">Records per
                             page:</label>
@@ -113,11 +116,11 @@
                     "{{ $transfer->transfer_start_date ? \Carbon\Carbon::parse($transfer->transfer_start_date)->format('d-m-Y') : 'N/A' }}",
                     "{{ $transfer->created_by_name ?? 'N/A' }}", // Created by
                     `<div class="btns-trans">
-                    <button onclick="downloadPDF({{ $transfer->id }})" class="btn btn-primary down-btn-transfer">Download PDF</button>` +
+                    <button onclick="downloadPDF({{ $transfer->id }})" class="btn btn-primary down-btn-transfer"><svg fill="#fff" xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 100 100" xml:space="preserve"><path d="M84.514 49.615H67.009a4.91 4.91 0 0 0-4.679 3.406 12.92 12.92 0 0 1-12.329 8.983 12.92 12.92 0 0 1-12.329-8.983 4.92 4.92 0 0 0-4.681-3.406H15.486a4.92 4.92 0 0 0-4.919 4.919v28.054a4.92 4.92 0 0 0 4.919 4.917h69.028a4.92 4.92 0 0 0 4.919-4.917V54.534c0-2.719-2.2-4.919-4.919-4.919"/><path d="M48.968 52.237c.247.346.651.553 1.076.553h.003c.428 0 .826-.207 1.076-.558l13.604-19.133a1.33 1.33 0 0 0 .096-1.374 1.32 1.32 0 0 0-1.177-.716h-6.399V13.821c0-.735-.593-1.326-1.323-1.326H44.078c-.732 0-1.323.591-1.323 1.326v17.188h-6.404a1.323 1.323 0 0 0-1.076 2.09z"/></svg></button>` +
                     `@can('Delete')
-                <button  data-id="{{ $transfer->id }}" style="margin-left:10px;" class="btn btn-danger cancel-transfer">Cancel</button>
+                <button  data-id="{{ $transfer->id }}" style="margin-left:10px;" class="btn btn-danger cancel-transfer"><svg fill="#fff" viewBox="0 0 24 24" version="1.2" baseProfile="tiny" xmlns="http://www.w3.org/2000/svg"><path d="M12 4c-4.411 0-8 3.589-8 8s3.589 8 8 8 8-3.589 8-8-3.589-8-8-8m-5 8c0-.832.224-1.604.584-2.295l6.711 6.711A4.94 4.94 0 0 1 12 17c-2.757 0-5-2.243-5-5m9.416 2.295L9.705 7.584A4.94 4.94 0 0 1 12 7c2.757 0 5 2.243 5 5 0 .832-.224 1.604-.584 2.295"/></svg></button>
                 @if ($transfer->type === 'Rotation')
-                    <button data-id="{{ $transfer->id }}" style="margin-left:10px;" class="btn btn-warning change-action-type">Make Transfer</button>
+                    <button data-id="{{ $transfer->id }}" style="margin-left:10px;" class="btn btn-warning change-action-type"><svg fill="#fff" viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg"><path d="M30.87 2.42a1.37 1.37 0 0 0-2 0l-2 1.8a1.28 1.28 0 0 0 0 1.94l3.37 3.26a.89.89 0 0 1-.61 1.58H11.38a1.53 1.53 0 0 0-1.46 1.38v2.78a1.47 1.47 0 0 0 1.46 1.38h18.25a.9.9 0 0 1 .66 1.46l-3.37 3.26a1.28 1.28 0 0 0 0 1.94l2 1.94a1.37 1.37 0 0 0 2 0l10.77-10.4a1.3 1.3 0 0 0 0-1.94Zm-9.75 24.42a1.38 1.38 0 0 1 2 0l2 1.8a1.3 1.3 0 0 1 0 1.94l-3.37 3.26a.88.88 0 0 0 .66 1.53h18.2a1.54 1.54 0 0 1 1.47 1.38v2.78a1.49 1.49 0 0 1-1.47 1.39H22.37a.89.89 0 0 0-.66 1.52l3.37 3.26a1.3 1.3 0 0 1 0 1.94l-2 1.94a1.38 1.38 0 0 1-2 0l-10.72-10.4a1.28 1.28 0 0 1 0-1.94Z" fill-rule="evenodd"/></svg></button>
                 @endif
             @endcan
             </div>`
@@ -137,7 +140,7 @@
                 'To Branch',
                 'Job',
                 'Type',
-                'Rotation Duration',
+                'Rotation End',
                 'Transfer Date',
                 'Created by',
                 {
@@ -289,5 +292,10 @@
 <style>
     body {
         color: var(--primary-color);
+    }
+
+    .dashboard-header {
+        display: flex !important;
+        justify-content: start;
     }
 </style>

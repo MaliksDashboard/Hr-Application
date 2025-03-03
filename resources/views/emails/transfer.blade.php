@@ -63,7 +63,7 @@
 
         <div class="content">
             <p>Dear Team,</p><br>
-            <p>Please find attached the **Transfer Letter** for <span class="highlight">{{ $employeeName }}</span>,
+            <p>Please find attached the Transfer Letter for <span class="highlight">{{ $employeeName }}</span>,
                 effective <span class="highlight">{{ \Carbon\Carbon::parse($startDate)->format('d-m-Y') }}</span>.</p>
             <br>
             <p>Best regards,</p>

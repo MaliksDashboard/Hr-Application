@@ -6,13 +6,16 @@
             <div class="container">
                 <div class="logo">
                     <svg viewBox="0 0 24 24" id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg">
-                        <circle class="cls-1" cx="12" cy="4.34" r="2.86" />
-                        <circle class="cls-1" cx="19.64" cy="16.75" r="2.86" />
-                        <circle class="cls-1" cx="4.36" cy="16.75" r="2.86" />
-                        <path class="cls-1"
+                        <circle class="cls-1" cx="12" cy="4.34" r="2.86" fill="#fff" />
+                        <circle class="cls-1" cx="19.64" cy="16.75" r="2.86" fill="#fff" />
+                        <circle class="cls-1" cx="4.36" cy="16.75" r="2.86" fill="#fff" />
+                        <path class="cls-1" fill="#fff"
                             d="M6 19.09a8.59 8.59 0 0 0 12 0M14.82 4.82a8.57 8.57 0 0 1 5.77 8.11 7 7 0 0 1-.08 1.1M3.49 14a7 7 0 0 1-.08-1.1 8.57 8.57 0 0 1 5.77-8.08" />
                     </svg>
                     <p>Maliks</p>
+
+                    <span class="nav-toggle" onclick="toggleNav()">&#9776;</span>
+
                 </div>
 
                 <div class="main-tools">
@@ -148,6 +151,17 @@
                         </a>
                     @endcan
 
+                    @can('Sundays')
+                        <a href="{{ route('sundays.index') }}"
+                            class="tool {{ request()->is('sundays*') ? 'active' : '' }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 57 57" xml:space="preserve">
+                                <path
+                                    d="M22.66 0H3.34A3.343 3.343 0 0 0 0 3.34v19.32A3.343 3.343 0 0 0 3.34 26h19.32A3.343 3.343 0 0 0 26 22.66V3.34A3.343 3.343 0 0 0 22.66 0m10.68 26h19.32A3.343 3.343 0 0 0 56 22.66V3.34A3.343 3.343 0 0 0 52.66 0H33.34A3.343 3.343 0 0 0 30 3.34v19.32A3.343 3.343 0 0 0 33.34 26m-10.68 4H3.34A3.343 3.343 0 0 0 0 33.34v19.32A3.343 3.343 0 0 0 3.34 56h19.32A3.343 3.343 0 0 0 26 52.66V33.34A3.343 3.343 0 0 0 22.66 30M55 41H45V31a2 2 0 0 0-4 0v10H31a2 2 0 0 0 0 4h10v10a2 2 0 0 0 4 0V45h10a2 2 0 0 0 0-4" />
+                            </svg>
+                            <p>Sundays</p>
+                        </a>
+                    @endcan
+
                 </div>
 
                 <div id="seperator">
@@ -204,6 +218,11 @@
 
                 <a style="text-decoration: none;" href="https://wa.me/96176938653" target="blank" id="help"
                     class="help">
+                    <svg viewBox="-2 -2 24 24" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin"
+                        class="jam jam-help">
+                        <path
+                            d="M10 20C4.477 20 0 15.523 0 10S4.477 0 10 0s10 4.477 10 10-4.477 10-10 10m0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16m0-3a1 1 0 1 1 0-2 1 1 0 0 1 0 2m1.276-3.218a1 1 0 0 1-1.232-1.576l.394-.308a1.5 1.5 0 1 0-1.847-2.364l-.394.308a1 1 0 1 1-1.23-1.576l.393-.308a3.5 3.5 0 1 1 4.31 5.516z" />
+                    </svg>
                     <p>Need Help?</p>
                     <small>Call Shadi Farhat</small>
                 </a>
@@ -237,20 +256,30 @@
     <div class="body">
         <header>
             <div class="right">
-                <div id="icon" class="icon">
+
+                <h2 class="custom-title">
+                    @yield('custom_title', 'Dashboard')
+                </h2>
+                {{-- <div id="icon" class="icon">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" xml:space="preserve">
                         <path
                             d="M625.1 700.9H175.3c-41.4 0-74.9-33.6-74.9-74.9V175.8c0-41.4 33.6-74.9 74.9-74.9h449.9c41.4 0 74.9 33.5 74.9 74.9V626c-.1 41.4-33.6 74.9-75 74.9m-324.8-50v-500H187.7c-20.6 0-37.4 16.7-37.4 37.4v425.3c0 20.6 16.7 37.4 37.4 37.4h112.6z"
                             style="fill-rule:evenodd;clip-rule:evenodd" />
                     </svg>
-                </div>
-                <div class="search">
+                </div> --}}
+                {{-- <div style="display: none" class="search">
                     <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
                         <path
                             d="m416 448-97-97q-42 32-95 32-43 0-80-21-37-22-58-59-22-37-22-80t22-80q21-37 58-58 37-22 80-22t80 22q37 21 59 58 21 37 21 80 0 54-33 96l97 97zM223 336q47 0 80-33 32-33 32-79 0-47-32-79-33-33-80-33-46 0-79 33-33 32-33 79 0 46 33 79t79 33" />
                     </svg>
-                    <input type="text" id="search-box" placeholder="Search Here">
-                </div>
+                    <form action="{{ route('employees.index') }}" method="GET"
+                        style="display: flex; width: 100%;">
+                        <input type="text" name="search" id="search-box" class="search-input"
+                            placeholder="Search Here" value="{{ request('search') }}"
+                            onkeypress="return event.keyCode != 13 || this.form.submit();">
+                    </form>
+                </div> --}}
+
             </div>
             <div class="left">
 
@@ -306,17 +335,15 @@
                     </div>
                 </div>
 
-
-
+                {{-- 
                 <div class="task notes">
                     <a id="open-editor">
                         <span>
-                            <svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
-                                <path
-                                    d="m33 6.4-3.7-3.7a1.71 1.71 0 0 0-2.36 0L23.65 6H6a2 2 0 0 0-2 2v22a2 2 0 0 0 2 2h22a2 2 0 0 0 2-2V11.76l3-3a1.67 1.67 0 0 0 0-2.36M18.83 20.13l-4.19.93 1-4.15 9.55-9.57 3.23 3.23ZM29.5 9.43 26.27 6.2l1.85-1.85 3.23 3.23Z"
-                                    class="clr-i-solid clr-i-solid-path-1" fill="#fff" />
-                                <path fill="none" d="M0 0h36v36H0z" />
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                <path opacity=".5"
+                                    d="M16,2.172v-1.172c0-.553-.448-1-1-1s-1,.447-1,1v1h-2v-1c0-.553-.448-1-1-1s-1,.447-1,1v1h-2v-1c0-.553-.448-1-1-1s-1,.447-1,1v1h-2v-1c0-.553-.448-1-1-1s-1,.447-1,1v1.172c-1.164.413-2,1.524-2,2.828v14c0,2.757,2.243,5,5,5h8c2.757,0,5-2.243,5-5V5c0-1.304-.836-2.415-2-2.828ZM10,17h-5c-.552,0-1-.447-1-1s.448-1,1-1h5c.552,0,1,.447,1,1s-.448,1-1,1Zm3-4H5c-.552,0-1-.447-1-1s.448-1,1-1h8c.552,0,1,.447,1,1s-.448,1-1,1Zm0-4H5c-.552,0-1-.447-1-1s.448-1,1-1h8c.552,0,1,.447,1,1s-.448,1-1,1Zm9,15l-1.121-1.121c-.563-.563-.879-1.326-.879-2.121V2c0-1.105.895-2,2-2h0c1.105,0,2,.895,2,2v18.757c0,.796-.316,1.559-.879,2.121l-1.121,1.121" />
                             </svg>
+
 
                         </span>
                     </a>
@@ -327,24 +354,14 @@
                         <button class="close-btn" id="close-editor">×</button>
                         <textarea id="editor"></textarea>
                     </div>
-                </div>
+                </div> --}}
 
-                <div class="task">
+                {{-- <div class="task">
                     <a id="open-task-popup">
                         <span>
-                            <svg viewBox="0 0 32 32" data-name="Layer 1" id="Layer_1"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <defs>
-                                    <style>
-                                        .cls-1 {
-                                            fill: #fff
-                                        }
-                                    </style>
-                                </defs>
-                                <path class="cls-1"
-                                    d="M25 7h-1.18A3 3 0 0 0 21 5h-1a3 3 0 0 0-3-3h-2a3 3 0 0 0-3 3h-1a3 3 0 0 0-2.82 2H7a2 2 0 0 0-2 2v19a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2M11 7h1a2 2 0 0 0 2-2 1 1 0 0 1 1-1h2a1 1 0 0 1 1 1 2 2 0 0 0 2 2h1a1 1 0 0 1 1 1v1H10V8a1 1 0 0 1 1-1m14 21H7V9h1a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2h1Z" />
-                                <path class="cls-1"
-                                    d="M22 13H10a1 1 0 0 0 0 2h12a1 1 0 0 0 0-2m0 5H10a1 1 0 0 0 0 2h12a1 1 0 0 0 0-2m-6 5h-6a1 1 0 0 0 0 2h6a1 1 0 0 0 0-2m-.71-16.29A1 1 0 0 0 16 7h.19a.6.6 0 0 0 .19-.06.6.6 0 0 0 .17-.09l.16-.12a1 1 0 0 0 .21-.33A1 1 0 0 0 17 6a1.4 1.4 0 0 0 0-.2.6.6 0 0 0-.06-.18.8.8 0 0 0-.09-.18l-.12-.15a1 1 0 0 0-1.42 0A1 1 0 0 0 15 6a1 1 0 0 0 .08.38 1 1 0 0 0 .21.33" />
+                            <svg hover xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+                                <path opacity=".5"
+                                    d="M25.321 2H6.679a4.143 4.143 0 0 0-4.143 4.143v19.713A4.143 4.143 0 0 0 6.679 30H25.32a4.143 4.143 0 0 0 4.143-4.143V6.143A4.14 4.14 0 0 0 25.321 2M11.423 7.287h9.154a.9.9 0 0 1 0 1.8h-9.154a.9.9 0 0 1 0-1.8m5.226 16.426H7.662a.9.9 0 0 1 0-1.8h8.987a.9.9 0 0 1 0 1.8m0-7.102H7.662a.9.9 0 0 1 0-1.8h8.987a.9.9 0 0 1 0 1.8m8.253 5.903-2.481 2a.9.9 0 0 1-1.272-.146l-.976-1.244a.901.901 0 0 1 1.416-1.112l.413.526 1.771-1.428a.902.902 0 0 1 1.129 1.404m0-7.101-2.481 1.999a.9.9 0 0 1-1.272-.146l-.976-1.244a.901.901 0 0 1 1.416-1.112l.413.527 1.771-1.428a.9.9 0 0 1 1.129 1.404" />
                             </svg>
                         </span>
                         <span id="task-badge" class="badge">0</span>
@@ -362,14 +379,38 @@
                             <button id="add-task-btn">Add Task</button>
                         </div>
                     </div>
-                </div>
+                </div> --}}
+
+                <button id="theme-toggle" class="theme-toggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path fill-rule="evenodd"
+                            d="M22 12c0 5.523-4.477 10-10 10a10 10 0 0 1-3.321-.564A9 9 0 0 1 8 18a8.97 8.97 0 0 1 2.138-5.824A6.5 6.5 0 0 0 15.5 15a6.5 6.5 0 0 0 5.567-3.143c.24-.396.933-.32.933.143"
+                            clip-rule="evenodd" opacity=".5" />
+                        <path
+                            d="M2 12c0 4.359 2.789 8.066 6.679 9.435A9 9 0 0 1 8 18c0-2.221.805-4.254 2.138-5.824A6.47 6.47 0 0 1 9 8.5a6.5 6.5 0 0 1 3.143-5.567C12.54 2.693 12.463 2 12 2 6.477 2 2 6.477 2 12" />
+                    </svg>
+                </button>
+
+                <a href="{{ url('/settings') }}">
+                    <svg class="set-ico" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path fill-rule="evenodd"
+                            d="M14.279 2.152C13.909 2 13.439 2 12.5 2s-1.408 0-1.779.152a2 2 0 0 0-1.09 1.083c-.094.223-.13.484-.145.863a1.62 1.62 0 0 1-.796 1.353 1.64 1.64 0 0 1-1.579.008c-.338-.178-.583-.276-.825-.308a2.03 2.03 0 0 0-1.49.396c-.318.242-.553.646-1.022 1.453-.47.807-.704 1.21-.757 1.605-.07.526.074 1.058.4 1.479.148.192.357.353.68.555.477.297.783.803.783 1.361s-.306 1.064-.782 1.36c-.324.203-.533.364-.682.556a2 2 0 0 0-.399 1.479c.053.394.287.798.757 1.605s.704 1.21 1.022 1.453c.424.323.96.465 1.49.396.242-.032.487-.13.825-.308a1.64 1.64 0 0 1 1.58.008c.486.28.774.795.795 1.353.015.38.051.64.145.863.204.49.596.88 1.09 1.083.37.152.84.152 1.779.152s1.409 0 1.779-.152a2 2 0 0 0 1.09-1.083c.094-.223.13-.483.145-.863.02-.558.309-1.074.796-1.353a1.64 1.64 0 0 1 1.579-.008c.338.178.583.276.825.308.53.07 1.066-.073 1.49-.396.318-.242.553-.646 1.022-1.453.47-.807.704-1.21.757-1.605a2 2 0 0 0-.4-1.479c-.148-.192-.357-.353-.68-.555-.477-.297-.783-.803-.783-1.361s.306-1.064.782-1.36c.324-.203.533-.364.682-.556a2 2 0 0 0 .399-1.479c-.053-.394-.287-.798-.757-1.605s-.704-1.21-1.022-1.453a2.03 2.03 0 0 0-1.49-.396c-.242.032-.487.13-.825.308a1.64 1.64 0 0 1-1.58-.008 1.62 1.62 0 0 1-.795-1.353c-.015-.38-.051-.64-.145-.863a2 2 0 0 0-1.09-1.083"
+                            clip-rule="evenodd" opacity=".5" />
+                        <path
+                            d="M15.523 12c0 1.657-1.354 3-3.023 3s-3.023-1.343-3.023-3S10.83 9 12.5 9s3.023 1.343 3.023 3" />
+                    </svg>
+                </a>
 
                 <div class="notification-container">
-                    <svg class="notf" onclick="toggleNotifications()" viewBox="0 0 24 24">
-                        <path d="M15 17H9a1 1 0 0 0-1 1 4 4 0 0 0 8 0 1 1 0 0 0-1-1" />
+                    <svg class="notf" onclick="toggleNotifications()" xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24">
                         <path
-                            d="M20.09 13.67L19 12.59V9A7 7 0 0 0 5 9v3.59l-1.09 1.08A3.13 3.13 0 0 0 6.12 19h11.76a3.13 3.13 0 0 0 2.21-5.33" />
+                            d="M18.75 9v.704c0 .845.24 1.671.692 2.374l1.108 1.723c1.011 1.574.239 3.713-1.52 4.21a25.8 25.8 0 0 1-14.06 0c-1.759-.497-2.531-2.636-1.52-4.21l1.108-1.723a4.4 4.4 0 0 0 .693-2.374V9c0-3.866 3.022-7 6.749-7s6.75 3.134 6.75 7"
+                            opacity=".5" />
+                        <path
+                            d="M12.75 6a.75.75 0 0 0-1.5 0v4a.75.75 0 0 0 1.5 0zM7.243 18.545a5.002 5.002 0 0 0 9.513 0c-3.145.59-6.367.59-9.513 0" />
                     </svg>
+
                     <span id="notification-badge" class="notification-badge" style="display:none;">0</span>
 
                     <div id="notification-box" class="notification-box">
@@ -377,7 +418,6 @@
                             <h3>Notifications</h3>
                             <h3>X</h3>
                         </div>
-                        <span class="line"></span>
                         <div id="notification-list">
                             <p>Loading notifications...</p>
                         </div>
@@ -449,32 +489,32 @@
         const editor = document.getElementById('editor');
 
         // Load saved note from local storage on page load
-        const savedNote = localStorage.getItem('note');
-        if (savedNote) {
-            editor.value = savedNote;
-        }
+        // const savedNote = localStorage.getItem('note');
+        // if (savedNote) {
+        //     editor.value = savedNote;
+        // }
 
         // Open the editor popup
-        openEditor.addEventListener('click', () => {
-            notePopup.style.display = 'flex'; // Show the popup
-            body.classList.add('popup-open'); // Prevent background scrolling
-        });
+        //openEditor.addEventListener('click', () => {
+        //notePopup.style.display = 'flex'; // Show the popup
+        //body.classList.add('popup-open'); // Prevent background scrolling
+        // });
 
         // Close the editor popup
-        closeEditor.addEventListener('click', () => {
-            notePopup.style.display = 'none'; // Hide the popup
-            body.classList.remove('popup-open'); // Allow background scrolling
-            localStorage.setItem('note', editor.value); // Save note to local storage
-        });
+        //closeEditor.addEventListener('click', () => {
+        //  notePopup.style.display = 'none'; // Hide the popup
+        //     body.classList.remove('popup-open'); // Allow background scrolling
+        //     localStorage.setItem('note', editor.value); // Save note to local storage
+        // });
 
         // Close popup on outside click
-        notePopup.addEventListener('click', (e) => {
-            if (e.target === notePopup) { // Ensure it's the backdrop
-                notePopup.style.display = 'none';
-                body.classList.remove('popup-open');
-                localStorage.setItem('note', editor.value); // Save note to local storage
-            }
-        });
+        // notePopup.addEventListener('click', (e) => {
+        // if (e.target === notePopup) { // Ensure it's the backdrop
+        // notePopup.style.display = 'none';
+        //  body.classList.remove('popup-open');
+        //   localStorage.setItem('note', editor.value); // Save note to local storage
+        // }
+        // });
 
         //Task List Popup
         const openPopup = document.getElementById('open-task-popup');
@@ -510,45 +550,45 @@
         };
 
         // Open popup
-        openPopup.addEventListener('click', () => {
-            taskPopup.style.display = 'flex';
-        });
+        // openPopup.addEventListener('click', () => {
+        //    taskPopup.style.display = 'flex';
+        // });
 
         // Close popup
-        closePopup.addEventListener('click', () => {
-            taskPopup.style.display = 'none';
-        });
+        //closePopup.addEventListener('click', () => {
+        //   taskPopup.style.display = 'none';
+        // });
 
         // Close popup on outside click
-        taskPopup.addEventListener('click', (e) => {
-            if (e.target === taskPopup) { // Ensure it's the background, not the popup content
-                taskPopup.style.display = 'none';
-            }
-        });
+        //taskPopup.addEventListener('click', (e) => {
+        //   if (e.target === taskPopup) { // Ensure it's the background, not the popup content
+        //       taskPopup.style.display = 'none';
+        //    }
+        //  });
 
         // Add task
-        addTaskBtn.addEventListener('click', () => {
-            const task = taskInput.value.trim();
-            if (task) {
-                tasks.push(task);
-                localStorage.setItem('tasks', JSON.stringify(tasks));
-                renderTasks();
-                taskInput.value = '';
-            }
-        });
+        // addTaskBtn.addEventListener('click', () => {
+        //   const task = taskInput.value.trim();
+        //   if (task) {
+        //        tasks.push(task);
+        //        localStorage.setItem('tasks', JSON.stringify(tasks));
+        //        renderTasks();
+        //        taskInput.value = '';
+        //    }
+        // });
 
         // Delete task
-        taskList.addEventListener('click', (e) => {
-            if (e.target.tagName === 'BUTTON') {
-                const index = e.target.getAttribute('data-index');
-                tasks.splice(index, 1);
-                localStorage.setItem('tasks', JSON.stringify(tasks));
-                renderTasks();
-            }
-        });
+        // taskList.addEventListener('click', (e) => {
+        //    if (e.target.tagName === 'BUTTON') {
+        //         const index = e.target.getAttribute('data-index');
+        //        tasks.splice(index, 1);
+        //         localStorage.setItem('tasks', JSON.stringify(tasks));
+        //        renderTasks();
+        //     }
+        //  });
 
         // Initial render
-        renderTasks();
+        //renderTasks();
     });
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -669,6 +709,21 @@
             .catch(error => console.error("Error fetching notifications:", error));
     }
 
+    function toggleNav() {
+        const nav = document.getElementById("nav");
+        nav.classList.toggle("collapsed");
+        localStorage.setItem("navState", nav.classList.contains("collapsed") ? "collapsed" : "expanded");
+    }
+
+    // Restore previous state
+    document.addEventListener("DOMContentLoaded", () => {
+        const nav = document.getElementById("nav");
+        if (localStorage.getItem("navState") === "collapsed") {
+            nav.classList.add("collapsed");
+        }
+    });
+
+
     // Toggle notification box visibility
     function toggleNotifications() {
         const notificationBox = document.getElementById("notification-box");
@@ -682,6 +737,14 @@
         }
     }
 
+
+    // Restore previous state
+    document.addEventListener("DOMContentLoaded", () => {
+        const nav = document.getElementById("nav");
+        if (localStorage.getItem("navState") === "collapsed") {
+            nav.classList.add("collapsed");
+        }
+    });
     // Handle Mark as Read Button click
     document.addEventListener('click', function(event) {
         if (event.target.classList.contains('mark-as-read')) {
@@ -740,7 +803,7 @@
     // Initialize fetchNotifications on page load and set interval for periodic refresh
     document.addEventListener("DOMContentLoaded", () => {
         fetchNotifications();
-        setInterval(fetchNotifications, 10000); // Auto-refresh every 10 seconds
+        setInterval(fetchNotifications, 60000); // Auto-refresh every 10 seconds
     });
 
     document.addEventListener("DOMContentLoaded", function() {
@@ -757,6 +820,30 @@
             if (!nav.contains(event.target) && !burger.contains(event.target)) {
                 nav.classList.remove("show");
                 burger.classList.remove("active");
+            }
+        });
+    });
+
+
+
+    //Light and dark mode:
+    document.addEventListener("DOMContentLoaded", function() {
+        const themeToggle = document.getElementById("theme-toggle");
+        const body = document.body;
+
+        // Check Local Storage for Theme
+        if (localStorage.getItem("theme") === "dark") {
+            body.classList.add("dark-mode");
+        }
+
+        themeToggle.addEventListener("click", function() {
+            body.classList.toggle("dark-mode");
+
+            // Save user preference
+            if (body.classList.contains("dark-mode")) {
+                localStorage.setItem("theme", "dark");
+            } else {
+                localStorage.setItem("theme", "light");
             }
         });
     });

@@ -1,5 +1,6 @@
 @extends('layouts.master')
 @section('title', 'Vacancies')
+@section('custom_title', 'Vacacnies Managment')
 
 @section('main')
 
@@ -7,7 +8,6 @@
     <div class="main vacancy">
 
         <div class="dashboard-header">
-            <h1>Vacacnies Managment</h1>
             @can('Create')
                 <a class="add-vac" href="{{ route('vacancies.create') }} ">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" xml:space="preserve">
@@ -154,30 +154,23 @@
                 </div>
 
             </div>
-
             <div class="row-right-top item-1">
                 <h2>Vacancies Graph</h2>
                 <span class="line"></span>
-                <div class="coming-soon">
-                    <p>Coming Soon</p>
-                    <div class="coming-soon-spinner"></div>
-                </div>
+                <div id="lebanon-map" style="width: 100%; height: 100%;"></div>
             </div>
 
-            <div class="row-right-top item-2">
-                <h2>Vacancies Graph</h2>
-                <span class="line"></span>
-                <div class="coming-soon">
-                    <p>Coming Soon</p>
-                    <div class="coming-soon-spinner"></div>
-                </div>
-            </div>
 
         </div>
 
     </div>
 
 @endsection
+
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
 
 <script>
     //Toggle Buttons
@@ -280,12 +273,61 @@
         searchInput.addEventListener('input', filterVacancies);
     });
 
+    //Leaflet script
+    document.addEventListener("DOMContentLoaded", function() {
+        // 🗺️ Initialize the map centered on **Beirut**
+        var map = L.map('lebanon-map').setView([33.899280815859, 35.481435079622], 14); // 📌 Beirut Focus
 
-    //function to ask if i need to add a new vacancy
+        // 🏙️ Add OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        // 📌 Object to track duplicate coordinates
+        let locationCount = {};
+
+        // 📢 Fetch branch vacancies data from Laravel API
+        fetch('/branches-vacancies')
+            .then(response => response.json())
+            .then(branches => {
+                branches.forEach(branch => {
+                    let lat = branch.latitude;
+                    let lng = branch.longitude;
+                    let key = `${lat},${lng}`;
+
+                    // ✅ Handle Duplicate Locations (Avoid Overlapping)
+                    if (locationCount[key]) {
+                        let offset = locationCount[key] * 0.0003; // Shift markers slightly
+                        lat += offset;
+                        lng += offset;
+                        locationCount[key]++;
+                    } else {
+                        locationCount[key] = 1;
+                    }
+
+                    // 📌 Add a marker for each branch
+                    var marker = L.marker([lat, lng]).addTo(map);
+
+                    // 🏷️ Add Tooltip on Hover
+                    marker.bindTooltip(
+                        `<strong>${branch.branch_name}</strong><br>Vacancies: ${branch.vacancies_count}`, {
+                            permanent: false,
+                            direction: "top",
+                            offset: [0, -10]
+                        }
+                    );
+                });
+            })
+            .catch(error => console.error("Error fetching branches:", error));
+    });
 </script>
 
 
 <style>
+    path {
+        display: block !important;
+    }
+
     body {
         overflow: hidden
     }
@@ -339,5 +381,10 @@
         100% {
             transform: rotate(360deg);
         }
+    }
+
+    .dashboard-header {
+        display: flex !important;
+        justify-content: start;
     }
 </style>

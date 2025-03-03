@@ -1,9 +1,9 @@
 @extends('layouts.master')
 @section('title', 'Edit Vacancy')
+@section('custom_title', 'Edit Vacancy')
 
 @section('main')
     <div class="main edit-vacancy add-vacancy">
-        <h1>Edit Vacancy</h1>
 
         <div class="container">
             <form action="{{ route('vacancies.update', $vacancy->id) }}" method="POST" enctype="multipart/form-data"

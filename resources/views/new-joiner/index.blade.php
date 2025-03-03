@@ -1,5 +1,6 @@
 @extends('layouts.master')
 @section('title', 'New Joiners System')
+@section('custom_title', 'New Joiners Details')
 
 @section('main')
 
@@ -21,7 +22,6 @@
 
     <div class="main new-joiners">
         <div class="controller">
-            <h2>New Joiners Details</h2>
             <div class="new-joiner-btns">
                 <a class="add-btn" href="{{ url('/new-joiners/create') }}">
                     <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -62,7 +62,7 @@
             </div>
 
             <div class="new-joiner-list-status" id="new-joiner-list-status">
-                <!-- Joiner progress history will load here -->
+                <h1 style="color:var(--light-color)"> Select An employee </h1>
             </div>
 
             <div id="remarks-modal" class="modal">
@@ -140,10 +140,10 @@
 
                         // ✅ Check if the employee is in the "Ready" phase
                         if (joiner.current_step === "Ready") {
-                            actionButton = `<span class="ready-label">✅ Employee is Ready</span>`;
+                            actionButton = `<span class="ready-label">✅</span>`;
                         } else if (stepId === "all") {
                             actionButton =
-                                `<button class="view-progress delete-employee" data-joiner="${joiner.id}">Delete</button>`;
+                                `<button class="view-progress delete-employee" data-joiner="${joiner.id}"><svg  viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2h4a1 1 0 1 1 0 2h-1.069l-.867 12.142A2 2 0 0 1 17.069 22H6.93a2 2 0 0 1-1.995-1.858L4.07 8H3a1 1 0 0 1 0-2h4zm2 2h6V4H9zM6.074 8l.857 12H17.07l.857-12zM10 10a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1m4 0a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1" fill="#fff"/></svg></button>`;
                         } else {
                             actionButton =
                                 `<button class="complete-btn" data-joiner="${joiner.id}" data-step="${stepId}">Mark Completed</button>`;
@@ -155,7 +155,7 @@
                         <p><b>${joiner.name}</b> - ${joiner.job} </p>
                         <span>${currentStepText}</span></div>
                         <div class="joiner-card-btns">
-                            <button class="view-progress" data-id="${joiner.id}">View Progress</button>
+                            <button class="view-progress" data-id="${joiner.id}"><svg fill="#fff"  xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42" xml:space="preserve"><path d="M15.3 20.1c0 3.1 2.6 5.7 5.7 5.7s5.7-2.6 5.7-5.7-2.6-5.7-5.7-5.7-5.7 2.6-5.7 5.7m8.1 12.3C30.1 30.9 40.5 22 40.5 22s-7.7-12-18-13.3c-.6-.1-2.6-.1-3-.1-10 1-18 13.7-18 13.7s8.7 8.6 17 9.9c.9.4 3.9.4 4.9.2M11.1 20.7c0-5.2 4.4-9.4 9.9-9.4s9.9 4.2 9.9 9.4S26.5 30 21 30s-9.9-4.2-9.9-9.3"/></svg></button>
                             ${actionButton}
                         </div>
                     </div>
@@ -556,6 +556,7 @@
 
     .add-btn {
         height: 45px !important;
+        max-width: 250px !important;
     }
 
     .steps-btn {

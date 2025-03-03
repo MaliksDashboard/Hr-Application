@@ -1,5 +1,7 @@
 @extends('layouts.master')
 @section('title', 'Promotions')
+@section('custom_title', 'Promotions')
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 @section('main')
@@ -21,7 +23,6 @@
             </script>
         @endif
         <div class="promo-header">
-            <h1>Promotions</h1>
             @can('Create')
                 <a href="{{ route('promotions.create') }}" class="instructor" href="{{ route('promotions.create') }}"><svg
                         viewBox="-60 0 512 512" xmlns="http://www.w3.org/2000/svg">
@@ -123,11 +124,11 @@
                         formatDate(promotion.promotion_date),
                         gridjs.html(`
                         <button class="down-promo" data-id="${promotion.id}">
-                             Download PDF
+                             <svg fill="#fff" xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 100 100" xml:space="preserve"><path d="M84.514 49.615H67.009a4.91 4.91 0 0 0-4.679 3.406 12.92 12.92 0 0 1-12.329 8.983 12.92 12.92 0 0 1-12.329-8.983 4.92 4.92 0 0 0-4.681-3.406H15.486a4.92 4.92 0 0 0-4.919 4.919v28.054a4.92 4.92 0 0 0 4.919 4.917h69.028a4.92 4.92 0 0 0 4.919-4.917V54.534c0-2.719-2.2-4.919-4.919-4.919"/><path d="M48.968 52.237c.247.346.651.553 1.076.553h.003c.428 0 .826-.207 1.076-.558l13.604-19.133a1.33 1.33 0 0 0 .096-1.374 1.32 1.32 0 0 0-1.177-.716h-6.399V13.821c0-.735-.593-1.326-1.323-1.326H44.078c-.732 0-1.323.591-1.323 1.326v17.188h-6.404a1.323 1.323 0 0 0-1.076 2.09z"/></svg>
                         </button>
                         ${canDelete ? `
                         <button class="delete-promo" data-id="${promotion.id}" style="color:red;">
-                            Delete
+                            <svg  viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2h4a1 1 0 1 1 0 2h-1.069l-.867 12.142A2 2 0 0 1 17.069 22H6.93a2 2 0 0 1-1.995-1.858L4.07 8H3a1 1 0 0 1 0-2h4zm2 2h6V4H9zM6.074 8l.857 12H17.07l.857-12zM10 10a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1m4 0a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1" fill="#fff"/></svg>
                         </button>` : ''}
                     `)
                     ]);

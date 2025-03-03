@@ -1,9 +1,9 @@
 @extends('layouts.master')
 @section('title', 'Edit Role')
+@section('custom_title', 'Edit Role')
 
 @section('main')
     <div class="main add-emp">
-        <h1>Edit Role</h1>
 
         <div class="container">
             <form action="{{ route('roles.update', $role->id) }}" method="POST">

@@ -1,10 +1,10 @@
 @extends('layouts.master')
 @section('title', 'Add Employee')
+@section('custom_title', 'Add Employee')
 
 
 @section('main')
     <div class="main add-emp">
-        <h1>Add Employee</h1>
 
         <div class="container">
             <form action="{{ route('employees.store') }}" method="POST" enctype="multipart/form-data" class="container">
@@ -102,6 +102,40 @@
                             <span class="error-message" style="color:red;">{{ $message }}</span>
                         @enderror
                     </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; width: 100%; gap: 20px;">
+
+                    <div class="input-group">
+                        <label for="car">Car</label>
+                        <select id="car" name="car" class="form-control" required>
+                            <option value="" disabled selected>Select or type a car...</option>
+                            <option value="No" {{ old('car') == $job ? 'selected' : '' }}> No</option>
+                            <option value="Yes" {{ old('car') == $job ? 'selected' : '' }}> Yes</option>
+                            <option value="Moto" {{ old('car') == $job ? 'selected' : '' }}> Moto</option>
+                            <option value="Both" {{ old('car') == $job ? 'selected' : '' }}> Both</option>
+                        </select>
+                        @error('car')
+                            <span class="error-message" style="color:red;">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="input-group">
+                        <label for="address">Address</label>
+                        <input type="address" name="address" id="address" value="{{ old('address') }}">
+                        @error('address')
+                            <span class="error-message" style="color:red;">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="input-group">
+                        <label for="birthday">Birthday<b style="color:red;">*</b></label>
+                        <input type="date" name="birthday" id="birthday" value="{{ old('birthday') }}">
+                        @error('birthday')
+                            <span class="error-message" style="color:red;">{{ $message }}</span>
+                        @enderror
+                    </div>
+
                 </div>
 
                 <div style="display: flex; justify-content: space-between; width: 100%; gap: 20px;">

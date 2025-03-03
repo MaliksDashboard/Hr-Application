@@ -1,5 +1,7 @@
 @extends('layouts.master')
 @section('title', 'Calendar')
+@section('custom_title', 'Calendar')
+
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar/main.min.css" rel="stylesheet">
@@ -8,7 +10,6 @@
 
 @section('main')
     <div class="main">
-        <h2 style="color:var(--primary-color);" class="my-4">Calendar</h2>
         <div id="calendar"></div>
     </div>
 @endsection

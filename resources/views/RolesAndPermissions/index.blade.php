@@ -1,11 +1,11 @@
 @extends('layouts.master')
 @section('title', 'Roles And Permissions')
+@section('custom_title', 'Roles and Permissions')
 
 @section('main')
 
     <div class="main">
         <div class="user-controller">
-            <h1 class="user-title">Roles and Permissions</h1>
             <a href="{{ url('roles/create') }}">Add New Role</a>
         </div>
 

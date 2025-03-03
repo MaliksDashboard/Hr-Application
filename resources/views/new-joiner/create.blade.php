@@ -1,9 +1,9 @@
 @extends('layouts.master')
 @section('title', 'Add New Joiner')
+@section('custom_title', 'Add New Joiner')
 
 @section('main')
     <div class="main add-emp add-joiner">
-        <h1>Add New Joiner</h1>
 
         <div class="container">
             <form action="{{ route('new-joiners.store') }}" method="POST" enctype="multipart/form-data" class="container">

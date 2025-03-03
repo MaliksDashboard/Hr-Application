@@ -1,5 +1,6 @@
 @extends('layouts.master')
 @section('title', 'Dashboard')
+@section('custom_title', 'Dashboard')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <!-- jsVectorMap -->
@@ -12,7 +13,6 @@
     <div class="main dashboard">
 
         <div class="dashboard-header">
-            <h1>Dashboard</h1>
             <a class="instructor" href=""><svg viewBox="-60 0 512 512" xmlns="http://www.w3.org/2000/svg">
                     <path d="m64 96 264 160L64 416z" />
                 </svg> Getting Started</a>
@@ -45,7 +45,10 @@
                                     @foreach ($categories as $category => $count)
                                         <td
                                             class="{{ $count > 0 ? 'category-' . strtolower(str_replace(' ', '-', $category)) : 'empty' }}">
-                                            {{ $count }}
+                                            {{ $count > 0 ? $count : '-' }}
+                                            @if ($count > 0)
+                                                <span class="word-emp">Employee{{ $count != 1 ? 's' : '' }}</span>
+                                            @endif
                                         </td>
                                     @endforeach
                                 </tr>
@@ -128,10 +131,31 @@
 
             <div class="fifth-card">
                 <div class="second-card-header">
-                    <h2>🎖️ Birthday Celebrations</h2>
-                    <small>(Celebrate your colleagues! 🎊)</small>
+                    <h3>🎂 Birthday Celebrations</h3>
+                    <small style="color:var(--text-light-color);">(Celebrate your colleagues! 🎊)</small>
                 </div>
+
+                @if ($birthdays->isEmpty())
+                    <p class="no-birthdays">No upcoming birthdays.</p>
+                @else
+                    <div class="birthday-list">
+                        @foreach ($birthdays as $emp)
+                            <div class="birthday-card {{ $emp['is_today'] ? 'highlight' : '' }}">
+                                <div class="avatar">
+                                    <img src="{{ asset('storage/' . $emp['image_path']) }}" alt="{{ $emp['name'] }}">
+                                </div>
+                                <div class="info">
+                                    <h3>{{ $emp['name'] }} 🎉</h3>
+                                    <p class="branch-name">📍 {{ $emp['branch'] }}</p>
+                                    <p class="birthday-date">🎂 {{ $emp['birthday'] }} (Turning {{ $emp['age'] }})</p>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
             </div>
+
+
 
         </div>
 

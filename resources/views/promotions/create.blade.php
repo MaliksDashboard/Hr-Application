@@ -1,9 +1,10 @@
 @extends('layouts.master')
 @section('title', 'Create Promotion')
+@section('custom_title', 'Add Promotion')
+
 
 @section('main')
     <div class="main add-emp add-promotion">
-        <h1>Apply Promotion</h1>
 
         <div class="container">
             <form id="promotion-form" action="{{ route('promotions.store') }}" method="POST" enctype="multipart/form-data"

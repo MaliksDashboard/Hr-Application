@@ -1,5 +1,7 @@
 @extends('layouts.master')
 @section('title', 'Badge Maker')
+@section('custom_title', 'Badge Maker')
+
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -7,7 +9,6 @@
 @section('main')
 
     <div id="emp-badge" class="main add-emp">
-        <h1>Badge Maker</h1>
 
 
         <div class="badge-controller add-emp">

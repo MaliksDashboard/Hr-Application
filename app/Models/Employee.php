@@ -24,6 +24,9 @@ class Employee extends Model
         'image_path',
         'job',
         'left_date',
+        'car',
+        'address',
+        'birthday',
     ];
 
     public function branch()

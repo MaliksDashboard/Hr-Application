@@ -53,37 +53,55 @@
     @yield('main')
 
     <script src="/js/script.js"></script>
+
+
 </body>
 
 </html>
 
 
+{{-- Tawk.io --}}
+<script type="text/javascript">
+    var Tawk_API = Tawk_API || {},
+        Tawk_LoadStart = new Date();
+    (function() {
+        var s1 = document.createElement("script"),
+            s0 = document.getElementsByTagName("script")[0];
+        s1.async = true;
+        s1.src = 'https://embed.tawk.to/67bf228be366d1190c78a7bd/1il19ts5u';
+        s1.charset = 'UTF-8';
+        s1.setAttribute('crossorigin', '*');
+        s0.parentNode.insertBefore(s1, s0);
+    })();
+</script>
+
+{{-- Live Agent --}}
 <script>
-    function checkUserRole() {
-        fetch('/api/get-user-role', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include', // Include cookies if using session-based auth
-            })
-            .then(response => response.json())
-            .then(data => {
-                const userRole = data.role_name; // Expecting { role_name: 'Admin' }
-                if (userRole === 'Admin') {
-                    // Allow access or load admin content
-                    console.log('User is Admin');
-                } else {
-                    // Redirect to dashboard
-                    window.location.href = '/dashboard';
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching user role:', error);
-                // Handle error, e.g., redirect to login
-                window.location.href = '/login';
-            });
-    }
+    // function checkUserRole() {
+    //     fetch('/api/get-user-role', {
+    //             method: 'GET',
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //             },
+    //             credentials: 'include', // Include cookies if using session-based auth
+    //         })
+    //         .then(response => response.json())
+    //         .then(data => {
+    //             const userRole = data.role_name; // Expecting { role_name: 'Admin' }
+    //             if (userRole === 'Admin') {
+    //                 // Allow access or load admin content
+    //                 console.log('User is Admin');
+    //             } else {
+    //                 // Redirect to dashboard
+    //                 window.location.href = '/dashboard';
+    //             }
+    //         })
+    //         .catch(error => {
+    //             console.error('Error fetching user role:', error);
+    //             // Handle error, e.g., redirect to login
+    //             window.location.href = '/login';
+    //         });
+    // }
 </script>
 
 

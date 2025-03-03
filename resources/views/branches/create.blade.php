@@ -1,9 +1,9 @@
 @extends('layouts.master')
 @section('title', 'Add Branch')
+@section('custom_title', 'Add Branch')
 
 @section('main')
     <div class="main add-emp">
-        <h1>Add Branch</h1>
 
         <div class="container">
             <form action="{{ route('branches.store') }}" method="POST" enctype="multipart/form-data" class="container">

@@ -1,5 +1,7 @@
 @extends('layouts.master')
 @section('title', 'Training Steps')
+@section('custom_title', 'Manage Steps')
+
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
 @can('Edit')
@@ -26,7 +28,6 @@
     <div class="main">
         <div class="container titles">
             <div class="steps-header">
-                <h1>Manage Steps</h1>
                 <a class="btn-primary" href="{{ url('/new-joiners') }}">Back</a>
             </div>
             <form id="add-step-form">
