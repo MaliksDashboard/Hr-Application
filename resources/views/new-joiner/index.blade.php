@@ -133,8 +133,13 @@
                         }
 
                         data.forEach(joiner => {
+
+                            const formattedDate = new Date(joiner.start_date).toLocaleDateString(
+                                'en-GB');
+
                             let currentStepText = joiner.current_step ?
-                                `<span class="current-step">Step: ${joiner.current_step}</span>` : "";
+                                `<span class="current-step">Step: ${joiner.current_step} - ${formattedDate}</span>` :
+                                "";
 
                             let interviewTimeText = joiner.interview_time ?
                                 `<span class="interview-time">${joiner.interview_time}</span>` :
