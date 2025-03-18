@@ -34,39 +34,47 @@ class UserController extends Controller
             'image' => 'nullable|image|max:2048',
             'role_name' => 'required|string', // Ensure the role is validated
         ]);
-    
+
         // Create user
         $user = new User();
         $user->name = $validated['name'];
         $user->email = $validated['email'];
         $user->password = bcrypt($validated['password']);
         $user->status = $validated['status'];
-    
+
         // Handle image upload
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('user-images', 'public');
             $user->image = $path;
         }
-    
+
         $user->save();
-    
-        // Assign role using Spatie's assignRole method
-        $user->assignRole($validated['role_name']); // Assign the role using the Spatie method
-    
+
+        $role = Role::where('name', $validated['role_name'])->first();
+
+        if ($role) {
+            // Insert manually into `model_has_roles`
+            DB::table('model_has_roles')->insert([
+                'role_id' => $role->id,
+                'model_id' => $user->id,
+                'model_type' => User::class, // Manually set model_type
+            ]);
+        }
+
         return redirect()->route('users.index')->with('success', 'User created successfully!');
     }
-    
+
     public function edit(User $user)
     {
         // Fetch all roles
         $roles = DB::table('roles')->get();
-    
+
         // Fetch the assigned role for the user
         $userRole = $user->roles->pluck('name')->first(); // Get first assigned role
-    
+
         return view('users.edit', compact('user', 'roles', 'userRole'));
     }
-    
+
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
@@ -76,37 +84,48 @@ class UserController extends Controller
             'status' => 'required|string',
             'role_name' => 'required|string', // Ensure role_name is validated
         ]);
-    
+
         $user = User::findOrFail($id);
         $user->name = $validated['name'];
         $user->email = $validated['email'];
         $user->status = $validated['status'];
-    
+
         // Update password only if provided
         if (!empty($validated['password'])) {
             $user->password = bcrypt($validated['password']);
         }
-    
+
         // Handle image upload if any
         if ($request->hasFile('image')) {
             // Delete the old image if it exists
             if ($user->image && Storage::exists('public/' . $user->image)) {
                 Storage::delete('public/' . $user->image);
             }
-    
+
             // Save the new image
             $path = $request->file('image')->store('user-images', 'public');
             $user->image = $path;
         }
-    
+
         $user->save();
-    
-        // Sync role (in case the role changes, it replaces the old one)
-        $user->syncRoles($validated['role_name']); // Sync the roles (replaces the current role)
-    
+
+        $role = Role::where('name', $validated['role_name'])->first();
+
+        if ($role) {
+            // First, delete the existing roles for this user
+            DB::table('model_has_roles')->where('model_id', $user->id)->delete();
+
+            // Insert the new role manually
+            DB::table('model_has_roles')->insert([
+                'role_id' => $role->id,
+                'model_id' => $user->id,
+                'model_type' => User::class, // Manually set model_type
+            ]);
+        }
+
         return redirect()->route('users.index')->with('success', 'User updated successfully!');
     }
-    
+
     public function destroy(User $user)
     {
         if ($user->image) {
@@ -120,13 +139,13 @@ class UserController extends Controller
     public function getUsersByRole(Request $request)
     {
         $role = $request->query('role', 'all'); // Default to 'all'
-    
+
         $users = User::with('roles') // Load roles
             ->when($role !== 'all', function ($query) use ($role) {
                 $query->role($role); // Filter users by role
             })
             ->get(['id', 'name', 'email', 'created_at', 'status', 'image']); // Fetch required columns
-    
+
         // Format response to include role names
         $formattedUsers = $users->map(function ($user) {
             return [
@@ -139,10 +158,9 @@ class UserController extends Controller
                 'role_name' => $user->roles->pluck('name')->implode(', '), // Get role names
             ];
         });
-    
+
         return response()->json($formattedUsers);
     }
-    
 
     public function profile()
     {
@@ -163,8 +181,10 @@ class UserController extends Controller
                 return response()->json(['error' => 'User not authenticated.'], 401);
             }
 
-            $user->temp_pass = Hash::make($request->temp_pass); // Save or update hashed password
-            $user->save();
+            DB::table('users')->where('id', Auth::id())->update([
+                'temp_pass' => Hash::make($request->temp_pass)
+            ]);
+
 
             return response()->json(['message' => 'Password successfully saved.']);
         } catch (\Exception $e) {

@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\NewJoinerProgress;
-use App\Models\NewJoiner;
-use Illuminate\Support\Facades\DB;
-use App\Models\TrainingSteps;
-use App\Models\Notification;
 use App\Models\User;
+use App\Models\NewJoiner;
+use App\Models\Notification;
+use Illuminate\Http\Request;
+use App\Models\TrainingSteps;
+use App\Events\NewNotification;
+use App\Models\NewJoinerProgress;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 
@@ -84,6 +85,24 @@ class NewJoinerProgressController extends Controller
             // ✅ Fetch the NewJoiner instance to use in the notification
             $newJoiner = NewJoiner::findOrFail($request->new_joiner_id);
 
+            // ✅ Get the next step
+            $nextStep = TrainingSteps::where('step_order', '>', $selectedStep->step_order)->orderBy('step_order', 'asc')->first();
+
+            if ($nextStep) {
+                // ✅ Create a new record for the next step
+                NewJoinerProgress::create([
+                    'new_joiner_id' => $request->new_joiner_id,
+                    'step_id' => $nextStep->id,
+                    'status' => 'pending',
+                ]);
+
+                Log::info("Next step '{$nextStep->name}' assigned to new joiner.");
+            } else {
+                // ✅ No more steps, mark the new joiner as completed
+                $newJoiner->update(['status' => 'completed']);
+                Log::info("New joiner '{$newJoiner->name}' has completed all steps.");
+            }
+
             $adminUsers = User::role('Admin')->get();
             foreach ($adminUsers as $admin) {
                 // Skip sending notification to the logged-in admin
@@ -92,7 +111,7 @@ class NewJoinerProgressController extends Controller
                 }
 
                 Log::info("Creating admin notification for {$admin->name}");
-                Notification::create([
+                $notification = Notification::create([
                     'user_id' => $admin->id,
                     'type' => 'admin_alert',
                     'message' => Auth::user()->name . " has marked step '{$selectedStep->name}' as completed for {$newJoiner->name}.",
@@ -101,6 +120,8 @@ class NewJoinerProgressController extends Controller
                     'user_image' => Auth::user()->image,
                 ]);
             }
+
+            broadcast(new NewNotification($notification))->toOthers();
 
             return response()->json(['success' => 'Step marked as completed!']);
         } catch (\Exception $e) {
@@ -128,4 +149,6 @@ class NewJoinerProgressController extends Controller
 
         return response()->json(['success' => 'Progress initialized for the new joiner!']);
     }
+
+ 
 }

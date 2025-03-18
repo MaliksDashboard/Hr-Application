@@ -28,4 +28,8 @@ class Vacancy extends Model
     {
         return $this->belongsTo(Employee::class, 'employee_id', 'id');
     }
+    public function jobRelation()
+    {
+        return $this->belongsTo(Job::class, 'job'); // ✅ Ensure 'job_id' is correct
+    }
 }

@@ -89,7 +89,7 @@
 
             </div>
 
-            <p class="job">{{ $employee->job }}</p>
+            <p class="job">{{ $employee->jobRelation->name ?? 'No Job Assigned' }}</p>
 
             <div class="card-more">
                 <div class="card-more-action">

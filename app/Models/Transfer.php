@@ -25,7 +25,7 @@ class Transfer extends Model
 
     public function employee()
     {
-        return $this->belongsTo(Employee::class);
+        return $this->belongsTo(Employee::class,'employee_id');
     }
 
     public function oldBranch()
@@ -47,4 +47,10 @@ class Transfer extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
+    public function jobRelation()
+    {
+        return $this->belongsTo(Job::class, 'job'); // ✅ Ensure 'job_id' is correct
+    }
+    
 }

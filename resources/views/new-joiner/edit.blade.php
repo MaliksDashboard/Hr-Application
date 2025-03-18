@@ -29,9 +29,11 @@
                     <div class="input-group">
                         <label for="job">Job Position <b style="color:red;">*</b></label>
                         <select name="job" id="job" required>
+                            <option value="">Select Job</option>
                             @foreach ($jobs as $job)
-                                <option value="{{ $job }}" {{ $newJoiner->job == $job ? 'selected' : '' }}>
-                                    {{ $job }}
+                                <option value="{{ $job->name }}"
+                                    {{ old('job', $newJoiner->job) == $job->name ? 'selected' : '' }}>
+                                    {{ $job->name }}
                                 </option>
                             @endforeach
                         </select>
@@ -67,6 +69,18 @@
                     </div>
                 </div>
 
+                <div style="display: flex; justify-content: space-between; width: 100%; gap: 20px;">
+                    <div class="input-group">
+                        <label for="target_branch">Target Branch<b style="color:red;">*</b></label>
+                        <input type="text" name="target_branch" id="target_branch"
+                            value="{{ old('target_branch', $newJoiner->target_branch) }}">
+                        @error('target_branch')
+                            <span class="error-message" style="color:red;">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                </div>
+
                 <div class="btns">
                     <button type="submit" class="add">Update Joiner</button>
                     <a href="{{ route('new-joiners.index') }}" class="back">Cancel</a>
@@ -75,4 +89,22 @@
             </form>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const jobInput = new Choices('#job', {
+                removeItemButton: false,
+                addItems: true,
+                duplicateItemsAllowed: false,
+                searchEnabled: true,
+                placeholderValue: 'Select a job...',
+                noResultsText: 'No results found',
+                noChoicesText: 'No choices available',
+                addItemFilter: function(value) {
+                    return value.trim() !== '';
+                },
+            });
+        })
+    </script>
 @endsection

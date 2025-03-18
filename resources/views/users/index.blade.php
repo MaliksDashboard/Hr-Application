@@ -10,7 +10,7 @@
 
 
         <div class="user-controller">
-            <a href="{{ url('users\create') }}">Add New</a>
+            <a class="add-btn" href="{{ url('users\create') }}">Add New</a>
             <button>Export member (Excel)</button>
         </div>
 
@@ -53,13 +53,7 @@
                     padding: 5px 10px;
                     border-radius: 5px;
                     text-decoration: none;">Edit</a>
-                <button class="delete-btn" data-id="${user.id}" style="
-                    background-color: var(--second-color);
-                    color: white;
-                    padding: 5px 10px;
-                    border-radius: 5px;
-                    border: none;
-                    cursor: pointer;">Delete</button>
+                <button class="delete-btn" data-id="${user.id}" style="background-color: var(--second-color); color: white; padding: 5px 10px; border-radius: 5px; border: none; cursor: pointer;">Delete</button>
             </div>`
                         ),
                     ];
@@ -82,20 +76,17 @@
         }
 
         // Function to attach delete listeners
-        function attachDeleteListeners() {
+        async function attachDeleteListeners() {
             document.querySelectorAll('.delete-btn').forEach(button => {
-                button.addEventListener('click', async () => {
+                button.addEventListener('click', () => {
                     const userId = button.dataset.id;
-
                     Swal.fire({
                         title: 'Are you sure?',
-                        text: "This action cannot be undone!",
+                        text: 'This action cannot be undone!',
                         icon: 'warning',
                         showCancelButton: true,
-                        confirmButtonColor: '#3085d6',
-                        cancelButtonColor: '#d33',
-                        confirmButtonText: 'Yes, delete it!',
-                    }).then(async result => {
+                        confirmButtonText: 'Yes, delete!'
+                    }).then(async (result) => {
                         if (result.isConfirmed) {
                             try {
                                 const response = await fetch(
@@ -105,24 +96,20 @@
                                             'X-CSRF-TOKEN': document
                                                 .querySelector(
                                                     'meta[name="csrf-token"]'
-                                                ).content,
-                                        },
+                                                ).content
+                                        }
                                     });
-
                                 if (response.ok) {
                                     Swal.fire('Deleted!',
-                                        'The user has been deleted.',
-                                        'success');
-                                    fetchAndRender(); // Refresh the table
+                                        'User has been deleted.', 'success');
+                                    fetchAndRender(); // Refresh table
                                 } else {
                                     Swal.fire('Error!',
-                                        'Failed to delete the user.',
-                                        'error');
+                                        'Failed to delete user.', 'error');
                                 }
                             } catch (error) {
                                 Swal.fire('Error!',
-                                    'An unexpected error occurred.', 'error'
-                                );
+                                    'Unexpected error occurred.', 'error');
                             }
                         }
                     });

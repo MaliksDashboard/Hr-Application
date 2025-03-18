@@ -9,7 +9,7 @@
 
         <div class="dashboard-header">
             @can('Create')
-                <a class="add-vac" href="{{ route('vacancies.create') }} ">
+                <a class="add-btn" href="{{ route('vacancies.create') }} ">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" xml:space="preserve">
                         <path
                             d="M256 0C114.6 0 0 114.6 0 256s114.6 256 256 256 256-114.6 256-256S397.4 0 256 0m149.3 277.3c0 11.8-9.5 21.3-21.3 21.3h-85.3V384c0 11.8-9.5 21.3-21.3 21.3h-42.7c-11.8 0-21.3-9.6-21.3-21.3v-85.3H128c-11.8 0-21.3-9.6-21.3-21.3v-42.7c0-11.8 9.5-21.3 21.3-21.3h85.3V128c0-11.8 9.5-21.3 21.3-21.3h42.7c11.8 0 21.3 9.6 21.3 21.3v85.3H384c11.8 0 21.3 9.6 21.3 21.3z" />
@@ -54,50 +54,59 @@
                             $statusClass = strtolower($vacancy->status); // Convert status to lowercase for class
                         @endphp
 
+
                         <div class="row-left-container-record" style="border-left-color: {{ $borderColor }};">
-                            <div class="record-date">
+                            <div class="vac-info">
 
-                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd"
-                                        d="M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2m0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16m0 2a1 1 0 0 1 .993.883L13 7v4.586l1.707 1.707a1 1 0 0 1-1.32 1.497l-.094-.083-2-2a1 1 0 0 1-.284-.576L11 12V7a1 1 0 0 1 1-1" />
-                                </svg>
-                                <p>Added: {{ \Carbon\Carbon::parse($vacancy->asked_date)->format('d-m-Y') }}</p>
-                            </div>
+                                <div class="record-date">
 
-                            <div class="record-needed">
-                                {{ $vacancy->job }} - {{ $vacancy->branch->branch_name ?? 'N/A' }}
-                                <span class="status {{ $statusClass }}">{{ ucfirst($vacancy->status) }}</span>
-                            </div>
+                                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd"
+                                            d="M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2m0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16m0 2a1 1 0 0 1 .993.883L13 7v4.586l1.707 1.707a1 1 0 0 1-1.32 1.497l-.094-.083-2-2a1 1 0 0 1-.284-.576L11 12V7a1 1 0 0 1 1-1" />
+                                    </svg>
+                                    <p>Added: {{ \Carbon\Carbon::parse($vacancy->asked_date)->format('d-m-Y') }}</p>
+                                </div>
 
-                            <div class="record-action">
+                                <div class="record-needed">
+                                    {{ $vacancy->jobRelation->name ?? 'No Job Assigned' }} -
+                                    {{ $vacancy->branch->branch_name ?? 'N/A' }}
+                                    <span class="status {{ $statusClass }}">{{ ucfirst($vacancy->status) }}</span>
+                                </div>
 
-                                @can('Edit')
-                                    <button>
-                                        <a href="{{ route('vacancies.edit', $vacancy->id) }}">
-                                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <path
-                                                    d="M20.989 4.285 19.64 2.93c-1.236-1.241-3.146-1.241-4.382 0L13.011 5.3l5.73 5.754 2.36-2.37A3.1 3.1 0 0 0 22 6.542c0-.79-.45-1.693-1.011-2.257m-4.719 6.657L11.775 6.43 2.9 15.343c-.563.564-.9 1.354-.9 2.256v3.498c0 .452.337.903.899.903h3.595c.787 0 1.573-.338 2.248-.903l8.876-8.914z" />
-                                            </svg>
-                                        </a>
-                                    </button>
-                                @endcan
+                                <div class="record-action">
 
-
-                                @can('Delete')
-                                    <form action="{{ route('vacancies.destroy', $vacancy->id) }}" method="POST"
-                                        class="delete-form">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="button" class="delete-button">
-                                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <path
-                                                    d="M7 4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2h4a1 1 0 1 1 0 2h-1.069l-.867 12.142A2 2 0 0 1 17.069 22H6.93a2 2 0 0 1-1.995-1.858L4.07 8H3a1 1 0 0 1 0-2h4zm2 2h6V4H9zM6.074 8l.857 12H17.07l.857-12zM10 10a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1m4 0a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1" />
-                                            </svg>
+                                    @can('Edit')
+                                        <button>
+                                            <a href="{{ route('vacancies.edit', $vacancy->id) }}">
+                                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path
+                                                        d="M20.989 4.285 19.64 2.93c-1.236-1.241-3.146-1.241-4.382 0L13.011 5.3l5.73 5.754 2.36-2.37A3.1 3.1 0 0 0 22 6.542c0-.79-.45-1.693-1.011-2.257m-4.719 6.657L11.775 6.43 2.9 15.343c-.563.564-.9 1.354-.9 2.256v3.498c0 .452.337.903.899.903h3.595c.787 0 1.573-.338 2.248-.903l8.876-8.914z" />
+                                                </svg>
+                                            </a>
                                         </button>
-                                    </form>
-                                @endcan
+                                    @endcan
 
+
+                                    @can('Delete')
+                                        <form action="{{ route('vacancies.destroy', $vacancy->id) }}" method="POST"
+                                            class="delete-form">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="button" class="delete-button">
+                                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path
+                                                        d="M7 4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2h4a1 1 0 1 1 0 2h-1.069l-.867 12.142A2 2 0 0 1 17.069 22H6.93a2 2 0 0 1-1.995-1.858L4.07 8H3a1 1 0 0 1 0-2h4zm2 2h6V4H9zM6.074 8l.857 12H17.07l.857-12zM10 10a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1m4 0a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1" />
+                                                </svg>
+                                            </button>
+                                        </form>
+                                    @endcan
+
+                                </div>
                             </div>
+                            @if ($vacancy->remarks)
+                                <span class="remarks">Remarks: {{ $vacancy->remarks }}</span>
+                            @endif
+
                         </div>
                     @endforeach
 

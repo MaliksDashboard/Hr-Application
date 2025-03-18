@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     'default' => env('BROADCAST_DRIVER', 'pusher'),
 
     'connections' => [
@@ -11,15 +10,12 @@ return [
             'secret' => env('PUSHER_APP_SECRET'),
             'app_id' => env('PUSHER_APP_ID'),
             'options' => [
+                'host' => env('PUSHER_HOST', 'api.pusher.com'),
+                'port' => env('PUSHER_PORT', 443),
+                'scheme' => env('PUSHER_SCHEME', 'https'),
                 'cluster' => env('PUSHER_APP_CLUSTER'),
-                'useTLS' => true,
-                'curl_options' => [
-                    CURLOPT_SSL_VERIFYPEER => false,
-                    CURLOPT_SSL_VERIFYHOST => false,
-                ],
+                'encrypted' => true,
             ],
-
         ],
-
     ],
 ];

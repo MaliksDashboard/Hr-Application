@@ -26,11 +26,11 @@
 
         <form class="form-login" method="POST" action="{{ route('users.unlock') }}">
             @csrf
-          
+
             <div class="input-group">
                 <label for="temp_pass">Password:</label>
                 <input type="password" id="temp_pass" name="temp_pass" placeholder="Enter your Lock Password" required>
-                    </div>
+            </div>
             <button type="submit">Unlock</button>
         </form>
 
@@ -40,24 +40,24 @@
                 target="_blank">Call Shadi !</a>
         </div>
         @if ($errors->any())
-        <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Oops...',
-                    html: `
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        html: `
                         <ul style="text-align: left;">
                             @foreach ($errors->all() as $error)
                                 <li>{{ $error }}</li>
                             @endforeach
                         </ul>
                     `,
-                    confirmButtonText: 'OK'
+                        confirmButtonText: 'OK'
+                    });
                 });
-            });
-        </script>
-    @endif
-    
+            </script>
+        @endif
+
     </div>
 
     <div class="right">

@@ -29,8 +29,8 @@
             <form class="form-login" method="POST" action="{{ route('login') }}">
                 @csrf
                 <div class="input-group">
-                    <label for="email">Email:</label>
-                    <input type="email" id="email" name="email" required>
+                    <label for="identifier">Email or Pin Code:</label>
+                    <input type="text" id="identifier" name="identifier" required>
                 </div>
                 <div class="input-group">
                     <label for="password">Password:</label>
@@ -38,6 +38,7 @@
                 </div>
                 <button type="submit">Login</button>
             </form>
+
 
             <div class="login-help">
                 <p>Don't have an account?</p>
@@ -65,7 +66,7 @@
         </div>
 
         <div class="right">
-            <p>With Maliks, <br> The Sky is <br> the Limit</p>
+            <p>With Maliks, <br> Sky is <br> the Limit</p>
         </div>
     </div>
 </body>

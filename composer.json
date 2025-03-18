@@ -17,10 +17,12 @@
         "milon/barcode": "^11.0",
         "munafio/chatify": "^1.6",
         "phpoffice/phpspreadsheet": "^1.29",
+        "predis/predis": "^2.3",
         "pusher/pusher-php-server": "^7.2",
         "spatie/laravel-permission": "^6.15"
     },
     "require-dev": {
+        "barryvdh/laravel-debugbar": "^3.14",
         "fakerphp/faker": "^1.23",
         "laravel/pail": "^1.1",
         "laravel/pint": "^1.13",

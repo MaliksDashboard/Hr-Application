@@ -34,6 +34,27 @@
                         </a>
                     @endcan
 
+                    @can('Employees')
+                        <a href="{{ route('employees.index') }}"
+                            class="tool {{ request()->is('employees*') ? 'active' : '' }}">
+                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M6.75 6.5a5.25 5.25 0 1 1 10.5 0 5.25 5.25 0 0 1-10.5 0m-2.5 12.071a5.32 5.32 0 0 1 5.321-5.321h4.858a5.32 5.32 0 0 1 5.321 5.321 4.18 4.18 0 0 1-4.179 4.179H8.43a4.18 4.18 0 0 1-4.179-4.179"
+                                    fill-rule="evenodd" clip-rule="evenodd" />
+                            </svg>
+                            <p>Employees</p>
+                        </a>
+                    @endcan
+
+                    <a href="{{ route('news.index') }}" target="blank"
+                        class="tool {{ request()->is('news*') ? 'active' : '' }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52" xml:space="preserve">
+                            <path
+                                d="M50.5 6h-41C8.7 6 8 6.7 8 7.5V38c0 1.2-1.1 2.2-2.3 2-1-.2-1.7-1.1-1.7-2.1V16c0-.6-.4-1-1-1H1.5c-.8 0-1.5.7-1.5 1.5V42c0 2.2 1.8 4 4 4h44c2.2 0 4-1.8 4-4V7.5c0-.8-.7-1.5-1.5-1.5M28 35c0 .6-.4 1-1 1H15c-.6 0-1-.4-1-1v-2c0-.6.4-1 1-1h12c.6 0 1 .4 1 1zm0-8c0 .6-.4 1-1 1H15c-.6 0-1-.4-1-1v-2c0-.6.4-1 1-1h12c.6 0 1 .4 1 1zm18 8c0 .6-.4 1-1 1H33c-.6 0-1-.4-1-1v-2c0-.6.4-1 1-1h12c.6 0 1 .4 1 1zm0-8c0 .6-.4 1-1 1H33c-.6 0-1-.4-1-1v-2c0-.6.4-1 1-1h12c.6 0 1 .4 1 1zm0-8c0 .6-.4 1-1 1H15c-.6 0-1-.4-1-1v-6c0-.6.4-1 1-1h30c.6 0 1 .4 1 1z" />
+                        </svg>
+                        <p>Al Nashra</p>
+                    </a>
+
                     @can('Users')
                         <a href="{{ url('/users') }}" class="tool {{ request()->is('users') ? 'active' : '' }}">
                             <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -64,7 +85,7 @@
                         </svg>
                         <p>Live Chat</p>
                     </a> --}}
-                    @can('Calendar & Tools')
+                    {{-- @can('Calendar & Tools')
                         <a href="{{ url('/calendar') }}" class="tool {{ request()->is('calendar') ? 'active' : '' }}">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 448">
                                 <g
@@ -77,9 +98,8 @@
                             </svg>
                             <p>Calendar & Tools</p>
                         </a>
-                    @endcan
+                    @endcan --}}
                 </div>
-
 
                 <div id="seperator">
                     <p class="seperator">Actions</p>
@@ -136,6 +156,47 @@
                 </div>
 
                 <div id="seperator">
+                    <p class="seperator">Target</p>
+                </div>
+
+                <div class="org-tools actions-tools">
+
+                    @can('View Evaluation')
+                        <a href="{{ url('/view-evaluation') }}"
+                            class="tool {{ request()->is('view-evaluation') ? 'active' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4" />
+                                <path fill-rule="evenodd" clip-rule="evenodd"
+                                    d="M22 12c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2s10 4.477 10 10m-10 6a6 6 0 1 0 0-12 6 6 0 0 0 0 12" />
+                            </svg>
+                            <p>View Evaluation</p>
+                        </a>
+                    @endcan
+
+                    @can('Apply Evaluation')
+                        <a href="{{ url('/evaluation') }}" class="tool {{ request()->is('evaluation') ? 'active' : '' }}">
+                            <svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M199.917 194.852a8 8 0 0 1-6.125 13.146H22.208a8 8 0 0 1-6.125-13.146 119.9 119.9 0 0 1 55.774-37.294 68 68 0 1 1 72.286 0 119.9 119.9 0 0 1 55.774 37.294M251.177 154a7.996 7.996 0 0 1-10.928 2.928l-4.669-2.695a24 24 0 0 1-7.58 4.39V164a8 8 0 0 1-16 0v-5.376a24 24 0 0 1-7.58-4.391l-4.669 2.695a8 8 0 0 1-8-13.856l4.657-2.689a23.7 23.7 0 0 1 0-8.766l-4.657-2.689a8 8 0 1 1 8-13.856l4.669 2.695a24 24 0 0 1 7.58-4.39V108a8 8 0 0 1 16 0v5.376a24 24 0 0 1 7.58 4.391l4.669-2.695a8 8 0 1 1 8 13.856l-4.657 2.689a23.7 23.7 0 0 1 0 8.766l4.657 2.689A8 8 0 0 1 251.177 154M220 144a8 8 0 1 0-8-8 8.01 8.01 0 0 0 8 8" />
+                            </svg>
+                            <p>Apply Evalaution</p>
+                        </a>
+                    @endcan
+
+                    @can('Target Controller')
+                        <a href="{{ url('/evaluation-forms') }}"
+                            class="tool {{ request()->is('evaluation-forms') ? 'active' : '' }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 226.834 226.834" xml:space="preserve">
+                                <path
+                                    d="M80.197 44.939v-9.746A3.197 3.197 0 0 1 83.39 32h60.053a3.197 3.197 0 0 1 3.193 3.193v9.746a3.197 3.197 0 0 1-3.193 3.193H83.391a3.196 3.196 0 0 1-3.194-3.193M131.841 17c-.768-9.5-8.729-17-18.424-17S95.761 7.5 94.993 17zm60.468 38.334v151.333c0 11.12-9.047 20.167-20.167 20.167H54.692c-11.12 0-20.167-9.047-20.167-20.167V55.334c0-11.12 9.047-20.167 20.167-20.167h10.506l-.001.026v9.746c0 10.032 8.162 18.193 18.193 18.193h60.053c10.032 0 18.193-8.161 18.193-18.193v-9.746l-.001-.026h10.506c11.121 0 20.168 9.047 20.168 20.167M88.183 143.449a7.5 7.5 0 0 0-10.32 2.449l-7.092 11.504-3.661-2.884a7.5 7.5 0 0 0-9.28 11.785l10.271 8.089a7.5 7.5 0 0 0 11.025-1.957l11.506-18.666a7.5 7.5 0 0 0-2.449-10.32m0-54a7.5 7.5 0 0 0-10.32 2.449l-7.092 11.504-3.661-2.884a7.5 7.5 0 0 0-9.28 11.785l10.271 8.089a7.5 7.5 0 0 0 11.025-1.957L90.632 99.77a7.5 7.5 0 0 0-2.449-10.321m77.675 79.051c0-4.143-3.357-7.5-7.5-7.5h-49c-4.142 0-7.5 3.357-7.5 7.5s3.358 7.5 7.5 7.5h49c4.143 0 7.5-3.357 7.5-7.5m0-54c0-4.143-3.357-7.5-7.5-7.5h-49c-4.142 0-7.5 3.357-7.5 7.5s3.358 7.5 7.5 7.5h49c4.143 0 7.5-3.357 7.5-7.5" />
+                            </svg>
+                            <p>Evaluation Forms</p>
+                        </a>
+                    @endcan
+
+                </div>
+
+                <div id="seperator">
                     <p class="seperator">Apps</p>
                 </div>
 
@@ -170,18 +231,6 @@
 
                 <div class="org-tools">
 
-                    @can('Employees')
-                        <a href="{{ route('employees.index') }}"
-                            class="tool {{ request()->is('employees*') ? 'active' : '' }}">
-                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path
-                                    d="M6.75 6.5a5.25 5.25 0 1 1 10.5 0 5.25 5.25 0 0 1-10.5 0m-2.5 12.071a5.32 5.32 0 0 1 5.321-5.321h4.858a5.32 5.32 0 0 1 5.321 5.321 4.18 4.18 0 0 1-4.179 4.179H8.43a4.18 4.18 0 0 1-4.179-4.179"
-                                    fill-rule="evenodd" clip-rule="evenodd" />
-                            </svg>
-                            <p>Employees</p>
-                        </a>
-                    @endcan
-
 
                     @can('Branches')
                         <a href="{{ route('branches.index') }}"
@@ -194,6 +243,30 @@
                         </a>
                     @endcan
 
+                    @can('Branches')
+                        <a href="{{ url('/departments') }}"
+                            class="tool {{ request()->is('departments*') ? 'active' : '' }}">
+                            <svg viewBox="0 0 74 74" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M1 1v72h28.1V1zm8.3 8.5c0-.1.1-.1.1-.1h11.1c.1 0 .1.1.1.1V42c0 .1 0 .1-.1.1h-11c-.1 0-.1-.1-.1-.1V9.5zM15 64.6c-3.4 0-6.2-2.8-6.2-6.2s2.8-6.2 6.2-6.2 6.2 2.8 6.2 6.2c.1 3.4-2.7 6.2-6.2 6.2" />
+                                <path
+                                    d="m55.9 4.3-26.8 7.5v.8L46 73l27-7.5zM45.8 41l-6.6-23.3.1-.1 10.7-3s.1 0 .1.1l6.5 23.2c0 .1 0 .1-.1.1zm11.4 20.2c-.5.2-1.1.2-1.7.2-2.8 0-5.3-1.9-6-4.6-.5-1.6-.2-3.3.6-4.7.8-1.5 2.2-2.5 3.8-2.9.5-.1 1.1-.2 1.7-.2 2.8 0 5.3 1.9 6 4.6.5 1.6.2 3.3-.6 4.7s-2.2 2.4-3.8 2.9" />
+                            </svg>
+                            <p>Departments</p>
+                        </a>
+                    @endcan
+
+                    @can('Titles')
+                        <a href="{{ url('/jobs') }}" class="tool {{ request()->is('jobs*') ? 'active' : '' }}">
+                            <svg viewBox="0 0 512 512" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M452 120h-76C376 53.726 322.274 0 256 0S136 53.726 136 120H60c-33.137 0-60 26.863-60 60v272c0 33.137 26.863 60 60 60h392c33.137 0 60-26.863 60-60V180c0-33.137-26.863-60-60-60M256 60c33.137 0 60 26.863 60 60H196c0-33.137 26.863-60 60-60m146 200v20c0 16.569-13.431 30-30 30s-30-13.431-30-30v-20H170v20c0 16.569-13.431 30-30 30s-30-13.431-30-30v-20c-16.569 0-30-13.431-30-30s13.431-30 30-30h292c16.569 0 30 13.431 30 30s-13.431 30-30 30" />
+                            </svg>
+                            <p>Jobs</p>
+                        </a>
+                    @endcan
+
+
                     @can('Titles')
                         <a href="{{ url('/titles') }}" class="tool {{ request()->is('titles') ? 'active' : '' }}">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 95.824 95.824" xml:space="preserve">
@@ -204,7 +277,7 @@
                         </a>
                     @endcan
 
-                    @can('Settings')
+                    {{-- @can('Settings')
                         <a class="tool {{ request()->is('setting') ? 'active' : '' }}">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 376.664 376.664" xml:space="preserve">
                                 <path
@@ -212,7 +285,7 @@
                             </svg>
                             <p>Settings</p>
                         </a>
-                    @endcan
+                    @endcan --}}
 
                 </div>
 
@@ -335,51 +408,6 @@
                     </div>
                 </div>
 
-                {{-- 
-                <div class="task notes">
-                    <a id="open-editor">
-                        <span>
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                <path opacity=".5"
-                                    d="M16,2.172v-1.172c0-.553-.448-1-1-1s-1,.447-1,1v1h-2v-1c0-.553-.448-1-1-1s-1,.447-1,1v1h-2v-1c0-.553-.448-1-1-1s-1,.447-1,1v1h-2v-1c0-.553-.448-1-1-1s-1,.447-1,1v1.172c-1.164.413-2,1.524-2,2.828v14c0,2.757,2.243,5,5,5h8c2.757,0,5-2.243,5-5V5c0-1.304-.836-2.415-2-2.828ZM10,17h-5c-.552,0-1-.447-1-1s.448-1,1-1h5c.552,0,1,.447,1,1s-.448,1-1,1Zm3-4H5c-.552,0-1-.447-1-1s.448-1,1-1h8c.552,0,1,.447,1,1s-.448,1-1,1Zm0-4H5c-.552,0-1-.447-1-1s.448-1,1-1h8c.552,0,1,.447,1,1s-.448,1-1,1Zm9,15l-1.121-1.121c-.563-.563-.879-1.326-.879-2.121V2c0-1.105.895-2,2-2h0c1.105,0,2,.895,2,2v18.757c0,.796-.316,1.559-.879,2.121l-1.121,1.121" />
-                            </svg>
-
-
-                        </span>
-                    </a>
-                </div>
-
-                <div class="note-popup" id="note-popup">
-                    <div class="popup">
-                        <button class="close-btn" id="close-editor">×</button>
-                        <textarea id="editor"></textarea>
-                    </div>
-                </div> --}}
-
-                {{-- <div class="task">
-                    <a id="open-task-popup">
-                        <span>
-                            <svg hover xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-                                <path opacity=".5"
-                                    d="M25.321 2H6.679a4.143 4.143 0 0 0-4.143 4.143v19.713A4.143 4.143 0 0 0 6.679 30H25.32a4.143 4.143 0 0 0 4.143-4.143V6.143A4.14 4.14 0 0 0 25.321 2M11.423 7.287h9.154a.9.9 0 0 1 0 1.8h-9.154a.9.9 0 0 1 0-1.8m5.226 16.426H7.662a.9.9 0 0 1 0-1.8h8.987a.9.9 0 0 1 0 1.8m0-7.102H7.662a.9.9 0 0 1 0-1.8h8.987a.9.9 0 0 1 0 1.8m8.253 5.903-2.481 2a.9.9 0 0 1-1.272-.146l-.976-1.244a.901.901 0 0 1 1.416-1.112l.413.526 1.771-1.428a.902.902 0 0 1 1.129 1.404m0-7.101-2.481 1.999a.9.9 0 0 1-1.272-.146l-.976-1.244a.901.901 0 0 1 1.416-1.112l.413.527 1.771-1.428a.9.9 0 0 1 1.129 1.404" />
-                            </svg>
-                        </span>
-                        <span id="task-badge" class="badge">0</span>
-
-                    </a>
-                </div>
-
-                <div class="task-popup" id="task-popup">
-                    <div class="popup">
-                        <button class="close-btn" id="close-task-popup">×</button>
-                        <h3>Task List</h3>
-                        <ul id="task-list"></ul>
-                        <div class="task-input">
-                            <input type="text" id="task-input" placeholder="Enter a new task">
-                            <button id="add-task-btn">Add Task</button>
-                        </div>
-                    </div>
-                </div> --}}
 
                 <button id="theme-toggle" class="theme-toggle">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -420,6 +448,7 @@
                         </div>
                         <div id="notification-list">
                             <p>Loading notifications...</p>
+                            <p id="no-notifications-message">No new notifications.</p>
                         </div>
                     </div>
                 </div>
@@ -476,121 +505,9 @@
 
     </div>
 
-
 </section>
 
 <script>
-    //Notes
-    document.addEventListener('DOMContentLoaded', () => {
-        const openEditor = document.getElementById('open-editor');
-        const closeEditor = document.getElementById('close-editor');
-        const notePopup = document.getElementById('note-popup');
-        const body = document.body;
-        const editor = document.getElementById('editor');
-
-        // Load saved note from local storage on page load
-        // const savedNote = localStorage.getItem('note');
-        // if (savedNote) {
-        //     editor.value = savedNote;
-        // }
-
-        // Open the editor popup
-        //openEditor.addEventListener('click', () => {
-        //notePopup.style.display = 'flex'; // Show the popup
-        //body.classList.add('popup-open'); // Prevent background scrolling
-        // });
-
-        // Close the editor popup
-        //closeEditor.addEventListener('click', () => {
-        //  notePopup.style.display = 'none'; // Hide the popup
-        //     body.classList.remove('popup-open'); // Allow background scrolling
-        //     localStorage.setItem('note', editor.value); // Save note to local storage
-        // });
-
-        // Close popup on outside click
-        // notePopup.addEventListener('click', (e) => {
-        // if (e.target === notePopup) { // Ensure it's the backdrop
-        // notePopup.style.display = 'none';
-        //  body.classList.remove('popup-open');
-        //   localStorage.setItem('note', editor.value); // Save note to local storage
-        // }
-        // });
-
-        //Task List Popup
-        const openPopup = document.getElementById('open-task-popup');
-        const closePopup = document.getElementById('close-task-popup');
-        const taskPopup = document.getElementById('task-popup');
-        const taskList = document.getElementById('task-list');
-        const taskInput = document.getElementById('task-input');
-        const addTaskBtn = document.getElementById('add-task-btn');
-        const taskBadge = document.getElementById('task-badge'); // Badge element
-
-        // Load tasks from local storage
-        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-
-        // Function to render tasks
-        const renderTasks = () => {
-            taskList.innerHTML = '';
-            tasks.forEach((task, index) => {
-                const li = document.createElement('li');
-                li.innerHTML = `
-                ${task}
-                <button data-index="${index}">Delete</button>
-            `;
-                taskList.appendChild(li);
-            });
-            updateBadge(); // Update badge count
-        };
-
-        // Function to update badge count
-        const updateBadge = () => {
-            const count = tasks.length;
-            taskBadge.textContent = count;
-            taskBadge.style.display = count > 0 ? 'inline-block' : 'none';
-        };
-
-        // Open popup
-        // openPopup.addEventListener('click', () => {
-        //    taskPopup.style.display = 'flex';
-        // });
-
-        // Close popup
-        //closePopup.addEventListener('click', () => {
-        //   taskPopup.style.display = 'none';
-        // });
-
-        // Close popup on outside click
-        //taskPopup.addEventListener('click', (e) => {
-        //   if (e.target === taskPopup) { // Ensure it's the background, not the popup content
-        //       taskPopup.style.display = 'none';
-        //    }
-        //  });
-
-        // Add task
-        // addTaskBtn.addEventListener('click', () => {
-        //   const task = taskInput.value.trim();
-        //   if (task) {
-        //        tasks.push(task);
-        //        localStorage.setItem('tasks', JSON.stringify(tasks));
-        //        renderTasks();
-        //        taskInput.value = '';
-        //    }
-        // });
-
-        // Delete task
-        // taskList.addEventListener('click', (e) => {
-        //    if (e.target.tagName === 'BUTTON') {
-        //         const index = e.target.getAttribute('data-index');
-        //        tasks.splice(index, 1);
-        //         localStorage.setItem('tasks', JSON.stringify(tasks));
-        //        renderTasks();
-        //     }
-        //  });
-
-        // Initial render
-        //renderTasks();
-    });
-
     document.addEventListener('DOMContentLoaded', () => {
         const profile = document.getElementById('profile');
         const profileSetting = document.getElementById('profile-setting');
@@ -609,12 +526,12 @@
     });
 
 
-    let lastNotificationId = parseInt(localStorage.getItem('lastNotificationId')) ||
-        0; // Ensure it's treated as a number
+    // let lastNotificationId = parseInt(localStorage.getItem('lastNotificationId')) ||
+    //     0; // Ensure it's treated as a number
 
-    const notificationBox = document.getElementById("notification-list");
-    const notificationBadge = document.getElementById("notification-badge");
-    const notificationButton = document.querySelector('.notf'); // Your bell SVG
+    // const notificationBox = document.getElementById("notification-list");
+    // const notificationBadge = document.getElementById("notification-badge");
+    // const notificationButton = document.querySelector('.notf'); // Your bell SVG
 
     // Initialize Notyf instance for the popup notification
     const notyf = new Notyf({
@@ -654,60 +571,198 @@
     });
 
     // Fetch notifications
+    // function fetchNotifications() {
+    //     console.log("Fetching notifications...");
+
+    //     fetch('/notifications')
+    //         .then(response => response.json())
+    //         .then(data => {
+    //             console.log("Notifications fetched:", data);
+
+    //             // Ensure the data is as expected
+    //             const unreadNotifications = data.filter(n => n.is_read === false); // Only unread notifications
+    //             console.log("Unread Notifications:", unreadNotifications);
+
+    //             // Handle if no unread notifications
+    //             if (unreadNotifications.length === 0) {
+    //                 notificationBox.innerHTML = "<p>No new notifications.</p>";
+    //                 notificationBadge.style.display = "none";
+    //                 notificationButton.classList.remove('ring'); // Stop ringing if no new notifications
+    //             } else {
+    //                 // Display the notifications
+    //                 notificationBox.innerHTML = unreadNotifications.map(n =>
+    //                     `<div class="notification-item-container" data-id="${n.id}">
+    //                 <img src="storage/${n.user_image}" alt="Error"/>
+    //                 <div class="notification-item">
+    //                     <p>${n.message}</p>
+    //                     <div class="notification-item-bottom">
+    //                         <small>${new Date(n.notified_at).toLocaleString()}</small>
+    //                         <button data-id="${n.id}" class="mark-as-read">Read</button>
+    //                     </div>
+    //                 </div>
+    //             </div>`
+    //                 ).join("");
+
+    //                 notificationBadge.style.display = "block";
+    //                 notificationBadge.textContent = unreadNotifications.length;
+
+    //                 // Get the latest notification ID
+    //                 const newNotification = unreadNotifications[unreadNotifications.length - 1];
+
+    //                 console.log("Latest unread notification:", newNotification);
+
+    //                 // Check if new notifications are available and show Notyf alert
+    //                 if (newNotification.id > lastNotificationId) {
+    //                     console.log("New notification received:", newNotification); // Debugging log
+    //                     notyf.success("You have a new notification!"); // Show Notyf popup
+    //                     lastNotificationId = newNotification.id; // Update last notification ID in localStorage
+    //                     localStorage.setItem('lastNotificationId', lastNotificationId); // Store it in localStorage
+    //                 }
+
+    //                 // Trigger the ringing animation if there's a new notification
+    //                 notificationButton.classList.add('ring');
+    //             }
+    //         })
+    //         .catch(error => console.error("Error fetching notifications:", error));
+    // }
+
+    // Handle Mark as Read Button click
+    // document.addEventListener('click', function(event) {
+    //     if (event.target.classList.contains('mark-as-read')) {
+    //         const notificationId = event.target.getAttribute('data-id');
+    //         const notificationItem = event.target.closest('.notification-item-container');
+
+    //         console.log("Marking notification as read:", notificationId);
+
+    //         // Send AJAX request to mark the notification as read
+    //         fetch(`/notifications/${notificationId}/read`, {
+    //                 method: 'PATCH',
+    //                 headers: {
+    //                     'Content-Type': 'application/json',
+    //                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+    //                         'content')
+    //                 },
+    //                 body: JSON.stringify({
+    //                     'is_read': true
+    //                 })
+    //             })
+    //             .then(response => response.json())
+    //             .then(data => {
+    //                 if (data.success) {
+    //                     // Add a smooth fade-out effect
+    //                     notificationItem.classList.add('fade-out');
+    //                     setTimeout(() => {
+    //                         notificationItem.remove(); // Remove after animation
+    //                     }, 500); // Wait for the animation to complete
+
+    //                     // Update the badge count directly without refreshing the page
+    //                     const currentBadgeCount = parseInt(notificationBadge.textContent);
+    //                     notificationBadge.textContent = currentBadgeCount - 1;
+
+    //                     // After removing the notification, fetch the updated notifications
+    //                     fetchNotifications(); // This will update the notification count
+    //                 } else {
+    //                     alert('Failed to mark notification as read.');
+    //                 }
+    //             })
+    //             .catch(error => console.error('Error marking notification as read:', error));
+    //     }
+    // });
+
+
+    document.addEventListener('click', function(event) {
+        if (event.target.classList.contains('mark-as-read')) {
+            const notificationId = event.target.getAttribute('data-id');
+            const notificationItem = event.target.closest('.notification-item-container');
+            const notificationBox = document.getElementById("notification-list");
+            const notificationBadge = document.getElementById("notification-badge");
+
+            console.log("📌 Marking notification as read:", notificationId);
+
+            // Send AJAX request to mark notification as read
+            fetch(`/notifications/${notificationId}/read`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                            'content')
+                    },
+                    body: JSON.stringify({
+                        'is_read': true
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        notificationItem.classList.add('fade-out'); // Add fade-out animation
+                        setTimeout(() => {
+                            notificationItem.remove(); // Remove after animation
+
+                            // Check if all notifications are read
+                            if (notificationBox.children.length === 0) {
+                                notificationBox.innerHTML =
+                                    '<p id="no-notifications-message">No new notifications.</p>';
+                            }
+                        }, 500);
+
+                        // Update badge count
+                        let currentBadgeCount = parseInt(notificationBadge.textContent) || 0;
+                        if (currentBadgeCount > 0) {
+                            notificationBadge.textContent = currentBadgeCount - 1;
+                        }
+
+                        // Hide badge if no unread notifications left
+                        if (parseInt(notificationBadge.textContent) === 0) {
+                            notificationBadge.style.display = "none";
+                        }
+                    } else {
+                        alert('❌ Failed to mark notification as read.');
+                    }
+                })
+                .catch(error => console.error('❌ Error marking notification as read:', error));
+        }
+    });
+
     function fetchNotifications() {
-        console.log("Fetching notifications...");
 
         fetch('/notifications')
             .then(response => response.json())
             .then(data => {
-                console.log("Notifications fetched:", data);
 
-                // Ensure the data is as expected
-                const unreadNotifications = data.filter(n => n.is_read === false); // Only unread notifications
-                console.log("Unread Notifications:", unreadNotifications);
+                const unreadNotifications = data.filter(n => !n.is_read);
 
-                // Handle if no unread notifications
+                const notificationBox = document.getElementById("notification-list");
+                const notificationBadge = document.getElementById("notification-badge");
+
                 if (unreadNotifications.length === 0) {
                     notificationBox.innerHTML = "<p>No new notifications.</p>";
                     notificationBadge.style.display = "none";
-                    notificationButton.classList.remove('ring'); // Stop ringing if no new notifications
                 } else {
-                    // Display the notifications
-                    notificationBox.innerHTML = unreadNotifications.map(n =>
-                        `<div class="notification-item-container" data-id="${n.id}">
-                    <img src="storage/${n.user_image}" alt="Error"/>
-                    <div class="notification-item">
-                        <p>${n.message}</p>
-                        <div class="notification-item-bottom">
-                            <small>${new Date(n.notified_at).toLocaleString()}</small>
-                            <button data-id="${n.id}" class="mark-as-read">Read</button>
+                    // Populate the notifications list
+                    notificationBox.innerHTML = unreadNotifications.map(n => `
+                    <div class="notification-item-container" data-id="${n.id}">
+                        <img src="/storage/${n.user_image}" alt="Error"/>
+                        <div class="notification-item">
+                            <p>${n.message}</p>
+                            <div class="notification-item-bottom">
+                                <small>${new Date(n.notified_at).toLocaleString()}</small>
+                                <button data-id="${n.id}" class="mark-as-read">Read</button>
+                            </div>
                         </div>
                     </div>
-                </div>`
-                    ).join("");
+                `).join("");
 
                     notificationBadge.style.display = "block";
                     notificationBadge.textContent = unreadNotifications.length;
-
-                    // Get the latest notification ID
-                    const newNotification = unreadNotifications[unreadNotifications.length - 1];
-
-                    console.log("Latest unread notification:", newNotification);
-
-                    // Check if new notifications are available and show Notyf alert
-                    if (newNotification.id > lastNotificationId) {
-                        console.log("New notification received:", newNotification); // Debugging log
-                        notyf.success("You have a new notification!"); // Show Notyf popup
-                        lastNotificationId = newNotification.id; // Update last notification ID in localStorage
-                        localStorage.setItem('lastNotificationId', lastNotificationId); // Store it in localStorage
-                    }
-
-                    // Trigger the ringing animation if there's a new notification
-                    notificationButton.classList.add('ring');
                 }
             })
             .catch(error => console.error("Error fetching notifications:", error));
     }
+
+    // Run fetchNotifications when the page loads
+    document.addEventListener("DOMContentLoaded", fetchNotifications);
+
+
 
     function toggleNav() {
         const nav = document.getElementById("nav");
@@ -723,70 +778,26 @@
         }
     });
 
+    // Define notificationButton globally
+    const notificationButton = document.getElementById("notification-button");
 
-    // Toggle notification box visibility
     function toggleNotifications() {
         const notificationBox = document.getElementById("notification-box");
+
+        if (!notificationBox) {
+            console.error("Notification box not found.");
+            return;
+        }
 
         // Open the notification box
         notificationBox.classList.toggle("show");
 
         // Stop the bell from ringing when the box is opened
-        if (notificationBox.classList.contains("show")) {
+        if (notificationBox.classList.contains("show") && notificationButton) {
             notificationButton.classList.remove('ring');
         }
     }
 
-
-    // Restore previous state
-    document.addEventListener("DOMContentLoaded", () => {
-        const nav = document.getElementById("nav");
-        if (localStorage.getItem("navState") === "collapsed") {
-            nav.classList.add("collapsed");
-        }
-    });
-    // Handle Mark as Read Button click
-    document.addEventListener('click', function(event) {
-        if (event.target.classList.contains('mark-as-read')) {
-            const notificationId = event.target.getAttribute('data-id');
-            const notificationItem = event.target.closest('.notification-item-container');
-
-            console.log("Marking notification as read:", notificationId);
-
-            // Send AJAX request to mark the notification as read
-            fetch(`/notifications/${notificationId}/read`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
-                            'content')
-                    },
-                    body: JSON.stringify({
-                        'is_read': true
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Add a smooth fade-out effect
-                        notificationItem.classList.add('fade-out');
-                        setTimeout(() => {
-                            notificationItem.remove(); // Remove after animation
-                        }, 500); // Wait for the animation to complete
-
-                        // Update the badge count directly without refreshing the page
-                        const currentBadgeCount = parseInt(notificationBadge.textContent);
-                        notificationBadge.textContent = currentBadgeCount - 1;
-
-                        // After removing the notification, fetch the updated notifications
-                        fetchNotifications(); // This will update the notification count
-                    } else {
-                        alert('Failed to mark notification as read.');
-                    }
-                })
-                .catch(error => console.error('Error marking notification as read:', error));
-        }
-    });
 
     // Close notification box if clicked outside of it
     document.addEventListener('click', function(event) {
@@ -800,11 +811,11 @@
         }
     });
 
-    // Initialize fetchNotifications on page load and set interval for periodic refresh
-    document.addEventListener("DOMContentLoaded", () => {
-        fetchNotifications();
-        setInterval(fetchNotifications, 60000); // Auto-refresh every 10 seconds
-    });
+    // // Initialize fetchNotifications on page load and set interval for periodic refresh
+    // document.addEventListener("DOMContentLoaded", () => {
+    //     fetchNotifications();
+    //     setInterval(fetchNotifications, 60000); // Auto-refresh every 10 seconds
+    // });
 
     document.addEventListener("DOMContentLoaded", function() {
         const burger = document.getElementById("burger-menu");

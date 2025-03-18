@@ -12,7 +12,7 @@ class RolesAndPermissionController extends Controller
 {
     public function addPermissions(Request $request)
     {
-        $permissions = ['Dashboard', 'Users', 'Calendar & Tools', 'Vacancies', 'New Joiners', 'Trasnfers/Rotation', 'Promotions', 'Badge Maker', 'Employees', 'Branches', 'Titles', 'Settings', 'Edit', 'Download', 'Create', 'Delete', 'Role And Permission','HR Member','Sundays'];
+        $permissions = ['View Evaluation', 'Apply Evaluation', 'Dashboard', 'Users', 'Calendar & Tools', 'Vacancies', 'New Joiners', 'Trasnfers/Rotation', 'Promotions', 'Badge Maker', 'Employees', 'Branches', 'Titles', 'Settings', 'Edit', 'Download', 'Create', 'Delete', 'Role And Permission', 'HR Member', 'Sundays','Target Controller'];
 
         foreach ($permissions as $permission) {
             Permission::create(['name' => $permission]);
@@ -40,41 +40,39 @@ class RolesAndPermissionController extends Controller
             'name' => 'required|unique:roles,name',
             'permission' => 'required|array',
         ]);
-    
+
         // Create role
         $role = \Spatie\Permission\Models\Role::create([
             'name' => $request->name,
             'guard_name' => 'web',
         ]);
-    
+
         // Assign permissions properly
         $permissions = \Spatie\Permission\Models\Permission::whereIn('name', $request->permission)->get();
-    
+
         if ($permissions->isEmpty()) {
             Log::error("No permissions found for role '{$role->name}'!");
         } else {
             $role->syncPermissions($permissions);
             Log::info("Role '{$role->name}' successfully assigned permissions.");
         }
-    
+
         return redirect()->route('roles.index')->with('success', 'Role added successfully.');
     }
-    
 
     public function edit($id)
     {
         // Force eager loading of permissions
         $role = \Spatie\Permission\Models\Role::with('permissions')->findOrFail($id);
-    
+
         // Fetch all permissions
         $permissions = \Spatie\Permission\Models\Permission::all();
-    
+
         // Ensure permissions are formatted properly
         $rolePermissions = $role->permissions->pluck('name')->toArray(); // ✅ Ensure array format
-    
+
         return view('RolesAndPermissions.edit', compact('role', 'permissions', 'rolePermissions'));
     }
-    
 
     public function update(Request $request, $id)
     {
@@ -83,27 +81,26 @@ class RolesAndPermissionController extends Controller
             'name' => 'required|unique:roles,name,' . $id,
             'permission' => 'required|array',
         ]);
-    
+
         // Find role
         $role = \Spatie\Permission\Models\Role::findOrFail($id);
-    
+
         // Update role name
         $role->update(['name' => $request->name]);
-    
+
         // Assign permissions
         $permissions = \Spatie\Permission\Models\Permission::whereIn('name', $request->permission)->get();
-    
+
         if ($permissions->isEmpty()) {
             Log::error("No permissions found for role '{$role->name}' during update!");
         } else {
             $role->syncPermissions($permissions);
             Log::info("Role '{$role->name}' updated with permissions.");
         }
-    
+
         return redirect()->route('roles.index')->with('success', 'Role updated successfully.');
     }
-    
-    
+
     public function destroy($id)
     {
         // Find the role by ID and delete it
@@ -120,7 +117,7 @@ class RolesAndPermissionController extends Controller
     {
         // Force eager loading to avoid missing permissions
         $roles = \Spatie\Permission\Models\Role::with('permissions')->get();
-    
+
         // Transform roles to ensure correct structure
         $formattedRoles = $roles->map(function ($role) {
             return [
@@ -129,11 +126,10 @@ class RolesAndPermissionController extends Controller
                 'permissions' => $role->permissions->pluck('name')->toArray(), // ✅ Ensure correct format
             ];
         });
-    
+
         return response()->json($formattedRoles);
     }
-    
-    
+
     public function assignRoleToUser(Request $request, $userId)
     {
         // Fetch the user by ID

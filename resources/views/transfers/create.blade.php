@@ -3,7 +3,7 @@
 @section('custom_title', 'Add Trasnfer')
 
 @section('main')
-    <div class="main add-vacancy add-transfer">
+    <div class="main add-emp add-transfer">
 
         <div class="container">
             <form id="transferForm" action="{{ route('transfers.apply') }}" method="POST" enctype="multipart/form-data"
@@ -20,7 +20,8 @@
                         <select class="form-control" name="employee_id" id="employee_id" required>
                             @foreach ($employees as $employee)
                                 <option style="font-size: 10px" value="{{ $employee->id }}"{!! old('employee_id') == $employee->id ? ' selected' : '' !!}>
-                                    {{ $employee->name }} - {{ $employee->job }} - {{ $employee->branch->branch_name }}
+                                    {{ $employee->name }} - {{ $employee->jobRelation->name }} -
+                                    {{ $employee->branch->branch_name }}
                                 </option>
                             @endforeach
                         </select>
@@ -240,6 +241,9 @@
 
             <div class="cc-group"><div class="cc-select"><label><input type="checkbox" id="loulwa" checked> Loulwa Khaddaj</label></div>
             <div class="cc-select"><label><input type="checkbox" id="silva" checked> Silva Trayji</label></div></div>
+
+            <div class="cc-select"><label><input type="checkbox" id="iman" checked> Iman Hamdan</label></div></div>
+
         </div>
         `,
             showCancelButton: true,
@@ -260,6 +264,7 @@
                 if (document.getElementById("shadi").checked) selectedEmails.push("shadifarhat98@gmail.com");
                 if (document.getElementById("silva").checked) selectedEmails.push("hr2@maliks.com");
                 if (document.getElementById("loulwa").checked) selectedEmails.push("hr3@maliks.com");
+                if (document.getElementById("iman").checked) selectedEmails.push("hr1@maliks.com");
 
                 sendEmailWithCCs(selectedEmails); // Send the email after selecting CCs
             } else {
@@ -378,10 +383,14 @@
                     .then(data => {
                         const vacancies = data.vacancies || [];
                         vacancyDropdown.innerHTML = `
-                <option value="none" selected>Select Vacancy (Optional)</option>
-                ${vacancies.map(v => `<option value="${v.id}">${v.job} (Added: ${v.asked_date})</option>`).join('')}
-            `;
-                        vacancySelect.setChoices(vacancies, 'id', 'job', true);
+                    <option value="none" selected>Select Vacancy (Optional)</option>
+                    ${vacancies.map(v => `
+                        <option value="${v.id}">
+                            ${v.job_name || 'Unknown Job'} (Added: ${v.asked_date}) // ✅ FIXED
+                        </option>
+                    `).join('')}
+                `;
+                        vacancySelect.setChoices(vacancies, 'id', 'job_name', true);
                     })
                     .catch(error => console.error('Error fetching vacancies:', error));
             } else {
@@ -389,8 +398,8 @@
                     `<option value="none" selected>Select Vacancy (Optional)</option>`;
                 vacancySelect.clearStore();
             }
-
         });
+
     });
 
     //Function to show the duration rotation

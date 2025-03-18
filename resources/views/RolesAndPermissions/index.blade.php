@@ -6,7 +6,7 @@
 
     <div class="main">
         <div class="user-controller">
-            <a href="{{ url('roles/create') }}">Add New Role</a>
+            <a class="add-btn" href="{{ url('roles/create') }}">Add New Role</a>
         </div>
 
         <div class="custom-roles-table">

@@ -372,7 +372,6 @@
                 console.log("✅ Updated branch previews to:", selectedDesign);
             }
 
-
             document.addEventListener("DOMContentLoaded", function() {
                 const branchDesignDropdown = document.getElementById("branch-design");
                 if (branchDesignDropdown) {
@@ -462,6 +461,16 @@
                 return;
             }
 
+            // Show SweetAlert loading spinner immediately when the download starts
+            Swal.fire({
+                title: 'Generating PDF...',
+                text: 'Please wait while we generate the badges PDF.',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
             let badgePromises = Array.from(badges).map((badge, index) => {
                 return html2canvas(badge, {
                     scale: 3
@@ -477,11 +486,23 @@
                         yOffset += badgeHeight + 1; // Move to next row
                         rowCount = 0;
                     }
+
+                    // Check if we need to add a new page
+                    if (yOffset + badgeHeight > A4Height) {
+                        pdf.addPage(); // Add new page
+                        yOffset = 1; // Reset Y position for the new page
+                    }
                 });
             });
 
             Promise.all(badgePromises).then(() => {
+                // Close SweetAlert spinner and save the PDF once the process is complete
+                Swal.close();
                 pdf.save("branch-badges.pdf");
+            }).catch(error => {
+                Swal.close();
+                Swal.fire('Error!', 'An unexpected error occurred. Please try again later.', 'error');
+                console.error('Error generating PDF:', error);
             });
         });
     </script>

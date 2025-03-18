@@ -14,9 +14,9 @@ class BadgeController extends Controller
     // Display the badge maker page
     public function index()
     {
-        $employees = \App\Models\Employee::all(); 
-        $branches=Branch::all();
-        return view('badge.index', compact('employees','branches'));
+        $employees = \App\Models\Employee::all();
+        $branches = Branch::all();
+        return view('badge.index', compact('employees', 'branches'));
     }
 
     public function getEmployeesByBranch($branchId)
@@ -27,7 +27,7 @@ class BadgeController extends Controller
         }
 
         // Fetch employees belonging to the branch
-        $employees = Employee::where('branch_id', $branchId)->get();
+        $employees = Employee::where('branch_id', $branchId)->where('status', '=', '1')->get();
 
         // Check if employees exist
         if ($employees->isEmpty()) {

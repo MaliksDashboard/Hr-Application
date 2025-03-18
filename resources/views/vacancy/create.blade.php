@@ -3,7 +3,7 @@
 @section('custom_title', 'Add Vacacny')
 
 @section('main')
-    <div class="main add-vacancy">
+    <div class="main add-emp">
 
         <div class="container">
             <form action="{{ route('vacancies.store') }}" method="POST" enctype="multipart/form-data" class="container">
@@ -34,8 +34,8 @@
                         <select id="job" name="job" class="form-control" required>
                             <option value="" disabled selected>Select or type a job...</option> <!-- Placeholder -->
                             @foreach ($jobs as $job)
-                                <option value="{{ $job }}" {{ old('job') == $job ? 'selected' : '' }}>
-                                    {{ $job }}
+                                <option value="{{ $job->id }}" {{ old('job') == $job->id ? 'selected' : '' }}>
+                                    {{ $job->name }}
                                 </option>
                             @endforeach
                         </select>

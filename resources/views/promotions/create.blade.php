@@ -108,213 +108,212 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
 
-<script>
-    function updateBadgePreview() {
-        let employeeSelect = document.getElementById('employee_id');
-        let titleSelect = document.getElementById('new_title');
-        let previewName = document.getElementById('preview-name');
-        let previewTitle = document.getElementById('preview-title');
-        let previewLogo = document.getElementById('preview-logo');
-        let previewBarcode = document.getElementById('preview-barcode');
+@push('scripts')
+    <script>
+        function updateBadgePreview() {
+            let employeeSelect = document.getElementById('employee_id');
+            let titleSelect = document.getElementById('new_title');
+            let previewName = document.getElementById('preview-name');
+            let previewTitle = document.getElementById('preview-title');
+            let previewLogo = document.getElementById('preview-logo');
+            let previewBarcode = document.getElementById('preview-barcode');
 
-        let fullName = employeeSelect.selectedOptions[0]?.getAttribute("data-name") || "Name";
-        let nameParts = fullName.trim().split(" ");
+            let fullName = employeeSelect.selectedOptions[0]?.getAttribute("data-name") || "Name";
+            let nameParts = fullName.trim().split(" ");
 
-        let employeeName = nameParts.length > 1 ?
-            `${nameParts[0]} ${nameParts[1][0]}.` :
-            fullName; // If only one name exists, use it as is.
+            let employeeName = nameParts.length > 1 ?
+                `${nameParts[0]} ${nameParts[1][0]}.` :
+                fullName; // If only one name exists, use it as is.
 
-        let newTitle = titleSelect.value || "New Title";
+            let newTitle = titleSelect.value || "New Title";
 
-        let barcodeValue = employeeSelect.selectedOptions[0]?.getAttribute("data-barcode") || "0000000";
-        barcodeValue = barcodeValue.padStart(7, '0'); // Ensure 7 digits for barcode format
+            let barcodeValue = employeeSelect.selectedOptions[0]?.getAttribute("data-barcode") || "0000000";
+            barcodeValue = barcodeValue.padStart(7, '0'); // Ensure 7 digits for barcode format
 
-        let branchName = employeeSelect.selectedOptions[0]?.getAttribute("data-branch-name") || "";
-        let logoSrc = "/logos/maliks.png"; // Default logo
+            let branchName = employeeSelect.selectedOptions[0]?.getAttribute("data-branch-name") || "";
+            let logoSrc = "/logos/maliks.png"; // Default logo
 
-        if (branchName.toLowerCase().includes("doculand")) {
-            logoSrc = "/logos/doculand.png";
-        } else if (branchName.toLowerCase().includes("gizmo")) {
-            logoSrc = "/logos/gizmo.png";
-        } else if (branchName.toLowerCase().includes("books")) {
-            logoSrc = "/logos/books_and_pens.png";
-        }
+            if (branchName.toLowerCase().includes("doculand")) {
+                logoSrc = "/logos/doculand.png";
+            } else if (branchName.toLowerCase().includes("gizmo")) {
+                logoSrc = "/logos/gizmo.png";
+            } else if (branchName.toLowerCase().includes("books")) {
+                logoSrc = "/logos/books_and_pens.png";
+            }
 
-        // ✅ Update the preview
-        previewName.innerText = employeeName;
-        previewTitle.innerText = newTitle;
-        previewLogo.src = logoSrc;
+            // ✅ Update the preview
+            previewName.innerText = employeeName;
+            previewTitle.innerText = newTitle;
+            previewLogo.src = logoSrc;
 
-        // ✅ Generate barcode
-        JsBarcode("#preview-barcode", barcodeValue, {
-            format: "EAN8",
-            width: 1.5,
-            height: 40,
-            displayValue: false
-        });
-
-        console.log(`Updated logo: ${logoSrc}`);
-    }
-
-    function downloadBadgeAsPDF() {
-        if (!window.jspdf || !window.jspdf.jsPDF) {
-            console.error("❌ Error: jsPDF is not loaded. Make sure the script is included correctly.");
-            return;
-        }
-
-        const jsPDF = window.jspdf.jsPDF;
-        const badgePreview = document.querySelector('.badge-preview');
-
-        if (!badgePreview) {
-            console.error("❌ Error: Badge preview not found.");
-            return;
-        }
-
-        console.log("⏳ Generating PDF...");
-
-        html2canvas(badgePreview, {
-            scale: 4
-        }).then(canvas => {
-            const imgData = canvas.toDataURL('image/png');
-
-            // ✅ Create A4-sized PDF
-            const pdf = new jsPDF({
-                orientation: 'portrait',
-                unit: 'cm',
-                format: [21, 29.7] // A4 dimensions
+            // ✅ Generate barcode
+            JsBarcode("#preview-barcode", barcodeValue, {
+                format: "EAN8",
+                width: 1.5,
+                height: 40,
+                displayValue: false
             });
 
-            // ✅ Position badge at the top-left with a margin
-            const marginX = 1.5; // 1.5 cm from left
-            const marginY = 1.5; // 1.5 cm from top
-            const badgeWidth = 7.5; // Badge width
-            const badgeHeight = 3.1; // Badge height
+            console.log(`Updated logo: ${logoSrc}`);
+        }
 
-            pdf.addImage(imgData, 'PNG', marginX, marginY, badgeWidth, badgeHeight);
-            pdf.save('badge_A4.pdf');
+        function downloadBadgeAsPDF() {
+            if (!window.jspdf || !window.jspdf.jsPDF) {
+                console.error("❌ Error: jsPDF is not loaded. Make sure the script is included correctly.");
+                return;
+            }
 
-            console.log("✅ PDF Downloaded Successfully");
-        }).catch(error => {
-            console.error("❌ Error generating PDF:", error);
-        });
-    }
+            const jsPDF = window.jspdf.jsPDF;
+            const badgePreview = document.querySelector('.badge-preview');
 
-    document.addEventListener('DOMContentLoaded', function() {
-        const employeeDropDown = document.getElementById('employee_id');
-        const oldTitleInput = document.getElementById('old_title');
+            if (!badgePreview) {
+                console.error("❌ Error: Badge preview not found.");
+                return;
+            }
 
-        employeeDropDown.addEventListener('change', function() {
-            const selectedOption = employeeDropDown.selectedOptions[0];
-            oldTitleInput.value = selectedOption.dataset.title || '';
-            updateBadgePreview();
-        });
+            console.log("⏳ Generating PDF...");
 
-        document.getElementById('new_title').addEventListener('change', updateBadgePreview);
-    });
-</script>
+            html2canvas(badgePreview, {
+                scale: 4
+            }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
 
-<script>
-    //Fetch the old title
-    document.addEventListener('DOMContentLoaded', function() {
-        const employeeDropDown = document.getElementById('employee_id');
-        const oldTitleInput = document.getElementById('old_title');
-        const promotionForm = document.getElementById('promotion-form');
-        const submitButton = document.getElementById('submit-promotion');
-
-        // Fetch the old title when employee changes
-        employeeDropDown.addEventListener('change', function(event) {
-            const selectedOption = event.target.selectedOptions[0]; // Correctly reference the event
-            const currentTitle = selectedOption.dataset.title || '';
-            oldTitleInput.value = currentTitle; // Update the old title field
-        });
-
-        // Submit form with AJAX and handle responses
-        submitButton.addEventListener('click', () => {
-            const formData = new FormData(promotionForm);
-
-            fetch('{{ route('promotions.store') }}', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    },
-                    body: formData,
-                })
-                .then((response) => response.json())
-                .then((data) => {
-                    if (data.error) {
-                        Swal.fire({
-                            title: 'Are you sure?',
-                            text: data.message,
-                            icon: 'warning',
-                            showCancelButton: true,
-                            confirmButtonText: 'Yes, proceed',
-                            cancelButtonText: 'No, cancel',
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                formData.append('confirmed', true);
-                                fetch('{{ route('promotions.store') }}', {
-                                        method: 'POST',
-                                        headers: {
-                                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                        },
-                                        body: formData,
-                                    })
-                                    .then((res) => res.json())
-                                    .then((finalData) => {
-                                        if (finalData.success) {
-                                            Swal.fire('Success', finalData.message,
-                                                'success').then(() => {
-                                                window.location.href = finalData
-                                                    .redirect;
-                                            });
-                                        }
-                                    });
-                            }
-                        });
-                    } else if (data.success) {
-                        Swal.fire('Success', data.message, 'success').then(() => {
-                            window.location.href = data.redirect;
-                        });
-                    }
-                })
-                .catch((error) => {
-                    console.error('Error:', error);
-                    Swal.fire('Error', 'An unexpected error occurred.', 'error');
+                // ✅ Create A4-sized PDF
+                const pdf = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'cm',
+                    format: [21, 29.7] // A4 dimensions
                 });
-        });
 
-        //today() for promotion date
-        document.getElementById('promotion_date').value = new Date().toISOString().split('T')[0];
+                // ✅ Position badge at the top-left with a margin
+                const marginX = 1.5; // 1.5 cm from left
+                const marginY = 1.5; // 1.5 cm from top
+                const badgeWidth = 7.5; // Badge width
+                const badgeHeight = 3.1; // Badge height
 
-        //apply Select2 to the dropdowns
-        if (employeeDropDown) {
-            new Choices(employeeDropDown, {
-                removeItemButton: false,
-                addItems: true,
-                duplicateItemsAllowed: false,
-                searchEnabled: true,
-                placeholderValue: 'Select an Employee...',
-                noResultsText: 'No results found',
-                noChoicesText: 'No Employees available',
+                pdf.addImage(imgData, 'PNG', marginX, marginY, badgeWidth, badgeHeight);
+                pdf.save('badge_A4.pdf');
+
+                console.log("✅ PDF Downloaded Successfully");
+            }).catch(error => {
+                console.error("❌ Error generating PDF:", error);
             });
         }
 
-        const titleDropDown = document.getElementById('new_title');
-        if (titleDropDown) {
-            new Choices(titleDropDown, {
-                removeItemButton: false,
-                addItems: true,
-                duplicateItemsAllowed: false,
-                searchEnabled: true,
-                placeholderValue: 'Select a Title...',
-                noResultsText: 'No results found',
-                noChoicesText: 'No Titles available',
-            })
-        }
+        document.addEventListener('DOMContentLoaded', function() {
+            const employeeDropDown = document.getElementById('employee_id');
+            const oldTitleInput = document.getElementById('old_title');
 
-    });
-</script>
+            employeeDropDown.addEventListener('change', function() {
+                const selectedOption = employeeDropDown.selectedOptions[0];
+                oldTitleInput.value = selectedOption.dataset.title || '';
+                updateBadgePreview();
+            });
 
+            document.getElementById('new_title').addEventListener('change', updateBadgePreview);
+        });
+
+        //Fetch the old title
+        document.addEventListener('DOMContentLoaded', function() {
+            const employeeDropDown = document.getElementById('employee_id');
+            const oldTitleInput = document.getElementById('old_title');
+            const promotionForm = document.getElementById('promotion-form');
+            const submitButton = document.getElementById('submit-promotion');
+
+            // Fetch the old title when employee changes
+            employeeDropDown.addEventListener('change', function(event) {
+                const selectedOption = event.target.selectedOptions[0]; // Correctly reference the event
+                const currentTitle = selectedOption.dataset.title || '';
+                oldTitleInput.value = currentTitle; // Update the old title field
+            });
+
+            // Submit form with AJAX and handle responses
+            submitButton.addEventListener('click', () => {
+                const formData = new FormData(promotionForm);
+
+                fetch('{{ route('promotions.store') }}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        },
+                        body: formData,
+                    })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if (data.error) {
+                            Swal.fire({
+                                title: 'Are you sure?',
+                                text: data.message,
+                                icon: 'warning',
+                                showCancelButton: true,
+                                confirmButtonText: 'Yes, proceed',
+                                cancelButtonText: 'No, cancel',
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    formData.append('confirmed', true);
+                                    fetch('{{ route('promotions.store') }}', {
+                                            method: 'POST',
+                                            headers: {
+                                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                            },
+                                            body: formData,
+                                        })
+                                        .then((res) => res.json())
+                                        .then((finalData) => {
+                                            if (finalData.success) {
+                                                Swal.fire('Success', finalData.message,
+                                                    'success').then(() => {
+                                                    window.location.href = finalData
+                                                        .redirect;
+                                                });
+                                            }
+                                        });
+                                }
+                            });
+                        } else if (data.success) {
+                            Swal.fire('Success', data.message, 'success').then(() => {
+                                window.location.href = data.redirect;
+                            });
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                        Swal.fire('Error', 'An unexpected error occurred.', 'error');
+                    });
+            });
+
+            //today() for promotion date
+            document.getElementById('promotion_date').value = new Date().toISOString().split('T')[0];
+
+            //apply Select2 to the dropdowns
+            if (employeeDropDown) {
+                new Choices(employeeDropDown, {
+                    removeItemButton: false,
+                    addItems: true,
+                    duplicateItemsAllowed: false,
+                    searchEnabled: true,
+                    placeholderValue: 'Select an Employee...',
+                    noResultsText: 'No results found',
+                    noChoicesText: 'No Employees available',
+                });
+            }
+
+            const titleDropDown = document.getElementById('new_title');
+            if (titleDropDown) {
+                new Choices(titleDropDown, {
+                    removeItemButton: false,
+                    addItems: true,
+                    duplicateItemsAllowed: false,
+                    searchEnabled: true,
+                    placeholderValue: 'Select a Title...',
+                    noResultsText: 'No results found',
+                    noChoicesText: 'No Titles available',
+                })
+            }
+
+        });
+    </script>
+@endpush
 
 <style>
     #preview-barcode {

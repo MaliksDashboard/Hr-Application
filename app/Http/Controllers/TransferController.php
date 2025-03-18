@@ -2,19 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Employee;
+use App\Models\Job;
+use App\Models\User;
 use App\Models\Branch;
 use App\Models\Vacancy;
+use App\Models\Employee;
 use App\Models\Transfer;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB;
-use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Support\Facades\Auth;
-use App\Models\Notification;
-use App\Models\User;
-use Illuminate\Support\Facades\Mail;
 use App\Mail\TransferEmail;
+use App\Models\Notification;
+use Illuminate\Http\Request;
+use App\Events\NewNotification;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class TransferController extends Controller
 {
@@ -24,7 +26,14 @@ class TransferController extends Controller
 
         $mostActiveBranches = Transfer::select('old_branch_id', 'new_branch_id', DB::raw('COUNT(*) as total'))->groupBy('old_branch_id', 'new_branch_id')->orderBy('total', 'desc')->get();
 
-        $mostTransferredRoles = Transfer::with('employee')->select('employee_id', DB::raw('COUNT(*) as total'))->groupBy('employee_id')->orderBy('total', 'desc')->take(3)->get();
+        $mostTransferredRoles = Transfer::with('employee') // No need for jobRelation
+            ->whereNotNull('employee_id')
+            ->whereHas('employee') // Ensure employee exists in employee_info
+            ->select('employee_id', DB::raw('COUNT(*) as total'))
+            ->groupBy('employee_id')
+            ->orderBy('total', 'desc')
+            ->take(3)
+            ->get();
 
         $mostEffectedBranch = Transfer::select('old_branch_id', DB::raw('COUNT(*) as total'))->with('oldBranch')->groupBy('old_branch_id')->orderBy('total', 'desc')->first();
 
@@ -36,7 +45,7 @@ class TransferController extends Controller
             ]
             : ['branch_name' => 'N/A', 'total' => 0];
 
-        $transfers = Transfer::with(['employee', 'oldBranch', 'newBranch', 'vacancy', 'creator'])
+        $transfers = Transfer::with(['employee', 'oldBranch', 'newBranch', 'vacancy', 'creator', 'jobRelation'])
             ->leftJoin('users', 'transfers.created_by', '=', 'users.id')
             ->select('transfers.*', 'users.name as created_by_name')
             ->latest()
@@ -54,13 +63,15 @@ class TransferController extends Controller
         );
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $employees = Employee::where('status', 1)->get(); // Fetch employees with status = 1
         $branches = Branch::all();
-        $vacancies = Vacancy::all();
+        $jobs = Job::all();
+        $branchId = $request->branch_id;
+        $vacancies = Vacancy::with('jobRelation')->where('branch_id', $branchId)->get();
 
-        return view('transfers.create', compact('employees', 'branches', 'vacancies'));
+        return view('transfers.create', compact('employees', 'branches', 'vacancies', 'jobs'));
     }
 
     public function applyTransfer(Request $request)
@@ -177,7 +188,7 @@ class TransferController extends Controller
                 Log::info("User image path: {$imagePath}");
 
                 // Creating notification for the user who created this rotation
-                Notification::create([
+                $notification = Notification::create([
                     'user_id' => Auth::id(),
                     'type' => 'rotation_reminder',
                     'message' => "Reminder: The rotation for {$employee->name} at {$employee->branch->branch_name} will end on {$rotationEndDate->format('d-m-Y')}.",
@@ -185,6 +196,8 @@ class TransferController extends Controller
                     'is_read' => false,
                     'user_image' => $imagePath,
                 ]);
+
+                broadcast(new NewNotification($notification))->toOthers();
 
                 Log::info('Rotation reminder notification created for the user.');
 
@@ -197,7 +210,7 @@ class TransferController extends Controller
                     }
 
                     Log::info("Creating admin notification for {$admin->name}");
-                    Notification::create([
+                    $notification = Notification::create([
                         'user_id' => $admin->id,
                         'type' => 'admin_alert',
                         'message' => " {$employee->name} is scheduled to complete rotation on {$rotationEndDate->format('d-m-Y')}.",
@@ -206,6 +219,8 @@ class TransferController extends Controller
                         'user_image' => $admin->$imagePath,
                     ]);
                 }
+
+                broadcast(new NewNotification($notification))->toOthers();
 
                 Log::info('Admin notifications created successfully.');
             }
@@ -229,7 +244,7 @@ class TransferController extends Controller
 
                 // If it's a Rotation
                 if ($actionType === 'Rotation') {
-                    Notification::create([
+                    $notification = Notification::create([
                         'user_id' => $admin->id,
                         'type' => 'admin_alert',
                         'message' => Auth::user()->name . " has created a rotation for {$employee->name} to branch {$employee->branch->branch_name}",
@@ -238,10 +253,9 @@ class TransferController extends Controller
                         'user_image' => Auth::user()->image,
                     ]);
                 }
-
                 // If it's a Transfer
                 elseif ($actionType === 'Transfer') {
-                    Notification::create([
+                    $notification = Notification::create([
                         'user_id' => $admin->id,
                         'type' => 'admin_alert',
                         'message' => Auth::user()->name . " has created a transfer for {$employee->name} to branch {$employee->branch->branch_name}",
@@ -251,6 +265,8 @@ class TransferController extends Controller
                     ]);
                 }
             }
+
+            broadcast(new NewNotification($notification))->toOthers();
 
             Log::info('Admin transfer action notifications created successfully.');
 
@@ -263,7 +279,7 @@ class TransferController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error("Transfer failed: " . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            Log::error('Transfer failed: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to apply transfer. Error: ' . $e->getMessage(),
@@ -411,7 +427,7 @@ class TransferController extends Controller
             foreach ($adminUsers as $admin) {
                 // Skip the creator to avoid sending a notification to them
                 if ($admin->id !== $creator->id) {
-                    Notification::create([
+                    $notification = Notification::create([
                         'user_id' => $admin->id,
                         'type' => 'admin_alert',
                         'message' => Auth::user()->name . " has marked the rotation of {$employee->name} as a transfer.",
@@ -422,8 +438,10 @@ class TransferController extends Controller
                 }
             }
 
+            broadcast(new NewNotification($notification))->toOthers();
+
             // 2. Notify the creator of the rotation about the change to Transfer
-            Notification::create([
+            $notification = Notification::create([
                 'user_id' => $creator->id,
                 'type' => 'admin_alert',
                 'message' => "The rotation of {$employee->name} as a transfer by the Admin.",
@@ -431,6 +449,8 @@ class TransferController extends Controller
                 'is_read' => false,
                 'user_image' => $creator->image ?? '/images/Default.jpg',
             ]);
+
+            broadcast(new NewNotification($notification))->toOthers();
 
             return response()->json(['success' => true, 'message' => 'The action type has been successfully changed to Transfer.']);
         } catch (\Exception $e) {

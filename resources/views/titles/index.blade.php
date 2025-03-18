@@ -33,7 +33,7 @@
                     <option value="employee">Employee</option>
                 </select>
                 @can('Create')
-                    <button class="add-titlles" type="submit">Add Title</button>
+                    <button class="add-btn" type="submit">Add Title</button>
                 @endcan
 
             </form>
@@ -368,3 +368,11 @@
         });
     });
 </script>
+
+<style>
+    .add-btn {
+        width: 100%;
+        border: none;
+        cursor: pointer;
+    }
+</style>

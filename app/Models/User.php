@@ -11,19 +11,9 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable, HasRoles; // Use Spatie's HasRoles trait
 
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'image',
-        'status',
-        'temp_pass',
-    ];
+    protected $fillable = ['employee_id', 'name', 'email', 'password', 'temp_pass', 'must_change_password', 'pin_code', 'image', 'status', 'job', 'branch_id'];
 
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    protected $hidden = ['password', 'remember_token'];
 
     protected function casts(): array
     {
@@ -33,4 +23,13 @@ class User extends Authenticatable
         ];
     }
 
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class, 'model_has_roles', 'model_id', 'role_id');
+    }
+
+    public function employee()
+    {
+        return $this->hasOne(Employee::class, 'id', 'employee_id');
+    }
 }

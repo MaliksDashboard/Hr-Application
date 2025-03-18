@@ -51,6 +51,9 @@
                         <p class="steps-btn" data-step="{{ $step->id }}"
                             style="border-bottom: 3px solid {{ $step->color }};">
                             {{ $step->name }}
+                            @if ($step->name !== 'Ready')
+                                <span class="step-badge" id="badge-{{ $step->id }}">0</span>
+                            @endif
                         </p>
                     @endforeach
                 </div>
@@ -73,6 +76,7 @@
                         <label for="completion-date">Completion Date <b style="color:red;">*</b></label>
                         <input type="date" id="completion-date" required>
                     </div>
+
                     <div class="input-group">
                         <label for="remarks">Remarks (optional)</label>
                         <textarea id="remarks" placeholder="Enter remarks"></textarea>
@@ -90,69 +94,72 @@
 
 @endsection
 
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const stepsBtns = document.querySelectorAll(".steps-btn");
-        const joinerList = document.getElementById("new-joiner-list-name");
-        const joinerStatus = document.getElementById("new-joiner-list-status");
-        const selectedStep = document.getElementById("selected-step");
-        const remarksModal = document.getElementById("remarks-modal");
-        const modalOverlay = document.getElementById("modal-overlay");
-        const completionDateInput = document.getElementById("completion-date");
-        const remarksInput = document.getElementById("remarks");
-        let selectedJoinerId, selectedStepId;
+@push('scripts')
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const stepsBtns = document.querySelectorAll(".steps-btn");
+            const joinerList = document.getElementById("new-joiner-list-name");
+            const joinerStatus = document.getElementById("new-joiner-list-status");
+            const selectedStep = document.getElementById("selected-step");
+            const remarksModal = document.getElementById("remarks-modal");
+            const modalOverlay = document.getElementById("modal-overlay");
+            const completionDateInput = document.getElementById("completion-date");
+            const remarksInput = document.getElementById("remarks");
+            let selectedJoinerId, selectedStepId;
 
-        function openRemarksModal(joinerId, stepId) {
-            selectedJoinerId = joinerId;
-            selectedStepId = stepId;
-            remarksModal.style.display = "flex";
-            modalOverlay.style.display = "block";
-            completionDateInput.value = new Date().toISOString().split('T')[0];
-        }
+            function openRemarksModal(joinerId, stepId) {
+                selectedJoinerId = joinerId;
+                selectedStepId = stepId;
+                remarksModal.style.display = "flex";
+                modalOverlay.style.display = "block";
+                completionDateInput.value = new Date().toISOString().split('T')[0];
+            }
 
-        function closeRemarksModal() {
-            remarksModal.style.display = "none";
-            modalOverlay.style.display = "none";
-            remarksInput.value = "";
-            completionDateInput.value = "";
-        }
 
-        function loadJoiners(stepId = "all") {
-            fetch(`/new-joiners/filter/${stepId}`)
-                .then(response => response.json())
-                .then(data => {
-                    joinerList.innerHTML = "";
 
-                    // ✅ Update progress count
-                    let employeesInProgress = data.length;
-                    document.getElementById("progress-count").innerText = employeesInProgress;
+            function loadJoiners(stepId = "all") {
+                fetch(`/new-joiners/filter/${stepId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        joinerList.innerHTML = "";
 
-                    if (data.length === 0) {
-                        joinerList.innerHTML = `<p class="no-records">No records available.</p>`;
-                        return;
-                    }
+                        // ✅ Update progress count
+                        let employeesInProgress = data.length;
+                        document.getElementById("progress-count").innerText = employeesInProgress;
 
-                    data.forEach(joiner => {
-                        let currentStepText = joiner.current_step ?
-                            `<span class="current-step">Step: ${joiner.current_step}</span>` : "";
-
-                        let actionButton = "";
-
-                        // ✅ Check if the employee is in the "Ready" phase
-                        if (joiner.current_step === "Ready") {
-                            actionButton = `<span class="ready-label">✅</span>`;
-                        } else if (stepId === "all") {
-                            actionButton =
-                                `<button class="view-progress delete-employee" data-joiner="${joiner.id}"><svg  viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2h4a1 1 0 1 1 0 2h-1.069l-.867 12.142A2 2 0 0 1 17.069 22H6.93a2 2 0 0 1-1.995-1.858L4.07 8H3a1 1 0 0 1 0-2h4zm2 2h6V4H9zM6.074 8l.857 12H17.07l.857-12zM10 10a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1m4 0a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1" fill="#fff"/></svg></button>`;
-                        } else {
-                            actionButton =
-                                `<button class="complete-btn" data-joiner="${joiner.id}" data-step="${stepId}">Mark Completed</button>`;
+                        if (data.length === 0) {
+                            joinerList.innerHTML = `<p class="no-records">No records available.</p>`;
+                            return;
                         }
 
-                        let joinerHTML = `
+                        data.forEach(joiner => {
+                            let currentStepText = joiner.current_step ?
+                                `<span class="current-step">Step: ${joiner.current_step}</span>` : "";
+
+                            let interviewTimeText = joiner.interview_time ?
+                                `<span class="interview-time">${joiner.interview_time}</span>` :
+                                "";
+
+
+                            let actionButton = "";
+
+                            // ✅ Check if the employee is in the "Ready" phase
+                            if (joiner.current_step === "Ready") {
+                                actionButton = `<span class="ready-label">✅</span>`;
+                            } else if (stepId === "all") {
+                                actionButton =
+                                    `<button class="view-progress delete-employee" data-joiner="${joiner.id}"><svg  viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2h4a1 1 0 1 1 0 2h-1.069l-.867 12.142A2 2 0 0 1 17.069 22H6.93a2 2 0 0 1-1.995-1.858L4.07 8H3a1 1 0 0 1 0-2h4zm2 2h6V4H9zM6.074 8l.857 12H17.07l.857-12zM10 10a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1m4 0a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1" fill="#fff"/></svg></button>
+                                     <a class='edit-btn' href="/new-joiners/${joiner.id}/edit">Edit </a>`;
+                            } else {
+                                actionButton =
+                                    `<button class="complete-btn" data-joiner="${joiner.id}" data-step="${stepId}">Mark Completed</button>
+                                     <a class='edit-btn' href="/new-joiners-steps/${joiner.current_step_id}/edit">Edit</a>`;
+                            }
+
+                            let joinerHTML = `
                     <div class="joiner-card" data-id="${joiner.id}">
                         <div class="new-joiner-steps-name">
-                        <p><b>${joiner.name}</b> - ${joiner.job} </p>
+                        <p><b>${joiner.name}</b> - ${joiner.job} - ${joiner.target_branch}  ${interviewTimeText} </p> 
                         <span>${currentStepText}</span></div>
                         <div class="joiner-card-btns">
                             <button class="view-progress" data-id="${joiner.id}"><svg fill="#fff"  xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42" xml:space="preserve"><path d="M15.3 20.1c0 3.1 2.6 5.7 5.7 5.7s5.7-2.6 5.7-5.7-2.6-5.7-5.7-5.7-5.7 2.6-5.7 5.7m8.1 12.3C30.1 30.9 40.5 22 40.5 22s-7.7-12-18-13.3c-.6-.1-2.6-.1-3-.1-10 1-18 13.7-18 13.7s8.7 8.6 17 9.9c.9.4 3.9.4 4.9.2M11.1 20.7c0-5.2 4.4-9.4 9.9-9.4s9.9 4.2 9.9 9.4S26.5 30 21 30s-9.9-4.2-9.9-9.3"/></svg></button>
@@ -160,145 +167,149 @@
                         </div>
                     </div>
                 `;
-                        joinerList.innerHTML += joinerHTML;
-                    });
+                            joinerList.innerHTML += joinerHTML;
+                        });
 
-                    attachEventListeners();
-                })
-                .catch(error => console.error("Error fetching joiners:", error));
-        }
-
-
-        function attachEventListeners() {
-            document.querySelectorAll(".view-progress").forEach(button => {
-                button.removeEventListener("click", handleViewProgress);
-                button.addEventListener("click", handleViewProgress);
-            });
-
-            document.querySelectorAll(".complete-btn").forEach(button => {
-                button.removeEventListener("click", handleMarkComplete);
-                button.addEventListener("click", handleMarkComplete);
-            });
-
-            document.querySelectorAll(".delete-employee").forEach(button => {
-                button.removeEventListener("click", handleDeleteEmployee);
-                button.addEventListener("click", handleDeleteEmployee);
-            });
-
-            document.getElementById("submit-completion").removeEventListener("click", handleCompletionSubmit);
-            document.getElementById("submit-completion").addEventListener("click", handleCompletionSubmit);
-        }
-
-        function handleViewProgress() {
-            let joinerId = this.getAttribute("data-id");
-            loadProgress(joinerId);
-        }
-
-        function handleMarkComplete() {
-            let joinerId = this.getAttribute("data-joiner");
-            let stepId = this.getAttribute("data-step");
-            openRemarksModal(joinerId, stepId);
-        }
-
-        function handleCompletionSubmit() {
-            let remarks = remarksInput.value;
-            let completionDate = completionDateInput.value;
-
-            if (!completionDate) {
-                Swal.fire("Error", "Completion date is required!", "error");
-                return;
+                        updateStepCounts();
+                        attachEventListeners();
+                    })
+                    .catch(error => console.error("Error fetching joiners:", error));
             }
 
-            markStepComplete(selectedJoinerId, selectedStepId, completionDate, remarks)
-                .then(() => {
-                    closeRemarksModal(); // ✅ Close modal after successful submission
-                    loadJoiners(); // ✅ Refresh the list to show updated progress
+
+            function attachEventListeners() {
+                document.querySelectorAll(".view-progress").forEach(button => {
+                    button.removeEventListener("click", handleViewProgress);
+                    button.addEventListener("click", handleViewProgress);
                 });
-        }
 
+                document.querySelectorAll(".complete-btn").forEach(button => {
+                    button.removeEventListener("click", handleMarkComplete);
+                    button.addEventListener("click", handleMarkComplete);
+                });
 
-        function handleDeleteEmployee() {
-            let joinerId = this.getAttribute("data-joiner");
+                document.querySelectorAll(".delete-employee").forEach(button => {
+                    button.removeEventListener("click", handleDeleteEmployee);
+                    button.addEventListener("click", handleDeleteEmployee);
+                });
 
-            Swal.fire({
-                title: "Are you sure?",
-                text: "This action cannot be undone!",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#d33",
-                cancelButtonColor: "#3085d6",
-                confirmButtonText: "Yes, delete it!"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    deleteEmployee(joinerId);
+                document.getElementById("submit-completion").removeEventListener("click", handleCompletionSubmit);
+                document.getElementById("submit-completion").addEventListener("click", handleCompletionSubmit);
+            }
+
+            function handleViewProgress() {
+                let joinerId = this.getAttribute("data-id");
+                loadProgress(joinerId);
+            }
+
+            function handleMarkComplete() {
+                let joinerId = this.getAttribute("data-joiner");
+                let stepId = this.getAttribute("data-step");
+                openRemarksModal(joinerId, stepId);
+            }
+
+            function handleCompletionSubmit() {
+                let remarks = document.getElementById("remarks").value;
+                let completionDate = document.getElementById("completion-date").value;
+
+                if (!completionDate) {
+                    Swal.fire("Error", "Completion date is required!", "error");
+                    return;
                 }
-            });
-        }
+
+                markStepComplete(selectedJoinerId, selectedStepId, completionDate, remarks)
+                    .then(() => {
+                        closeRemarksModal();
+                        loadJoiners();
+                    })
+                    .catch(error => {
+                        console.error("Error completing step:", error);
+                    });
+            }
 
 
-        function deleteEmployee(joinerId) {
-            fetch(`/new-joiners/${joinerId}`, {
-                    method: 'DELETE', // ✅ Use DELETE method now
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
-                            'content'),
+            function handleDeleteEmployee() {
+                let joinerId = this.getAttribute("data-joiner");
+
+                Swal.fire({
+                    title: "Are you sure?",
+                    text: "This action cannot be undone!",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#d33",
+                    cancelButtonColor: "#3085d6",
+                    confirmButtonText: "Yes, delete it!"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        deleteEmployee(joinerId);
                     }
-                })
-
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        Swal.fire("Error", data.error, "error");
-                    } else {
-                        Swal.fire("Deleted!", "The employee has been removed.", "success").then(() => {
-                            loadJoiners();
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error("Error deleting employee:", error);
-                    Swal.fire("Error", "Something went wrong!", "error");
                 });
-        }
+            }
 
-        function formatDate(dateString) {
-            if (!dateString) return "N/A"; // If no date, return N/A
-            let date = new Date(dateString);
-            let day = String(date.getDate()).padStart(2, "0");
-            let month = String(date.getMonth() + 1).padStart(2, "0");
-            let year = date.getFullYear();
-            return `${day}-${month}-${year}`;
-        }
 
-        function loadProgress(newJoinerId) {
-            let joinerCard = document.querySelector(`.joiner-card[data-id="${newJoinerId}"]`);
-            let selectedJoinerName = joinerCard ? joinerCard.querySelector("p b").innerText : "Unknown";
+            function deleteEmployee(joinerId) {
+                fetch(`/new-joiners/${joinerId}`, {
+                        method: 'DELETE', // ✅ Use DELETE method now
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                                'content'),
+                        }
+                    })
 
-            fetch(`/progress/${newJoinerId}`)
-                .then(response => response.json())
-                .then(data => {
-                    joinerStatus.innerHTML = `
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            Swal.fire("Error", data.error, "error");
+                        } else {
+                            Swal.fire("Deleted!", "The employee has been removed.", "success").then(() => {
+                                loadJoiners();
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error deleting employee:", error);
+                        Swal.fire("Error", "Something went wrong!", "error");
+                    });
+            }
+
+            function formatDate(dateString) {
+                if (!dateString) return "N/A"; // If no date, return N/A
+                let date = new Date(dateString);
+                let day = String(date.getDate()).padStart(2, "0");
+                let month = String(date.getMonth() + 1).padStart(2, "0");
+                let year = date.getFullYear();
+                return `${day}-${month}-${year}`;
+            }
+
+            function loadProgress(newJoinerId) {
+                let joinerCard = document.querySelector(`.joiner-card[data-id="${newJoinerId}"]`);
+                let selectedJoinerName = joinerCard ? joinerCard.querySelector("p b").innerText : "Unknown";
+
+                fetch(`/progress/${newJoinerId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        joinerStatus.innerHTML = `
                         <div class="progress-header-container">
                             <h3>Progress History for <span class="selected-employee">${selectedJoinerName}</span></h3>
                             <button id="print-progress" class="print-btn">Print Progress</button>
                         </div>
                     `;
 
-                    if (data.length === 0) {
-                        joinerStatus.innerHTML += `<p class="no-records">No progress recorded.</p>`;
-                        return;
-                    }
+                        if (data.length === 0) {
+                            joinerStatus.innerHTML += `<p class="no-records">No progress recorded.</p>`;
+                            return;
+                        }
 
-                    data.forEach(progress => {
-                        // ✅ Only mark "Ready" as completed if ALL previous steps are completed
-                        let isReadyStep = progress.step.name.toLowerCase() === "ready";
-                        let isAllPreviousCompleted = data.every(p => p.status === "completed" || p
-                            .step.name === "Ready");
+                        data.forEach(progress => {
+                            // ✅ Only mark "Ready" as completed if ALL previous steps are completed
+                            let isReadyStep = progress.step.name.toLowerCase() === "ready";
+                            let isAllPreviousCompleted = data.every(p => p.status === "completed" || p
+                                .step.name === "Ready");
 
-                        let finalStatus = isReadyStep && isAllPreviousCompleted ? "completed" :
-                            progress.status;
+                            let finalStatus = isReadyStep && isAllPreviousCompleted ? "completed" :
+                                progress.status;
 
-                        joinerStatus.innerHTML += `
+                            joinerStatus.innerHTML += `
                     <div style="${finalStatus === "completed" ? "border-left: 5px solid green;" : "border-left: 5px solid red;"}" 
                         class="progress-card">
                         <div class="progress-header">
@@ -317,21 +328,21 @@
                         </div>
                     </div>
                 `;
-                    });
-                })
-                .catch(error => console.error("Error fetching progress:", error));
+                        });
+                    })
+                    .catch(error => console.error("Error fetching progress:", error));
 
-            setTimeout(() => {
-                let printButton = document.getElementById("print-progress");
-                if (printButton) {
-                    printButton.addEventListener("click", function() {
-                        let progressSection = document.getElementById("new-joiner-list-status")
-                            .innerHTML;
-                        let employeeName = document.querySelector(".selected-employee")
-                            .innerText || "Employee";
+                setTimeout(() => {
+                    let printButton = document.getElementById("print-progress");
+                    if (printButton) {
+                        printButton.addEventListener("click", function() {
+                            let progressSection = document.getElementById("new-joiner-list-status")
+                                .innerHTML;
+                            let employeeName = document.querySelector(".selected-employee")
+                                .innerText || "Employee";
 
-                        let printWindow = window.open("", "", "width=800,height=600");
-                        printWindow.document.write(`
+                            let printWindow = window.open("", "", "width=800,height=600");
+                            printWindow.document.write(`
                 <html>
                 <head>
                     <title>Progress Report - ${employeeName}</title>
@@ -416,88 +427,107 @@
                 </html>
              `);
 
-                        printWindow.document.close();
-                        printWindow.focus();
-                        printWindow.print();
-                        printWindow.close();
-                    });
-                }
-            }, 100);
-
-        }
-
-
-        function markStepComplete(newJoinerId, stepId, completionDate, remarks) {
-            if (stepId === "all") {
-                Swal.fire("Error", "Please select a specific step before marking completion.", "error");
-                return;
-            }
-
-            console.log("Sending data:", {
-                newJoinerId,
-                stepId,
-                completionDate,
-                remarks
-            });
-
-            return fetch('/progress/complete', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
-                            'content'),
-                    },
-                    body: JSON.stringify({
-                        new_joiner_id: newJoinerId,
-                        step_id: stepId,
-                        completion_date: completionDate,
-                        remarks: remarks
-                    }),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log("Server response:", data);
-                    if (data.error) {
-                        Swal.fire("Error", data.error, "error");
-                    } else {
-                        Swal.fire("Success", "Step marked as completed!", "success").then(() => {
-                            closeRemarksModal();
-                            // ✅ Keep the system in the same filter after marking step completed
-                            loadJoiners(stepId);
+                            printWindow.document.close();
+                            printWindow.focus();
+                            printWindow.print();
+                            printWindow.close();
                         });
                     }
-                })
-                .catch(error => {
-                    console.error("Fetch error:", error);
-                    Swal.fire("Error", "Something went wrong!", "error");
+                }, 100);
+
+            }
+
+            function updateStepCounts() {
+                fetch('/count-by-step')
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log("🚀 Step Count Data from API:", data);
+
+                        document.querySelectorAll(".step-badge").forEach(badge => {
+                            badge.innerText = "0"; // Reset all to 0
+                        });
+
+                        Object.entries(data).forEach(([stepId, count]) => {
+                            let badge = document.getElementById(`badge-${stepId}`);
+                            if (badge) {
+                                badge.innerText = count;
+                            } else {
+                                console.warn(
+                                    `🚨 MISSING BADGE: No element found for step ID ${stepId}`);
+                            }
+                        });
+                    })
+                    .catch(error => console.error("❌ Error fetching step counts:", error));
+            }
+
+
+            function markStepComplete(newJoinerId, stepId, completionDate, remarks) {
+                return fetch('/progress/complete', { // ✅ RETURN the fetch request
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                                'content'),
+                        },
+                        body: JSON.stringify({
+                            new_joiner_id: newJoinerId,
+                            step_id: stepId,
+                            completion_date: completionDate,
+                            remarks: remarks
+                        }),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            Swal.fire("Error", data.error, "error");
+                        } else {
+                            Swal.fire("Success", "Step marked as completed!", "success").then(() => {
+                                closeRemarksModal();
+                                loadJoiners(); // ✅ Reload joiner progress
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Fetch error:", error);
+                        Swal.fire("Error", "Something went wrong!", "error");
+                    });
+            }
+
+            modalOverlay.addEventListener("click", closeRemarksModal);
+
+            stepsBtns.forEach(button => {
+                button.addEventListener("click", function() {
+                    let stepId = this.getAttribute("data-step");
+
+                    stepsBtns.forEach(btn => btn.classList.remove("active"));
+                    this.classList.add("active");
+                    selectedStep.innerText = this.innerText;
+
+                    loadJoiners(stepId);
                 });
-        }
-
-
-        modalOverlay.addEventListener("click", closeRemarksModal);
-
-        stepsBtns.forEach(button => {
-            button.addEventListener("click", function() {
-                let stepId = this.getAttribute("data-step");
-
-                stepsBtns.forEach(btn => btn.classList.remove("active"));
-                this.classList.add("active");
-                selectedStep.innerText = this.innerText;
-
-                loadJoiners(stepId);
             });
+
+            const allRecordsBtn = document.querySelector('.steps-btn[data-step="all"]');
+            if (allRecordsBtn) {
+                allRecordsBtn.classList.add("active");
+                selectedStep.innerText = allRecordsBtn.innerText;
+            }
+
+            loadJoiners();
         });
 
-        const allRecordsBtn = document.querySelector('.steps-btn[data-step="all"]');
-        if (allRecordsBtn) {
-            allRecordsBtn.classList.add("active");
-            selectedStep.innerText = allRecordsBtn.innerText;
+        function closeRemarksModal() {
+            const remarksModal = document.getElementById("remarks-modal");
+            const modalOverlay = document.getElementById("modal-overlay");
+            const remarksInput = document.getElementById("remarks");
+            const completionDateInput = document.getElementById("completion-date");
+            remarksModal.style.display = "none";
+            modalOverlay.style.display = "none";
+            remarksInput.value = "";
+            completionDateInput.value = "";
         }
-
-        loadJoiners();
-    });
-</script>
-
+    </script>
+@endpush
 
 
 <style>

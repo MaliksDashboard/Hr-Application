@@ -1,4 +1,4 @@
-@extends('layouts.master')
+{{-- @extends('layouts.master')
 @section('title', 'Calendar')
 @section('custom_title', 'Calendar')
 
@@ -357,4 +357,4 @@
     div:where(.swal2-container) .swal2-input {
         margin-left: 0 !important;
     }
-</style>
+</style> --}}

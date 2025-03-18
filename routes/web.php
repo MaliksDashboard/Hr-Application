@@ -2,44 +2,40 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Route;
-use App\Exports\EmployeesExport;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Http\Controllers\AuthController;
-use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\ChatController;
-use Illuminate\Support\Facades\Broadcast;
+use App\Models\Evaluation;
 use App\Models\Notification;
 use Illuminate\Http\Request;
+use App\Models\EvaluationForm;
+use App\Events\NewNotification;
+use App\Exports\EmployeesExport;
+use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Route;
+use App\Models\EvaluationFormQuestions;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ChatController;
+use Illuminate\Support\Facades\Broadcast;
 
 Route::middleware('auth')->group(function () {
     //route for the Main Page
     Route::get('/', [DashboardController::class, 'index'])
         ->name('dashboard')
         ->middleware('permission:Dashboard');
-    Route::get('/dashboard', [DashboardController::class, 'index'])
-        ->name('dashboard')
-        ->middleware('permission:Dashboard');
+
     Route::get('/getVaccanciesData', [DashboardController::class, 'getVaccanciesData']);
+    Route::post('/send-anniversary-email', [DashboardController::class, 'sendAniversaryEmail'])->name('send.anniversary.email');
+    Route::post('/send-birthday-email', [DashboardController::class, 'sendBirthdayEmail'])->name('send.birthday.email');
+    Route::post('/send-notice-assessment-email', [DashboardController::class, 'sendNoticeAssessmentEmail']);
+    Route::get('/getEmployeePerBranch', [DashboardController::class, 'getTopBranches'])->name('getTopBranches');
 
     //Users Routes
-    Route::get('/users/profile', [UserController::class, 'profile'])
-        ->name('users.profile')
-        ->middleware('permission:Users');
+    Route::get('/users/profile', [UserController::class, 'profile'])->name('users.profile');
     Route::resource('users', UserController::class)->middleware('permission:Users');
     Route::get('/getusers', [UserController::class, 'getUsersByRole'])->middleware('permission:Users');
-    Route::post('/lock-rule', [UserController::class, 'lockRule'])
-        ->name('lock.rule')
-        ->middleware('permission:Users');
-    Route::get('/check-temp-pass', [UserController::class, 'checkTempPass'])
-        ->name('check.temp.pass')
-        ->middleware('permission:Users');
-    Route::get('/lock-screen', [UserController::class, 'lockScreen'])
-        ->name('users.lock')
-        ->middleware('permission:Users');
-    Route::post('/unlock-screen', [UserController::class, 'unlockScreen'])
-        ->name('users.unlock')
-        ->middleware('permission:Users');
+    Route::post('/lock-rule', [UserController::class, 'lockRule'])->name('lock.rule');
+    Route::get('/check-temp-pass', [UserController::class, 'checkTempPass'])->name('check.temp.pass');
+    Route::get('/lock-screen', [UserController::class, 'lockScreen'])->name('users.lock');
+    Route::post('/unlock-screen', [UserController::class, 'unlockScreen'])->name('users.unlock');
 
     //Employees Routes
     Route::delete('/delete-file', [EmployeesController::class, 'delete'])
@@ -60,6 +56,8 @@ Route::middleware('auth')->group(function () {
         return Excel::download(new EmployeesExport(), 'employees.xlsx');
     })->name('employees.export');
     Route::get('/countEmp', [EmployeesController::class, 'countEmp'])->middleware('permission:Employees');
+    Route::get('/export-employees', [EmployeesController::class, 'exportEmployees'])->name('export.employees');
+    Route::get('/test-probation', [EmployeesController::class, 'checkProbationPeriod']);
 
     //Branches Routes
     Route::resource('/branches', BranchController::class)->middleware('permission:Branches');
@@ -71,16 +69,26 @@ Route::middleware('auth')->group(function () {
         ->name('branches.employees')
         ->middleware('permission:Branches');
 
-    //Calendars Page
-    Route::get('/events', [CalendarController::class, 'fetchEvents'])->middleware('permission:Calendar & Tools');
-    Route::post('/events', [CalendarController::class, 'storeEvent'])->middleware('permission:Calendar & Tools');
-    Route::get('/calendar', function () {
-        return view('calendar');
-    })->middleware('permission:Calendar & Tools');
-    Route::get('/upcoming-events', [CalendarController::class, 'fetchUpcomingEvents'])->middleware('permission:Calendar & Tools');
-    Route::delete('/events/{id}', [CalendarController::class, 'deleteEvent'])->middleware('permission:Calendar & Tools');
-    Route::put('/events/{id}', [CalendarController::class, 'editEvent'])->middleware('permission:Calendar & Tools');
-    Route::get('/events/{id}', [CalendarController::class, 'fetchEvent'])->middleware('permission:Calendar & Tools');
+    //Department Routes
+    Route::resource('/departments', DepartmentController::class)->middleware('permission:Branches');
+    Route::get('/getDeptData', [DepartmentController::class, 'getDeptData']);
+
+    //Jobs Routes:
+    Route::resource('/jobs', JobController::class)->middleware('permission:Titles');
+
+    //News Routes:
+    Route::resource('/news', NewsController::class);
+
+    // //Calendars Page
+    // Route::get('/events', [CalendarController::class, 'fetchEvents'])->middleware('permission:Calendar & Tools');
+    // Route::post('/events', [CalendarController::class, 'storeEvent'])->middleware('permission:Calendar & Tools');
+    // Route::get('/calendar', function () {
+    //     return view('calendar');
+    // })->middleware('permission:Calendar & Tools');
+    // Route::get('/upcoming-events', [CalendarController::class, 'fetchUpcomingEvents'])->middleware('permission:Calendar & Tools');
+    // Route::delete('/events/{id}', [CalendarController::class, 'deleteEvent'])->middleware('permission:Calendar & Tools');
+    // Route::put('/events/{id}', [CalendarController::class, 'editEvent'])->middleware('permission:Calendar & Tools');
+    // Route::get('/events/{id}', [CalendarController::class, 'fetchEvent'])->middleware('permission:Calendar & Tools');
 
     //Titles routes
     Route::resource('titles', TitleController::class)->middleware('permission:Titles');
@@ -88,9 +96,9 @@ Route::middleware('auth')->group(function () {
         ->name('titles.updateRanks')
         ->middleware('permission:Titles');
     Route::get('/titles/{id}', [TitleController::class, 'show'])->middleware('permission:Titles');
-    Route::delete('/titles/{id}', [TitleController::class, 'destroy'])
-        ->name('titles.destroy')
-        ->middleware('permission:Titles');
+    // Route::delete('/titles/{id}', [TitleController::class, 'destroy'])
+    //     ->name('titles.destroy')
+    //     ->middleware('permission:Titles');
     Route::get('/get-titles-data', [TitleController::class, 'getTitleData'])->middleware('permission:Titles');
 
     //Vacancies routes
@@ -98,7 +106,7 @@ Route::middleware('auth')->group(function () {
         ->name('vacancies.fetch')
         ->middleware('permission:Vacancies');
     Route::resource('vacancies', VacancyController::class)->middleware('permission:Vacancies');
-    Route::get('/branches-vacancies',[VacancyController::class,'getBranchesWithVacancies']);
+    Route::get('/branches-vacancies', [VacancyController::class, 'getBranchesWithVacancies']);
 
     //Transfers routes
     Route::post('/send-transfer-email', [TransferController::class, 'sendTransferEmail'])
@@ -161,10 +169,16 @@ Route::middleware('auth')->group(function () {
     Route::post('/progress/init/{newJoinerId}', [NewJoinerProgressController::class, 'initializeProgress'])->middleware('permission:New Joiners');
     Route::get('/new-joiners/filter/{stepId}', [NewJoinerController::class, 'filterByStep'])->middleware('permission:New Joiners');
     Route::delete('/new-joiners/{id}', [NewJoinerController::class, 'destroy'])->middleware('permission:New Joiners');
+    Route::get('/count-by-step', [NewJoinerController::class, 'countByStep'])->middleware('permission:New Joiners');
+    Route::put('/new-joiners-steps/{id}/update', [NewJoinerController::class, 'UpdateStepTime'])->name('update.step.time')->middleware('permission:New Joiners');
+    Route::get('/new-joiners-steps/{id}/edit',[NewJoinerController::class,'EditStepTime'])->name('edit.step.time')->middleware('permission:New Joiners');
+
 
     //Notification System
+    // Route::get('/notifications', [NotificationController::class, 'fetchNotifications']);
+    // Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
+    Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
     Route::get('/notifications', [NotificationController::class, 'fetchNotifications']);
-    Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
 
     //Training Steps API
     Route::resource('steps', TrainingStepsController::class)->middleware('permission:New Joiners');
@@ -177,17 +191,46 @@ Route::middleware('auth')->group(function () {
     Route::get('add-permission', [RolesAndPermissionController::class, 'addPermissions'])->middleware('permission:Role And Permission');
     Route::resource('roles', RolesAndPermissionController::class)->middleware('permission:Role And Permission');
     Route::get('/getroles', [RolesAndPermissionController::class, 'getRoles'])->middleware('permission:Role And Permission');
-    Route::put('/roles/{id}', [RolesAndPermissionController::class, 'update'])
-        ->name('roles.update')
-        ->middleware('permission:Role And Permission');
+    // Route::put('/roles/{id}', [RolesAndPermissionController::class, 'update'])
+    //     ->name('roles.update')
+    //     ->middleware('permission:Role And Permission');
 
     //Sundays API:
-    Route::get('/sundays', [SundaysController::class, 'index'])->name('sundays.index')->middleware('permission:Sundays');
-    Route::post('/sundays/upload', [SundaysController::class, 'upload'])->name('sundays.upload')->middleware('permission:Sundays');
-    Route::get('/sundays/factors', [SundaysController::class, 'factors'])->name('sundays.factors')->middleware('permission:Sundays');
-    Route::post('/sundays/process', [SundaysController::class, 'process'])->name('sundays.process')->middleware('permission:Sundays');
-    Route::get('/sundays/export', [SundaysController::class, 'export'])->name('sundays.export')->middleware('permission:Sundays');
+    Route::get('/sundays', [SundaysController::class, 'index'])
+        ->name('sundays.index')
+        ->middleware('permission:Sundays');
+    Route::post('/sundays/upload', [SundaysController::class, 'upload'])
+        ->name('sundays.upload')
+        ->middleware('permission:Sundays');
+    Route::get('/sundays/factors', [SundaysController::class, 'factors'])
+        ->name('sundays.factors')
+        ->middleware('permission:Sundays');
+    Route::post('/sundays/process', [SundaysController::class, 'process'])
+        ->name('sundays.process')
+        ->middleware('permission:Sundays');
+    Route::get('/sundays/export', [SundaysController::class, 'export'])
+        ->name('sundays.export')
+        ->middleware('permission:Sundays');
 
+    //Settings API
+    Route::get('settings', [SettingsController::class, 'showSettings'])->name('settings');
+    Route::post('settings', [SettingsController::class, 'updateSettings']);
+    Route::post('reset-settings', [SettingsController::class, 'resetSettings'])->name('reset.settings');
+
+    //Evaluation Forms
+    Route::resource('/evaluation-forms', EvaluationFormController::class);
+
+    //Evaluation Form Questions
+    Route::resource('/evaluations-forms-questions', EvaluationFormQuestionsController::class);
+
+    //Evaluation over all API
+    Route::resource('/evaluation', EvaluationController::class);
+    Route::get('/evaluation/start/{month}', [EvaluationController::class, 'startEvaluation'])->name('evaluation.start');
+    Route::post('/evaluation/submit/{id}', [EvaluationController::class, 'submitEvaluation'])->name('evaluation.submit');
+    // Route::get('/evaluation/show/{month}', [EvaluationController::class, 'show'])->name('evaluation.show');
+    Route::get('/evaluation/{month}/employee/{employee_id}', [EvaluationController::class, 'evaluate'])->name('evaluation.evaluate');
+    // Route::post('/evaluation/{evaluation_id}/employee/{employee_id}/submit', [EvaluationController::class, 'submitEvaluation'])->name('evaluation.submit');
+    Route::get('evaluation/{evaluation_id}/employee/{employee_id}/view', [EvaluationController::class, 'viewEvaluation'])->name('evaluation.view');
 });
 
 //Route for getting the user role
@@ -210,3 +253,5 @@ Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::get('/change-password', [AuthController::class, 'showChangePasswordForm'])->name('password.change');
+Route::post('/change-password', [AuthController::class, 'changePassword']);

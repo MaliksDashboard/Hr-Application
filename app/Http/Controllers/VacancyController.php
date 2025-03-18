@@ -2,38 +2,49 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Job;
+use App\Models\User;
 use App\Models\Branch;
-use Illuminate\Http\Request;
 use App\Models\Vacancy;
+use App\Models\Notification;
+use Illuminate\Http\Request;
+use App\Events\NewNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Models\User;
-use App\Models\Notification;
 use Illuminate\Support\Facades\Auth;
 
 class VacancyController extends Controller
 {
     public function index()
     {
-        $vacancies = Vacancy::with('branch')
-            ->where('is_finished', 0)
-            ->orWhereNull('is_finished')
-            ->orderBy('created_at', 'desc') // Sort by latest created_at
+        // ✅ Ensure jobRelation is loaded
+        $vacancies = Vacancy::with(['branch', 'jobRelation'])
+            ->where(function ($query) {
+                $query->where('is_finished', 0)->orWhereNull('is_finished');
+            })
+            ->orderBy('created_at', 'desc')
             ->get();
 
-        $vacanciesCompleted = Vacancy::with('branch')
+        $vacanciesCompleted = Vacancy::with(['branch', 'jobRelation'])
             ->where('is_finished', 1)
-            ->orderBy('updated_at', 'desc') // Sort by latest updated_at
-            ->limit(20) // Limit to 10 records
+            ->orderBy('updated_at', 'desc')
+            ->limit(20)
             ->get();
 
-        return view('vacancy.index', compact('vacancies', 'vacanciesCompleted'));
+        $jobs = Job::all();
+
+        // ✅ Debugging: Log vacancy data
+        foreach ($vacancies as $vacancy) {
+            Log::info("Vacancy ID: {$vacancy->id}, Job ID: {$vacancy->job_id}, Job Name: " . ($vacancy->jobRelation->name ?? 'No Job Assigned'));
+        }
+
+        return view('vacancy.index', compact('vacancies', 'vacanciesCompleted', 'jobs'));
     }
 
     public function create()
     {
         $branches = Branch::orderBy('branch_name', 'asc')->get();
-        $jobs = DB::table('employee_info')->pluck('job');
+        $jobs = Job::all();
         return view('vacancy.create', compact('branches', 'jobs'));
     }
 
@@ -46,23 +57,24 @@ class VacancyController extends Controller
                 'job' => 'required|string|max:255',
                 'status' => 'required|in:low,medium,high',
                 'asked_date' => 'required|date',
+                'remarks' => 'nullable|string|max:1000',
             ]);
-    
+
             // Create the vacancy
             $vacancy = Vacancy::create($validated);
-    
+
             // Get the user who created the vacancy
             $creator = Auth::user(); // The user who created the vacancy
-    
+
             // Get the branch name
             $branchName = $vacancy->branch->branch_name ?? 'N/A'; // Using optional chaining to handle null values
-    
+
             // Notify all admins about the new vacancy except the creator
             $adminUsers = User::role('Admin')->get(); // ✅ Fetch admins using Spatie roles
             foreach ($adminUsers as $admin) {
                 // Skip the creator of the vacancy
                 if ($admin->id !== $creator->id) {
-                    Notification::create([
+                    $notification = Notification::create([
                         'user_id' => $admin->id,
                         'type' => 'admin_alert',
                         'message' => "{$creator->name} has created a new vacancy for the job '{$vacancy->job}' at {$branchName}.",
@@ -72,7 +84,9 @@ class VacancyController extends Controller
                     ]);
                 }
             }
-    
+
+            broadcast(new NewNotification($notification))->toOthers();
+
             // Return success response
             return redirect()->route('vacancies.index')->with('success', 'Vacancy created successfully!');
         } catch (\Exception $e) {
@@ -91,7 +105,7 @@ class VacancyController extends Controller
             ->select('employee_info.id', 'employee_info.name', 'employee_info.image_path', 'employee_info.pin_code', 'branches.branch_name') // Select desired columns
             ->where('employee_info.status', 1) // Include only employees with status = 1
             ->get();
-        $jobs = DB::table('employee_info')->pluck('job');
+        $jobs = Job::all();
 
         return view('vacancy.edit', compact('vacancy', 'branches', 'employees', 'jobs'));
     }
@@ -130,20 +144,20 @@ class VacancyController extends Controller
         try {
             // Find the vacancy by ID
             $vacancy = Vacancy::findOrFail($id);
-    
+
             // Get the authenticated user (the one performing the action)
             $creator = Auth::user();
-    
+
             // Get the job and branch details for the notification
             $job = $vacancy->job;
             $branchName = $vacancy->branch->branch_name ?? 'N/A';
-    
+
             // Notify all admins about the deletion except the user who performed the action
             $adminUsers = User::role('Admin')->get(); // ✅ Fetch admins using Spatie roles
             foreach ($adminUsers as $admin) {
                 if ($admin->id !== $creator->id) {
                     // Skip the creator
-                    Notification::create([
+                    $notification = Notification::create([
                         'user_id' => $admin->id,
                         'type' => 'admin_alert',
                         'message' => "{$creator->name} has deleted the vacancy for the job '{$job}' at {$branchName}.",
@@ -153,10 +167,12 @@ class VacancyController extends Controller
                     ]);
                 }
             }
-    
+
+            broadcast(new NewNotification($notification))->toOthers();
+
             // Delete the vacancy
             $vacancy->delete();
-    
+
             // Return success response
             return redirect()->route('vacancies.index')->with('success', 'Vacancy deleted successfully!');
         } catch (\Exception $e) {
@@ -165,17 +181,35 @@ class VacancyController extends Controller
             return redirect()->route('vacancies.index')->with('error', 'Failed to delete vacancy.');
         }
     }
-    
 
     public function fetch(Request $request)
     {
         $branchId = $request->query('branch_id');
 
         if (!$branchId) {
-            return response()->json(['vacancies' => []], 200); // Return empty if no branch selected
+            return response()->json(['vacancies' => []], 200);
         }
 
-        $vacancies = Vacancy::where('branch_id', $branchId)->where('is_finished', false)->orderBy('created_at', 'desc')->get();
+        // ✅ Ensure jobRelation is loaded
+        $vacancies = Vacancy::with('jobRelation')->where('branch_id', $branchId)->where('is_finished', false)->orderBy('created_at', 'desc')->get();
+
+        // ✅ Map data correctly
+        $vacancies = $vacancies->map(function ($vacancy) {
+            return [
+                'id' => $vacancy->id,
+                'branch_id' => $vacancy->branch_id,
+                'job_id' => $vacancy->job_id, // Keep this for reference
+                'job_name' => optional($vacancy->jobRelation)->name, // ✅ FIXED
+                'asked_date' => $vacancy->created_at->format('Y-m-d'),
+                'status' => $vacancy->status,
+                'is_finished' => $vacancy->is_finished,
+                'employee_id' => $vacancy->employee_id,
+                'image_path' => $vacancy->image_path,
+                'remarks' => $vacancy->remarks,
+                'created_at' => $vacancy->created_at,
+                'updated_at' => $vacancy->updated_at,
+            ];
+        });
 
         return response()->json(['vacancies' => $vacancies], 200);
     }

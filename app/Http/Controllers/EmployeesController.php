@@ -2,23 +2,26 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Employee;
-use Illuminate\Http\Request;
-use Intervention\Image\ImageManager;
-use Intervention\Image\Drivers\Gd\Driver;
-use Illuminate\Support\Facades\Log;
-use App\Models\Branch;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\DB;
-use App\Models\Title;
-use App\Models\Vacancy;
-use App\Models\User;
-use App\Models\Notification;
-use Illuminate\Support\Facades\Auth;
-
 use ZipArchive;
+use App\Models\Job;
+use App\Models\User;
+use App\Models\Title;
+use App\Models\Branch;
+use App\Models\Vacancy;
+use App\Models\Employee;
+use App\Models\Notification;
+use App\Events\NewNotification;
+use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use App\Exports\EmployeesExport;
+use Illuminate\Support\Facades\DB;
 use function Laravel\Prompts\table;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use Intervention\Image\ImageManager;
+use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Drivers\Gd\Driver;
 
 class EmployeesController extends Controller
 {
@@ -26,7 +29,7 @@ class EmployeesController extends Controller
     {
         $query = Employee::query();
 
-        // Search Filter
+        // Search Filter (DOES NOT exclude employees with status = 0)
         if ($request->has('search') && !empty($request->search)) {
             $searchTerms = explode(' ', trim($request->search));
 
@@ -39,24 +42,46 @@ class EmployeesController extends Controller
                                 $bQuery->where('branch_name', 'LIKE', "%{$term}%");
                             })
                             ->orWhere('title', 'LIKE', "%{$term}%")
-                            ->orWhere('job', 'LIKE', "%{$term}%")
+                            ->orWhereHas('jobRelation', function ($jQuery) use ($term) {
+                                $jQuery->where('name', 'LIKE', "%{$term}%");
+                            })
                             ->orWhere('pin_code', 'LIKE', "%{$term}%");
                     });
                 }
             });
         }
 
-        // Branch Filter
+        // Branch Filter (EXCLUDES status = 0)
         if ($request->has('branch') && !empty($request->branch)) {
-            $query->where('branch_id', $request->branch);
+            $query->where('branch_id', $request->branch)
+                ->where('status', '!=', 0);
         }
 
-        // Job Filter
+        // Job Filter (EXCLUDES status = 0)
         if ($request->has('job') && !empty($request->job)) {
-            $query->where('job', $request->job);
+            $query->whereHas('jobRelation', function ($jQuery) use ($request) {
+                $jQuery->where('id', $request->job);
+            })->where('status', '!=', 0);
         }
 
-        $employees = $query->orderBy('status', 'desc')->orderBy('branch_id', 'asc')->paginate(50);
+        // Final Query Execution
+        $employees = $query
+            ->with(['jobRelation'])
+            ->orderBy('status', 'desc')
+            ->orderBy('branch_id', 'asc')
+            ->paginate(20);
+
+
+        // Debug: Check if the job is actually being loaded
+        foreach ($employees as $employee) {
+            Log::info([
+                'employee_id' => $employee->id,
+                'job_id' => $employee->job,
+                'job_is_object' => is_object($employee->job) ? 'YES' : 'NO',
+                'job_class' => is_object($employee->job) ? get_class($employee->job) : 'Not an object',
+                'job_name' => is_object($employee->job) ? $employee->job->name : 'Not an object',
+            ]);
+        }
 
         if ($request->ajax()) {
             return response()->json([
@@ -66,7 +91,7 @@ class EmployeesController extends Controller
         }
 
         $branches = Branch::orderBy('branch_name', 'asc')->get();
-        $jobs = Employee::distinct()->pluck('job');
+        $jobs = Job::all();
 
         return view('employees.index', compact('employees', 'branches', 'jobs'));
     }
@@ -75,7 +100,7 @@ class EmployeesController extends Controller
     {
         $branches = Branch::orderBy('branch_name', 'asc')->get();
         $titles = Title::pluck('name')->toArray();
-        $jobs = DB::table('employee_info')->distinct()->pluck('job');
+        $jobs = Job::all();
         return view('employees.create', compact('branches', 'titles', 'jobs'));
     }
 
@@ -90,16 +115,33 @@ class EmployeesController extends Controller
             'branch_id' => 'required|exists:branches,id',
             'title' => 'required|string|max:255',
             'status' => 'required|in:on,off',
-            'date_hired' => ['required', 'date', 'before:today'],
-            'pin_code' => 'required|string|max:255|unique:employee_info,pin_code',
+            'date_hired' => ['required', 'date', 'before_or_equal:today'],
+            'pin_code' => 'required|string|digits:4|unique:employee_info,pin_code',
             'email' => 'nullable|email|unique:employee_info,email',
             'phone' => 'nullable|string|max:15|unique:employee_info,phone',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'job' => 'required|string|max:255',
-            'car' => 'nullable|string|max:255',
+            'car' => 'nullable|in:No,Yes,Moto,Both',
             'address' => 'nullable|string|max:255',
             'birthday' => 'nullable|date',
+            'blood_type' => 'nullable|string|max:10',
+            'marital_status' => 'nullable|in:Single,Married,Divorced',
+            'shift' => 'required|in:Full Time,Part Time',
+            'whish_number' => 'nullable|string|max:255',
+            'where_can_work' => 'nullable|string|max:500', // Allowing multiple branches as comma-separated values
+            'left_date' => 'nullable|date|after:date_hired',
+            'left_reason' => 'nullable|string|max:255',
+            'give_notice' => 'nullable|boolean',
+            'is_good_performer' => 'nullable|boolean',
+            'is_positive_person' => 'nullable|boolean',
+            'exit_interview_remarks' => 'nullable|string|max:500',
+            'is_recommended_to_back' => 'nullable|boolean',
         ]);
+
+        // ✅ Handle Multi-Selection for "where_can_work"
+        if ($request->has('where_can_work') && is_array($request->where_can_work)) {
+            $validatedData['where_can_work'] = implode(',', $request->where_can_work);
+        }
 
         Log::info('Validated data: ', $validatedData);
 
@@ -107,7 +149,7 @@ class EmployeesController extends Controller
         $existingTitle = DB::table('employee_info')->where('title', $request->title)->exists();
         if (!$existingTitle) {
             DB::table('employee_info')->insert([
-                'name' => $request->name, // Ensure name is included
+                'name' => $request->name,
                 'title' => $request->title,
                 'branch_id' => $request->branch_id,
                 'status' => $request->status === 'on',
@@ -116,15 +158,28 @@ class EmployeesController extends Controller
                 'email' => $request->email,
                 'phone' => $request->phone,
                 'job' => $request->job,
-                'image_path' => $request->image,
+                'image_path' => $request->image ?? '/images/Default.jpg',
                 'car' => $request->car,
                 'address' => $request->address,
                 'birthday' => $request->birthday,
+                'blood_type' => $request->blood_type ?? null,
+                'marital_status' => $request->marital_status ?? 'Single',
+                'shift' => $request->shift ?? 'Full Time',
+                'whish_number' => $request->whish_number ?? null,
+                'where_can_work' => isset($request->where_can_work) ? implode(',', (array) $request->where_can_work) : null,
+                'left_date' => $request->left_date ?? null,
+                'left_reason' => $request->left_reason ?? null,
+                'give_notice' => $request->give_notice ?? null,
+                'is_good_performer' => $request->is_good_performer ?? null,
+                'is_positive_person' => $request->is_positive_person ?? null,
+                'exit_interview_remarks' => $request->exit_interview_remarks ?? null,
+                'is_recommended_to_back' => $request->is_recommended_to_back ?? null,
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
         }
 
-
-        // Handle image upload
+        // ✅ Handle image upload
         $storedImagePath = null;
         if ($request->hasFile('image')) {
             try {
@@ -133,10 +188,19 @@ class EmployeesController extends Controller
                 $manager = new ImageManager(new Driver());
                 $image = $request->file('image');
                 $filename = uniqid() . '.' . $image->getClientOriginalExtension();
+
                 $img = $manager->read($image);
-                $img = $img->resize(370, 370);
+
+                // ✅ Keep the original width & height
+                $width = $img->width();
+                $height = $img->height();
+                $img = $img->resize($width, $height); // This does nothing but ensures dimensions remain the same
+
                 $savePath = storage_path('app/public/images/' . $filename);
-                $img->toJpeg(80)->save($savePath);
+
+                // ✅ Reduce file size by lowering JPEG quality (60 instead of 80)
+                $img->toJpeg(60)->save($savePath);
+
                 $storedImagePath = 'images/' . $filename;
             } catch (\Exception $e) {
                 Log::error('Image processing failed: ' . $e->getMessage());
@@ -144,21 +208,33 @@ class EmployeesController extends Controller
             }
         }
 
-        // Create employee record in the database
+        // ✅ Create employee record in the database
         $employee = Employee::create([
-            'name' => $validatedData['name'],
-            'branch_id' => $validatedData['branch_id'],
-            'title' => $validatedData['title'],
-            'status' => $validatedData['status'] === 'on',
-            'date_hired' => $validatedData['date_hired'],
-            'pin_code' => $validatedData['pin_code'],
-            'email' => $validatedData['email'] ?? null,
-            'phone' => $validatedData['phone'] ?? null,
-            'image_path' => $storedImagePath ?? null,
-            'job' => $validatedData['job'],
-            'car' => $validatedData['car'] ?? null,
-            'address' => $validatedData['address'] ?? null,
-            'birthday' => $validatedData['birthday'] ?? null,
+            'name' => $request->name,
+            'branch_id' => $request->branch_id,
+            'title' => $request->title,
+            'status' => $request->status === 'on',
+            'date_hired' => $request->date_hired,
+            'pin_code' => $request->pin_code,
+            'email' => $request->email ?? null,
+            'phone' => $request->phone ?? null,
+            'image_path' => $storedImagePath ?? '/images/Default.jpg',
+            'job' => $request->job,
+            'car' => $request->car ?? null,
+            'address' => $request->address ?? null,
+            'birthday' => $request->birthday ?? null,
+            'blood_type' => $request->blood_type ?? null,
+            'marital_status' => $request->marital_status ?? 'Single',
+            'shift' => $request->shift ?? 'Full Time',
+            'whish_number' => $request->whish_number ?? null,
+            'where_can_work' => isset($request->where_can_work) ? implode(',', (array) $request->where_can_work) : null,
+            'left_date' => $request->left_date ?? null,
+            'left_reason' => $request->left_reason ?? null,
+            'give_notice' => $request->give_notice ? 1 : 0,
+            'is_good_performer' => $request->is_good_performer ? 1 : 0,
+            'is_positive_person' => $request->is_positive_person ? 1 : 0,
+            'exit_interview_remarks' => $request->exit_interview_remarks ?? null,
+            'is_recommended_to_back' => $request->is_recommended_to_back ? 1 : 0,
         ]);
 
         // Create folder for employee in employees-data
@@ -177,18 +253,37 @@ class EmployeesController extends Controller
 
         // Notify all admins about the new employee except the creator
         $adminUsers = User::role('Admin')->get();
+
         foreach ($adminUsers as $admin) {
             if ($admin->id !== $creator->id) {
-                Notification::create([
+                $notification = Notification::create([
                     'user_id' => $admin->id,
                     'type' => 'admin_alert',
-                    'message' => "{$creator->name} has created a new employee named {$employee->name} with the job of {$employee->job}.",
+                    'message' => "{$creator->name} has created a new employee named {$employee->name} with the job of {$employee->jobRelation->name}.",
                     'notified_at' => now(),
                     'is_read' => false,
                     'user_image' => $creator->image ?? '/images/Default.jpg',
                 ]);
+
+                // Broadcast notification to other users in real-time
+                broadcast(new NewNotification($notification))->toOthers();
             }
         }
+
+        $defaultPassword = 'Welcome@123';
+
+        $user = User::create([
+            'employee_id' => $employee->id, // Make sure to use $employee->id here, not $validatedData['id']
+            'name' => $validatedData['name'],
+            'email' => $validatedData['email'] ?? null,
+            'password' => bcrypt($defaultPassword),
+            'pin_code' => $validatedData['pin_code'] ?? null,
+            'image' => $storedImagePath ?? null, // Use the stored image path
+            'status' => $validatedData['status'] ?? null,
+            'job' => $validatedData['job'] ?? null,
+            'branch_id' => $validatedData['branch_id'] ?? null,
+            'must_change_password' => 1,
+        ]);
 
         return redirect()->route('employees.index')->with('success', 'Employee added successfully!');
     }
@@ -197,7 +292,7 @@ class EmployeesController extends Controller
     {
         $branches = Branch::orderBy('branch_name', 'asc')->get();
         $titles = Title::pluck('name');
-        $jobs = DB::table('employee_info')->distinct()->pluck('job');
+        $jobs = Job::all();
         $employee = Employee::findOrFail($id);
 
         return view('employees.edit', compact('branches', 'employee', 'titles', 'jobs'));
@@ -211,31 +306,40 @@ class EmployeesController extends Controller
         // Ensure $employee is defined before validation (especially in update scenarios)
 
         $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
-            'branch_id' => 'required|exists:branches,id',
-            'title' => 'required|string|max:255',
-            'status' => 'required|in:on,off',
-            'date_hired' => ['required', 'date', 'before:today'],
-            'pin_code' => 'required|string|max:255|unique:employee_info,pin_code,' . ($employee->id ?? 'NULL') . ',id',
-            'email' => 'nullable|email|unique:employee_info,email,' . ($employee->id ?? 'NULL') . ',id',
-            'phone' => 'nullable|string|max:15|unique:employee_info,phone,' . ($employee->id ?? 'NULL') . ',id',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'job' => 'required|string|max:255',
-            'left_date' => [
+            'name'             => 'required|string|max:255',
+            'branch_id'        => 'required|exists:branches,id',
+            'title'            => 'required|string|max:255',
+            'status'           => 'required|in:on,off',
+            'date_hired'       => ['required', 'date', 'before_or_equal:today'],
+            'pin_code'         => 'required|string|digits:4|unique:employee_info,pin_code,' . $employee->id . ',id',
+            'email'            => 'nullable|email|unique:employee_info,email,' . $employee->id . ',id',
+            'phone'            => 'nullable|string|max:15|unique:employee_info,phone,' . $employee->id . ',id',
+            'image'            => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'job'              => 'required|string|max:255',
+            'blood_type'       => 'nullable|string|max:10',
+            'marital_status'   => 'nullable|in:Single,Married,Divorced',
+            'shift'            => 'required|in:Full Time,Part Time',
+            'whish_number'     => 'nullable|string|max:255',
+            'where_can_work'   => 'nullable|string|max:500', // comma-separated IDs
+            'left_date'        => [
                 'nullable',
                 'date',
                 'after_or_equal:date_hired',
                 function ($attribute, $value, $fail) use ($request) {
-                    if (!isset($request->status) || $request->status === 'on') {
-                        if (!empty($value)) {
-                            $fail("The {$attribute} field must be empty when the employee is active.");
-                        }
+                    if ($request->status === 'on' && !empty($value)) {
+                        $fail("The {$attribute} field must be empty when the employee is active.");
                     }
                 },
             ],
-            'car' => 'nullable|string|max:255',
-            'address' => 'nullable|string|max:255',
-            'birthday' => 'nullable|date',
+            'left_reason'            => 'nullable|string|max:255',
+            'give_notice'            => 'nullable|boolean',
+            'is_good_performer'      => 'nullable|boolean',
+            'is_positive_person'     => 'nullable|boolean',
+            'exit_interview_remarks' => 'nullable|string|max:500',
+            'is_recommended_to_back' => 'nullable|boolean',
+            'address'                => 'nullable|string|max:255',
+            'car'                  => 'nullable|string|max:255',
+            'birthday'             => 'nullable|date',
         ]);
 
         Log::info('Validated data: ', $validatedData);
@@ -264,7 +368,9 @@ class EmployeesController extends Controller
 
                 $manager = new ImageManager(new Driver());
                 $image = $request->file('image');
-                $filename = uniqid() . '.' . $image->getClientOriginalExtension();
+                $filename = $employee->image_path
+                    ? basename($employee->image_path)
+                    : uniqid() . '.' . $image->getClientOriginalExtension();
                 $img = $manager->read($image);
                 $img = $img->resize(370, 370);
                 $savePath = storage_path('app/public/images/' . $filename);
@@ -280,40 +386,73 @@ class EmployeesController extends Controller
 
         // Log data before saving to the database
         Log::info('Data to be updated: ', [
-            'name' => $validatedData['name'],
-            'branch_id' => $validatedData['branch_id'],
-            'title' => $validatedData['title'],
-            'status' => $validatedData['status'] === 'on',
-            'date_hired' => $validatedData['date_hired'],
-            'pin_code' => $validatedData['pin_code'],
-            'email' => $validatedData['email'] ?? null,
-            'phone' => $validatedData['phone'] ?? null,
-            'image_path' => $employee->image_path,
-            'job' => $validatedData['job'],
-            'left_date' => $validatedData['status'] === 'on' ? null : $validatedData['left_date'], // Log left_date
-            'car' => $validatedData['car'] ?? null,
-            'address' => $validatedData['address'] ?? null,
-            'birthday' => $validatedData['birthday'] ?? null,
+            'name'               => $validatedData['name'],
+            'branch_id'          => $validatedData['branch_id'],
+            'title'              => $validatedData['title'],
+            'status'             => $validatedData['status'] === 'on',
+            'date_hired'         => $validatedData['date_hired'],
+            'pin_code'           => $validatedData['pin_code'],
+            'email'              => $validatedData['email'] ?? null,
+            'phone'              => $validatedData['phone'] ?? null,
+            'image_path'         => $employee->image_path,
+            'job'                => $validatedData['job'],
+            'blood_type'         => $validatedData['blood_type'] ?? null,
+            'marital_status'     => $validatedData['marital_status'] ?? 'Single',
+            'shift'              => $validatedData['shift'] ?? 'Full Time',
+            'whish_number'       => $validatedData['whish_number'] ?? null,
+            'where_can_work'     => $validatedData['where_can_work'] ?? null,
+            'left_date'          => $validatedData['status'] === 'on' ? null : $validatedData['left_date'],
+            'left_reason'        => $validatedData['left_reason'] ?? null,
+            'give_notice'        => $validatedData['give_notice'] ?? null,
+            'is_good_performer'  => $validatedData['is_good_performer'] ?? null,
+            'is_positive_person' => $validatedData['is_positive_person'] ?? null,
+            'exit_interview_remarks' => $validatedData['exit_interview_remarks'] ?? null,
+            'is_recommended_to_back' => $validatedData['is_recommended_to_back'] ?? null,
+            'address'            => $validatedData['address'] ?? null,
+            'car'                => $validatedData['car'] ?? null,
+            'birthday'         => $validatedData['birthday'] ?? null,
         ]);
 
         // Update the employee record
         $employee->update([
-            'name' => $validatedData['name'],
-            'branch_id' => $validatedData['branch_id'],
-            'title' => $validatedData['title'],
-            'status' => $validatedData['status'] === 'on',
-            'date_hired' => $validatedData['date_hired'],
-            'pin_code' => $validatedData['pin_code'],
-            'email' => $validatedData['email'],
-            'phone' => $validatedData['phone'],
-            'image_path' => $employee->image_path, // This now includes the new image path if updated
-            'job' => $validatedData['job'],
-            'left_date' => $validatedData['status'] === 'on' ? null : $validatedData['left_date'], // Ensure left_date is included
-            'car' => $validatedData['car'],
-            'address' => $validatedData['address'],
-            'birthday' => $validatedData['birthday'],
+            'name'               => $validatedData['name'],
+            'branch_id'          => $validatedData['branch_id'],
+            'title'              => $validatedData['title'],
+            'status'             => $validatedData['status'] === 'on',
+            'date_hired'         => $validatedData['date_hired'],
+            'pin_code'           => $validatedData['pin_code'],
+            'email'              => $validatedData['email'] ?? null,
+            'phone'              => $validatedData['phone'] ?? null,
+            'image_path'         => $employee->image_path,
+            'job'                => $validatedData['job'],
+            'blood_type'         => $validatedData['blood_type'] ?? null,
+            'marital_status'     => $validatedData['marital_status'] ?? 'Single',
+            'shift'              => $validatedData['shift'] ?? 'Full Time',
+            'whish_number'       => $validatedData['whish_number'] ?? null,
+            'where_can_work'     => $validatedData['where_can_work'] ?? null,
+            'left_date'          => $validatedData['status'] === 'on' ? null : $validatedData['left_date'],
+            'left_reason'        => $validatedData['left_reason'] ?? null,
+            'give_notice'        => $validatedData['give_notice'] ?? null,
+            'is_good_performer'  => $validatedData['is_good_performer'] ?? null,
+            'is_positive_person' => $validatedData['is_positive_person'] ?? null,
+            'exit_interview_remarks' => $validatedData['exit_interview_remarks'] ?? null,
+            'is_recommended_to_back' => $validatedData['is_recommended_to_back'] ?? null,
+            'address'            => $validatedData['address'] ?? null,
+            'car'                => $validatedData['car'] ?? null,
+            'birthday'         => $validatedData['birthday'] ?? null,
         ]);
 
+        if ($employee->user) {
+            $employee->user->update([
+                'name'      => $validatedData['name'],
+                'email'     => $validatedData['email'] ?? null,
+                'image'     => $employee->image_path,
+                'status'    => $validatedData['status'] === 'on' ? 'active' : 'inactive',
+                'job'       => $validatedData['job'],
+                'pin_code'  => $validatedData['pin_code'],
+                'branch_id' => $validatedData['branch_id'],
+            ]);
+        }
         return redirect()->route('employees.index')->with('success', 'Employee updated successfully!');
     }
 
@@ -331,7 +470,7 @@ class EmployeesController extends Controller
         $adminUsers = User::role('Admin')->get();
         foreach ($adminUsers as $admin) {
             if ($admin->id !== $creator->id) {
-                Notification::create([
+                $notification = Notification::create([
                     'user_id' => $admin->id,
                     'type' => 'admin_alert',
                     'message' => "{$creator->name} has deleted the employee named {$employee->name}, who was working as {$job} at {$branchName}.",
@@ -342,9 +481,17 @@ class EmployeesController extends Controller
             }
         }
 
+        broadcast(new NewNotification($notification))->toOthers();
+
         if ($employee->image_path && Storage::disk('public')->exists($employee->image_path)) {
             Storage::disk('public')->delete($employee->image_path);
             Log::info('Image deleted successfully:', ['image_path' => $employee->image_path]);
+        }
+
+        // Delete the user associated with the employee
+        if ($employee->user) {
+            $employee->user->delete(); // Delete the related user
+            Log::info('User deleted successfully:', ['user_id' => $employee->user->id]);
         }
 
         $employee->delete();
@@ -489,25 +636,33 @@ class EmployeesController extends Controller
 
     public function uploadFiles(Request $request)
     {
+        Log::info('Upload request received', ['request' => $request->all()]);
+
         $employeeName = $request->input('employeeName');
         $pinCode = $request->input('pinCode');
         $folderName = "$employeeName-$pinCode";
         $folderPath = "employees-data/$folderName";
 
         if (!$request->hasFile('files')) {
+            Log::error('No files provided in request');
             return response()->json(['message' => 'No files provided'], 400);
         }
 
         $files = $request->file('files');
+
         foreach ($files as $file) {
-            $fileName = $file->getClientOriginalName();
+            Log::info('Processing file', ['file_name' => $file->getClientOriginalName(), 'size' => $file->getSize()]);
+
             try {
-                Storage::disk('public')->putFileAs($folderPath, $file, $fileName);
+                Storage::disk('public')->putFileAs($folderPath, $file, $file->getClientOriginalName());
+                Log::info('File uploaded successfully', ['file_name' => $file->getClientOriginalName()]);
             } catch (\Exception $e) {
+                Log::error('Failed to upload file', ['error' => $e->getMessage()]);
                 return response()->json(['message' => 'Failed to upload file'], 500);
             }
         }
 
+        Log::info('All files uploaded successfully');
         return response()->json(['message' => 'Files uploaded successfully'], 200);
     }
     public function delete(Request $request)
@@ -523,12 +678,17 @@ class EmployeesController extends Controller
 
         if (Storage::disk('public')->exists($filePath)) {
             Storage::disk('public')->delete($filePath);
-            session()->flash('success', 'File deleted successfully.');
-            return response()->json(['redirect' => route('employees.index')], 200);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'File deleted successfully.'
+            ], 200);
         }
 
-        session()->flash('error', 'File not found.');
-        return response()->json(['redirect' => route('employees.index')], 404);
+        return response()->json([
+            'success' => false,
+            'message' => 'File not found.'
+        ], 404);
     }
 
     public function countEmp(Request $request)
@@ -537,13 +697,17 @@ class EmployeesController extends Controller
 
         $query = Employee::query();
 
+        // Search Filter
         if ($request->has('search') && !empty($request->search)) {
             $searchTerms = explode(' ', trim($request->search));
             $query->where(function ($q) use ($searchTerms) {
                 foreach ($searchTerms as $term) {
                     $q->where('name', 'LIKE', "%{$term}%")
                         ->orWhere('title', 'LIKE', "%{$term}%")
-                        ->orWhere('job', 'LIKE', "%{$term}%")
+                        ->orWhereHas('jobRelation', function ($jQuery) use ($term) {
+                            // ✅ Fix job relation for search
+                            $jQuery->where('name', 'LIKE', "%{$term}%");
+                        })
                         ->orWhereHas('branch', function ($bQuery) use ($term) {
                             $bQuery->where('branch_name', 'LIKE', "%{$term}%");
                         });
@@ -551,20 +715,106 @@ class EmployeesController extends Controller
             });
         }
 
+        // Branch Filter
         if ($request->has('branch') && !empty($request->branch)) {
             $query->where('branch_id', $request->branch);
         }
 
+        // Job Filter
         if ($request->has('job') && !empty($request->job)) {
-            $query->where('job', $request->job);
+            $query->whereHas('jobRelation', function ($jQuery) use ($request) {
+                // ✅ Fix job relation filter
+                $jQuery->where('id', $request->job);
+            });
         }
 
+        // Total Employees Count
         $totalEmployees = $query->count();
+
+        // New Joiners in the Last 6 Months
         $newJoinersCount = $query->where('date_hired', '>=', $sixMonthsAgo)->count();
 
         return response()->json([
             'total_employees' => $totalEmployees,
-            'new_joiners' => $newJoinersCount
+            'new_joiners' => $newJoinersCount,
         ]);
+    }
+    public function exportEmployees(Request $request)
+    {
+        // Extract filter parameters from request
+        $filters = [
+            'search' => $request->input('search'),
+            'branch' => $request->input('branch'),
+            'job' => $request->input('job'),
+            'date_hired_from' => $request->input('date_hired_from'),
+            'date_hired_to' => $request->input('date_hired_to'),
+        ];
+
+        // Log the filters to check if they are being received
+        Log::info('Exporting Employees with filters:', $filters);
+
+        return Excel::download(new EmployeesExport($filters), 'filtered_employees.xlsx');
+    }
+    public function checkProbationPeriod()
+    {
+        $employees = DB::table('employee_info')->where('status', 1)->get();
+        $today = Carbon::now();
+        $probationPeriodStart = 90;
+        $probationPeriodEnd = 120;
+
+        Log::info("Running probation check for today: " . $today->toDateString());
+
+        foreach ($employees as $employee) {
+            // ✅ Fix Date Parsing
+            $hiredDate = Carbon::createFromFormat('Y-m-d', $employee->date_hired)->startOfDay();
+            $daysPassed = floor($hiredDate->diffInDays($today));
+
+            Log::info("Checking employee: {$employee->name}, Hired: {$hiredDate->toDateString()}, Days Passed: $daysPassed");
+            Log::info("Stored Image Path in DB: " . $employee->image_path);
+
+            // ✅ Use the stored image path or default
+            $userImage = !empty($employee->image_path) ? $employee->image_path : 'images/default.jpg';
+
+            Log::info("Final Employee Image Used: " . $userImage);
+
+            // ✅ Notify Only Employees Between 90 - 120 Days
+            if ($daysPassed >= $probationPeriodStart && $daysPassed <= $probationPeriodEnd) {
+                // ✅ Check if notification already exists for this employee
+                $alreadyNotified = DB::table('notifications')
+                    ->where('type', 'probation_alert')
+                    ->where('message', 'LIKE', "%{$employee->name}%")
+                    ->exists();
+
+                if (!$alreadyNotified) {
+                    $hrUsers = \App\Models\User::role(['Hr Team Member', 'Admin'])->get();
+                    Log::info("Employee {$employee->name} is in probation range. Sending notifications...");
+
+                    foreach ($hrUsers as $user) {
+                        try {
+                            $notification = Notification::create([
+                                'user_id' => $user->id,
+                                'type' => 'probation_alert',
+                                'message' => "Probation period for {$employee->name} is ending soon (Day $daysPassed).",
+                                'notified_at' => now(),
+                                'is_read' => false,
+                                'user_image' => $userImage, // ✅ Correctly stored image path
+                            ]);
+
+                            Log::info("Notification sent to: {$user->name}");
+                        } catch (\Exception $e) {
+                            Log::error("Failed to send notification", ['error' => $e->getMessage()]);
+                        }
+                    }
+
+                    broadcast(new NewNotification($notification))->toOthers();
+                } else {
+                    Log::info("✅ Skipping {$employee->name} (Already Notified)");
+                }
+            } else {
+                Log::info("Employee {$employee->name} is NOT in probation range ($daysPassed days). No notification sent.");
+            }
+        }
+
+        return response()->json(['message' => 'Probation period check completed.']);
     }
 }

@@ -11,13 +11,7 @@ class NewJoinerProgress extends Model
 
     protected $table = 'new_joiner_progress';
 
-    protected $fillable = [
-        'new_joiner_id',
-        'step_id',
-        'status',
-        'completed_at',
-        'remarks',
-    ];
+    protected $fillable = ['new_joiner_id', 'step_id', 'status', 'completed_at', 'remarks', 'interview_time'];
 
     // Relationship with NewJoiner
     public function newJoiner()
@@ -29,10 +23,9 @@ class NewJoinerProgress extends Model
     public function step()
     {
         return $this->belongsTo(TrainingSteps::class)->withDefault([
-            'name' => 'Step Deleted', 
-            'step_order' => 9999, 
-            'color' => '#ccc'
+            'name' => 'Step Deleted',
+            'step_order' => 9999,
+            'color' => '#ccc',
         ]);
     }
-    
 }
