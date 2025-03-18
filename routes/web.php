@@ -160,9 +160,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/getEmployeesByBranch/{branchId}', [BadgeController::class, 'getEmployeesByBranch'])->middleware('permission:Badge Maker');
 
     //New Joiners System Routes
+    Route::post('/new-joiners/reference', [NewJoinerController::class, 'storeReference']);
     Route::get('/employee-progress/{id}', [NewJoinerController::class, 'getEmployeeProgress'])->middleware('permission:New Joiners');
     Route::get('/new-joiners-data', [NewJoinerController::class, 'getNewJoinersData'])->middleware('permission:New Joiners');
-    Route::resource('new-joiners', NewJoinerController::class)->middleware('permission:New Joiners');
+    Route::resource('new-joiners', NewJoinerController::class)
+        ->except(['show'])
+        ->middleware('permission:New Joiners');
     Route::post('/save-phase-progress', [NewJoinerController::class, 'savePhaseProgress'])->middleware('permission:New Joiners');
     Route::get('/progress/{newJoinerId}', [NewJoinerProgressController::class, 'showProgress'])->middleware('permission:New Joiners');
     Route::post('/progress/complete', [NewJoinerProgressController::class, 'completeStep'])->middleware('permission:New Joiners');
@@ -170,9 +173,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/new-joiners/filter/{stepId}', [NewJoinerController::class, 'filterByStep'])->middleware('permission:New Joiners');
     Route::delete('/new-joiners/{id}', [NewJoinerController::class, 'destroy'])->middleware('permission:New Joiners');
     Route::get('/count-by-step', [NewJoinerController::class, 'countByStep'])->middleware('permission:New Joiners');
-    Route::put('/new-joiners-steps/{id}/update', [NewJoinerController::class, 'UpdateStepTime'])->name('update.step.time')->middleware('permission:New Joiners');
-    Route::get('/new-joiners-steps/{id}/edit',[NewJoinerController::class,'EditStepTime'])->name('edit.step.time')->middleware('permission:New Joiners');
-
+    Route::put('/new-joiners-steps/{id}/update', [NewJoinerController::class, 'UpdateStepTime'])
+        ->name('update.step.time')
+        ->middleware('permission:New Joiners');
+    Route::get('/new-joiners-steps/{id}/edit', [NewJoinerController::class, 'EditStepTime'])
+        ->name('edit.step.time')
+        ->middleware('permission:New Joiners');
 
     //Notification System
     // Route::get('/notifications', [NotificationController::class, 'fetchNotifications']);

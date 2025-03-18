@@ -48,6 +48,7 @@ class NewJoinerProgressController extends Controller
             // ✅ Debug previous steps check
             Log::info('Checking previous steps');
 
+            // ✅ Corrected previous steps check (EXCLUDE the current step)
             $previousStepsPending = NewJoinerProgress::where('new_joiner_id', $request->new_joiner_id)
                 ->whereHas('step', function ($query) use ($selectedStep) {
                     $query->where('step_order', '<', $selectedStep->step_order);
@@ -149,6 +150,4 @@ class NewJoinerProgressController extends Controller
 
         return response()->json(['success' => 'Progress initialized for the new joiner!']);
     }
-
- 
 }

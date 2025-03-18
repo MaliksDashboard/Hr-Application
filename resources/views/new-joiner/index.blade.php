@@ -68,13 +68,14 @@
                 <h1 style="color:var(--light-color)"> Select An employee </h1>
             </div>
 
+            <!-- Modal 1 -->
             <div id="remarks-modal" class="modal">
                 <div class="modal-content">
                     <span class="close-btn" onclick="closeRemarksModal()">&times;</span>
                     <h3>Complete Step</h3>
                     <div class="input-group">
-                        <label for="completion-date">Completion Date <b style="color:red;">*</b></label>
-                        <input type="date" id="completion-date" required>
+                        <label for="completion-date-main">Completion Date <b style="color:red;">*</b></label>
+                        <input type="date" id="completion-date-main" required>
                     </div>
 
                     <div class="input-group">
@@ -84,6 +85,60 @@
                     <button id="submit-completion">Submit</button>
                 </div>
             </div>
+
+            <!-- Modal 2 -->
+            <div id="remarks-modal-ref" class="modal">
+                <div class="modal-content">
+                    <span class="close-btn" onclick="closeRemarksModalRef()">&times;</span>
+                    <h3>Complete Step - Ref</h3>
+                    <div class="input-group">
+                        <label for="completion-date-ref">Completion Date <b style="color:red;">*</b></label>
+                        <input type="date" id="completion-date-ref" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="company_name">Company Name<b style="color:red;">*</b></label>
+                        <input type="text" id="company_name" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="contact_name">Contact Name<b style="color:red;">*</b></label>
+                        <input type="text" id="contact_name" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="phone">Phone<b style="color:red;">*</b></label>
+                        <input type="text" id="phone" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="position">Position<b style="color:red;">*</b></label>
+                        <input type="text" id="position" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="have_recommendation_letter">Has Recommendation Letter?</label>
+                        <select name="have_recommendation_letter" id="have_recommendation_letter">
+                            <option value="1" {{ old('have_recommendation_letter') }}>
+                                Yes</option>
+                            <option value="0" {{ old('have_recommendation_letter') }}>
+                                No</option>
+                        </select>
+                        @error('have_recommendation_letter')
+                            <span class="error-message" style="color:red;">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="input-group">
+                        <label for="feedback">Feedback (optional)</label>
+                        <textarea id="feedback" placeholder="Enter feedback"></textarea>
+                    </div>
+
+                    <button id="submit-completion-ref">Submit</button>
+                </div>
+            </div>
+
+
 
             <div id="modal-overlay"></div>
 
@@ -102,25 +157,43 @@
             const joinerStatus = document.getElementById("new-joiner-list-status");
             const selectedStep = document.getElementById("selected-step");
             const remarksModal = document.getElementById("remarks-modal");
+            const remarksModalRef = document.getElementById("remarks-modal-ref");
             const modalOverlay = document.getElementById("modal-overlay");
             const completionDateInput = document.getElementById("completion-date");
             const remarksInput = document.getElementById("remarks");
             let selectedJoinerId, selectedStepId;
+            const submitButtonRef = document.getElementById("submit-completion-ref");
+            const submitButton = document.getElementById("submit-completion");
+
+
 
             function openRemarksModal(joinerId, stepId) {
-                selectedJoinerId = joinerId;
+                console.log("🚀 Opening Remarks Modal...");
+                console.log("✅ Joiner ID:", joinerId);
+                console.log("✅ Step ID:", stepId);
+
+                selectedJoinerId = joinerId; // ✅ Store the ID globally
                 selectedStepId = stepId;
-                remarksModal.style.display = "flex";
-                modalOverlay.style.display = "block";
-                completionDateInput.value = new Date().toISOString().split('T')[0];
+
+                let modal = document.getElementById("remarks-modal");
+                let overlay = document.getElementById("modal-overlay");
+
+                if (!modal) {
+                    console.error("🚨 Modal not found!");
+                    return;
+                }
+
+                modal.style.display = "flex";
+                overlay.style.display = "block";
             }
 
 
-
             function loadJoiners(stepId = "all") {
+
                 fetch(`/new-joiners/filter/${stepId}`)
                     .then(response => response.json())
                     .then(data => {
+
                         joinerList.innerHTML = "";
 
                         // ✅ Update progress count
@@ -133,10 +206,8 @@
                         }
 
                         data.forEach(joiner => {
-
                             const formattedDate = new Date(joiner.start_date).toLocaleDateString(
                                 'en-GB');
-
                             let currentStepText = joiner.current_step ?
                                 `<span class="current-step">Step: ${joiner.current_step} - ${formattedDate}</span>` :
                                 "";
@@ -145,32 +216,40 @@
                                 `<span class="interview-time">${joiner.interview_time}</span>` :
                                 "";
 
-
                             let actionButton = "";
 
                             // ✅ Check if the employee is in the "Ready" phase
                             if (joiner.current_step === "Ready") {
                                 actionButton = `<span class="ready-label">✅</span>`;
                             } else if (stepId === "all") {
-                                actionButton =
-                                    `<button class="view-progress delete-employee" data-joiner="${joiner.id}"><svg  viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2h4a1 1 0 1 1 0 2h-1.069l-.867 12.142A2 2 0 0 1 17.069 22H6.93a2 2 0 0 1-1.995-1.858L4.07 8H3a1 1 0 0 1 0-2h4zm2 2h6V4H9zM6.074 8l.857 12H17.07l.857-12zM10 10a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1m4 0a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1" fill="#fff"/></svg></button>
-                                     <a class='edit-btn' href="/new-joiners/${joiner.id}/edit">Edit </a>`;
+                                actionButton = `<button class="view-progress delete-employee" 
+                        data-joiner="${joiner.id}">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M7 4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2h4a1 1 0 1 1 0 2h-1.069l-.867 12.142A2 2 0 0 1 17.069 22H6.93a2 2 0 0 1-1.995-1.858L4.07 8H3a1 1 0 0 1 0-2h4zm2 2h6V4H9zM6.074 8l.857 12H17.07l.857-12zM10 10a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1m4 0a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1" fill="#fff"/>
+                        </svg></button>
+                        <a class='edit-btn' href="/new-joiners/${joiner.id}/edit">Edit </a>`;
                             } else {
-                                actionButton =
-                                    `<button class="complete-btn" data-joiner="${joiner.id}" data-step="${stepId}">Mark Completed</button>
-                                     <a class='edit-btn' href="/new-joiners-steps/${joiner.current_step_id}/edit">Edit</a>`;
+                                actionButton = `<button class="complete-btn" data-joiner="${joiner.id}" data-step="${stepId}">
+                        Mark Completed</button>
+                        <a class='edit-btn' href="/new-joiners-steps/${joiner.current_step_id}/edit">Edit</a>`;
                             }
 
                             let joinerHTML = `
-                    <div class="joiner-card" data-id="${joiner.id}">
-                        <div class="new-joiner-steps-name">
-                        <p><b>${joiner.name}</b> - ${joiner.job} - ${joiner.target_branch}  ${interviewTimeText} </p> 
-                        <span>${currentStepText}</span></div>
-                        <div class="joiner-card-btns">
-                            <button class="view-progress" data-id="${joiner.id}"><svg fill="#fff"  xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42" xml:space="preserve"><path d="M15.3 20.1c0 3.1 2.6 5.7 5.7 5.7s5.7-2.6 5.7-5.7-2.6-5.7-5.7-5.7-5.7 2.6-5.7 5.7m8.1 12.3C30.1 30.9 40.5 22 40.5 22s-7.7-12-18-13.3c-.6-.1-2.6-.1-3-.1-10 1-18 13.7-18 13.7s8.7 8.6 17 9.9c.9.4 3.9.4 4.9.2M11.1 20.7c0-5.2 4.4-9.4 9.9-9.4s9.9 4.2 9.9 9.4S26.5 30 21 30s-9.9-4.2-9.9-9.3"/></svg></button>
-                            ${actionButton}
-                        </div>
+                <div class="joiner-card" data-id="${joiner.id}" data-step-name="${joiner.current_step}">
+                    <div class="new-joiner-steps-name">
+                        <p><b>${joiner.name}</b> - ${joiner.job} - ${joiner.target_branch}  
+                        ${interviewTimeText} </p> 
+                        <span>${currentStepText}</span>
                     </div>
+                    <div class="joiner-card-btns">
+                        <button class="view-progress" data-id="${joiner.id}">
+                            <svg fill="#fff" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
+                                <path d="M15.3 20.1c0 3.1 2.6 5.7 5.7 5.7s5.7-2.6 5.7-5.7-2.6-5.7-5.7-5.7-5.7 2.6-5.7 5.7m8.1 12.3C30.1 30.9 40.5 22 40.5 22s-7.7-12-18-13.3c-.6-.1-2.6-.1-3-.1-10 1-18 13.7-18 13.7s8.7 8.6 17 9.9c.9.4 3.9.4 4.9.2M11.1 20.7c0-5.2 4.4-9.4 9.9-9.4s9.9 4.2 9.9 9.4S26.5 30 21 30s-9.9-4.2-9.9-9.3"/>
+                            </svg>
+                        </button>
+                        ${actionButton}
+                    </div>
+                </div>
                 `;
                             joinerList.innerHTML += joinerHTML;
                         });
@@ -178,7 +257,7 @@
                         updateStepCounts();
                         attachEventListeners();
                     })
-                    .catch(error => console.error("Error fetching joiners:", error));
+                    .catch(error => console.error("🚨 Error fetching joiners:", error));
             }
 
 
@@ -189,17 +268,18 @@
                 });
 
                 document.querySelectorAll(".complete-btn").forEach(button => {
-                    button.removeEventListener("click", handleMarkComplete);
                     button.addEventListener("click", handleMarkComplete);
                 });
+
+                submitButton.addEventListener("click", submitCompletionData);
+                submitButtonRef.addEventListener("click", submitReferenceData);
+
 
                 document.querySelectorAll(".delete-employee").forEach(button => {
                     button.removeEventListener("click", handleDeleteEmployee);
                     button.addEventListener("click", handleDeleteEmployee);
                 });
 
-                document.getElementById("submit-completion").removeEventListener("click", handleCompletionSubmit);
-                document.getElementById("submit-completion").addEventListener("click", handleCompletionSubmit);
             }
 
             function handleViewProgress() {
@@ -207,31 +287,164 @@
                 loadProgress(joinerId);
             }
 
-            function handleMarkComplete() {
-                let joinerId = this.getAttribute("data-joiner");
-                let stepId = this.getAttribute("data-step");
-                openRemarksModal(joinerId, stepId);
-            }
+            function openRemarksModalRef(joinerId, stepId) {
+                console.log("🚀 Opening Remarks Modal Ref...");
+                console.log("✅ Joiner ID:", joinerId);
+                console.log("✅ Step ID:", stepId);
 
-            function handleCompletionSubmit() {
-                let remarks = document.getElementById("remarks").value;
-                let completionDate = document.getElementById("completion-date").value;
+                selectedJoinerId = joinerId; // ✅ Store the ID globally
+                selectedStepId = stepId;
 
-                if (!completionDate) {
-                    Swal.fire("Error", "Completion date is required!", "error");
+                let modal = document.getElementById("remarks-modal-ref");
+                let overlay = document.getElementById("modal-overlay");
+
+                if (!modal) {
+                    console.error("🚨 Modal not found!");
                     return;
                 }
 
-                markStepComplete(selectedJoinerId, selectedStepId, completionDate, remarks)
-                    .then(() => {
-                        closeRemarksModal();
-                        loadJoiners();
-                    })
-                    .catch(error => {
-                        console.error("Error completing step:", error);
-                    });
+                modal.style.display = "flex";
+                overlay.style.display = "block";
             }
 
+
+            function handleMarkComplete() {
+                let joinerId = this.getAttribute("data-joiner"); // ✅ Get correct ID
+                let stepId = this.getAttribute("data-step");
+                let stepName = this.closest(".joiner-card")?.getAttribute("data-step-name")?.trim() || "unknown";
+
+                // ✅ Set the global selected ID
+                selectedJoinerId = joinerId;
+                selectedStepId = stepId;
+
+                console.log(`✅ Marking joiner ID: ${joinerId}, Step ID: ${stepId}, Step Name: ${stepName}`);
+
+                if (stepName === "Back to Silva") {
+                    openRemarksModalRef(joinerId, stepId); // ✅ Pass the ID to modal
+                } else {
+                    openRemarksModal(joinerId, stepId); // ✅ Pass the ID to modal
+                }
+            }
+
+            function submitCompletionData() {
+                let completionDate = document.getElementById("completion-date-main")?.value || "";
+                let remarks = document.getElementById("remarks")?.value || "";
+
+                if (!selectedJoinerId || !selectedStepId || !completionDate) {
+                    Swal.fire("Error", "All required fields must be filled!", "error");
+                    return;
+                }
+
+                let data = {
+                    new_joiner_id: selectedJoinerId,
+                    step_id: selectedStepId,
+                    completion_date: completionDate,
+                    remarks: remarks,
+                };
+
+                console.log("📤 Sending data:", data);
+
+                fetch('/progress/complete', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: JSON.stringify(data)
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.text().then(text => {
+                                throw new Error(text);
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(response => {
+                        console.log("✅ Server Response:", response);
+                        if (response.success) {
+                            Swal.fire("Success", response.success, "success").then(() => {
+                                closeRemarksModal();
+                                loadJoiners();
+                            });
+                        } else {
+                            closeRemarksModal();
+                            Swal.fire("Error", response.error || "Something went wrong!", "error");
+                        }
+                    })
+                    .catch(error => {
+                        closeRemarksModal();
+                        console.error("❌ Fetch Error:", error);
+                        Swal.fire("Error", "Something went wrong!", "error");
+                    });
+
+
+            }
+
+            function submitReferenceData() {
+                console.log("🚀 Submitting Reference Form...");
+
+                let completionDate = document.getElementById("completion-date-ref")?.value || ""; // ✅ Now added
+                let companyName = document.getElementById("company_name")?.value || "";
+                let contactName = document.getElementById("contact_name")?.value || "";
+                let phone = document.getElementById("phone")?.value || "";
+                let position = document.getElementById("position")?.value || "";
+                let feedback = document.getElementById("feedback")?.value || "";
+                let haveRecommendationLetter = document.getElementById("have_recommendation_letter")?.checked ? 1 :
+                    0;
+
+                // ✅ Check if `selectedJoinerId` exists
+                if (!selectedJoinerId) {
+                    Swal.fire("Error", "Missing new joiner ID!", "error");
+                    console.error("🚨 ERROR: No joiner ID available!");
+                    return;
+                }
+
+                if (!completionDate || !companyName || !contactName || !phone || !position) {
+                    Swal.fire("Error", "All required fields must be filled!", "error");
+                    return;
+                }
+
+                let data = {
+                    new_joiner_id: selectedJoinerId,
+                    completion_date: completionDate, // ✅ Now added
+                    company_name: companyName,
+                    contact_name: contactName,
+                    phone: phone,
+                    position: position,
+                    feedback: feedback,
+                    have_recommendation_letter: haveRecommendationLetter
+                };
+
+                console.log("📤 Sending data:", data);
+
+                fetch('/new-joiners/reference', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: JSON.stringify(data)
+                    })
+                    .then(res => res.json())
+                    .then(response => {
+                        console.log("✅ Server Response:", response);
+                        if (response.success) {
+                            Swal.fire("Success", response.success, "success").then(() => {
+                                closeRemarksModalRef();
+                                loadJoiners();
+                            });
+                        } else {
+                            closeRemarksModalRef();
+                            Swal.fire("Error", response.error || "Something went wrong!", "error");
+                        }
+                    })
+                    .catch(err => {
+                        console.error("❌ Fetch Error:", err);
+                        closeRemarksModalRef();
+                        Swal.fire("Error", "Something went wrong!", "error");
+                    });
+            }
 
             function handleDeleteEmployee() {
                 let joinerId = this.getAttribute("data-joiner");
@@ -446,7 +659,6 @@
                 fetch('/count-by-step')
                     .then(response => response.json())
                     .then(data => {
-                        console.log("🚀 Step Count Data from API:", data);
 
                         document.querySelectorAll(".step-badge").forEach(badge => {
                             badge.innerText = "0"; // Reset all to 0
@@ -457,8 +669,7 @@
                             if (badge) {
                                 badge.innerText = count;
                             } else {
-                                console.warn(
-                                    `🚨 MISSING BADGE: No element found for step ID ${stepId}`);
+
                             }
                         });
                     })
@@ -466,20 +677,15 @@
             }
 
 
-            function markStepComplete(newJoinerId, stepId, completionDate, remarks) {
-                return fetch('/progress/complete', { // ✅ RETURN the fetch request
+            function markStepComplete(data) {
+                return fetch('/progress/complete', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
                                 'content'),
                         },
-                        body: JSON.stringify({
-                            new_joiner_id: newJoinerId,
-                            step_id: stepId,
-                            completion_date: completionDate,
-                            remarks: remarks
-                        }),
+                        body: JSON.stringify(data),
                     })
                     .then(response => response.json())
                     .then(data => {
@@ -488,7 +694,8 @@
                         } else {
                             Swal.fire("Success", "Step marked as completed!", "success").then(() => {
                                 closeRemarksModal();
-                                loadJoiners(); // ✅ Reload joiner progress
+                                closeRemarksModalRef();
+                                loadJoiners();
                             });
                         }
                     })
@@ -518,24 +725,48 @@
                 selectedStep.innerText = allRecordsBtn.innerText;
             }
 
+
             loadJoiners();
         });
+
+        document.getElementById("modal-overlay").addEventListener("click", function() {
+            closeRemarksModalRef();
+        });
+
 
         function closeRemarksModal() {
             const remarksModal = document.getElementById("remarks-modal");
             const modalOverlay = document.getElementById("modal-overlay");
             const remarksInput = document.getElementById("remarks");
             const completionDateInput = document.getElementById("completion-date");
-            remarksModal.style.display = "none";
-            modalOverlay.style.display = "none";
-            remarksInput.value = "";
-            completionDateInput.value = "";
+
+            // ✅ Make sure elements exist before setting values
+            if (remarksModal) remarksModal.style.display = "none";
+            if (modalOverlay) modalOverlay.style.display = "none";
+            if (remarksInput) remarksInput.value = "";
+            if (completionDateInput) completionDateInput.value = "";
+        }
+
+        function closeRemarksModalRef() {
+            console.log("Closing Ref Modal..."); // Debugging step
+
+            const modal = document.getElementById("remarks-modal-ref");
+            const overlay = document.getElementById("modal-overlay");
+
+            if (modal) modal.style.display = "none";
+            if (overlay) overlay.style.display = "none";
         }
     </script>
 @endpush
 
 
+
+
 <style>
+    .swal2-container {
+        z-index: 9999999999999999999 !important;
+    }
+
     .no-records {
         text-align: center;
         font-size: 16px;
@@ -680,5 +911,21 @@
         font-size: 14px !important;
         border-radius: 5px;
         font-weight: bold;
+    }
+
+    #remarks-modal-ref {
+        display: none;
+        /* Default hidden */
+        position: fixed;
+        width: 600px !important;
+        z-index: 10000;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 350px;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
     }
 </style>
