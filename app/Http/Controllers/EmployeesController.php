@@ -9,15 +9,19 @@ use App\Models\Title;
 use App\Models\Branch;
 use App\Models\Vacancy;
 use App\Models\Employee;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Str;
 use App\Models\Notification;
-use App\Events\NewNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use App\Events\NewNotification;
 use App\Exports\EmployeesExport;
+use App\Models\Department;
 use Illuminate\Support\Facades\DB;
 use function Laravel\Prompts\table;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
 use Intervention\Image\ImageManager;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
@@ -53,15 +57,16 @@ class EmployeesController extends Controller
 
         // Branch Filter (EXCLUDES status = 0)
         if ($request->has('branch') && !empty($request->branch)) {
-            $query->where('branch_id', $request->branch)
-                ->where('status', '!=', 0);
+            $query->where('branch_id', $request->branch)->where('status', '!=', 0);
         }
 
         // Job Filter (EXCLUDES status = 0)
         if ($request->has('job') && !empty($request->job)) {
-            $query->whereHas('jobRelation', function ($jQuery) use ($request) {
-                $jQuery->where('id', $request->job);
-            })->where('status', '!=', 0);
+            $query
+                ->whereHas('jobRelation', function ($jQuery) use ($request) {
+                    $jQuery->where('id', $request->job);
+                })
+                ->where('status', '!=', 0);
         }
 
         // Final Query Execution
@@ -70,7 +75,6 @@ class EmployeesController extends Controller
             ->orderBy('status', 'desc')
             ->orderBy('branch_id', 'asc')
             ->paginate(20);
-
 
         // Debug: Check if the job is actually being loaded
         foreach ($employees as $employee) {
@@ -100,8 +104,9 @@ class EmployeesController extends Controller
     {
         $branches = Branch::orderBy('branch_name', 'asc')->get();
         $titles = Title::pluck('name')->toArray();
+        $departments = Department::all();
         $jobs = Job::all();
-        return view('employees.create', compact('branches', 'titles', 'jobs'));
+        return view('employees.create', compact('branches', 'titles', 'jobs', 'departments'));
     }
 
     public function store(Request $request)
@@ -116,7 +121,7 @@ class EmployeesController extends Controller
             'title' => 'required|string|max:255',
             'status' => 'required|in:on,off',
             'date_hired' => ['required', 'date', 'before_or_equal:today'],
-            'pin_code' => 'required|string|digits:4|unique:employee_info,pin_code',
+            'pin_code' => 'required|string|min:3|unique:employee_info,pin_code',
             'email' => 'nullable|email|unique:employee_info,email',
             'phone' => 'nullable|string|max:15|unique:employee_info,phone',
             'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -128,7 +133,8 @@ class EmployeesController extends Controller
             'marital_status' => 'nullable|in:Single,Married,Divorced',
             'shift' => 'required|in:Full Time,Part Time',
             'whish_number' => 'nullable|string|max:255',
-            'where_can_work' => 'nullable|string|max:500', // Allowing multiple branches as comma-separated values
+            'where_can_work' => 'nullable|array',
+            'where_can_work.*' => 'exists:branches,id', // Ensure branch IDs exist
             'left_date' => 'nullable|date|after:date_hired',
             'left_reason' => 'nullable|string|max:255',
             'give_notice' => 'nullable|boolean',
@@ -136,6 +142,7 @@ class EmployeesController extends Controller
             'is_positive_person' => 'nullable|boolean',
             'exit_interview_remarks' => 'nullable|string|max:500',
             'is_recommended_to_back' => 'nullable|boolean',
+            'belongs_to' => 'nullable|exists:departments,id',
         ]);
 
         // ✅ Handle Multi-Selection for "where_can_work"
@@ -144,40 +151,6 @@ class EmployeesController extends Controller
         }
 
         Log::info('Validated data: ', $validatedData);
-
-        // Check if title exists and insert if not
-        $existingTitle = DB::table('employee_info')->where('title', $request->title)->exists();
-        if (!$existingTitle) {
-            DB::table('employee_info')->insert([
-                'name' => $request->name,
-                'title' => $request->title,
-                'branch_id' => $request->branch_id,
-                'status' => $request->status === 'on',
-                'date_hired' => $request->date_hired,
-                'pin_code' => $request->pin_code,
-                'email' => $request->email,
-                'phone' => $request->phone,
-                'job' => $request->job,
-                'image_path' => $request->image ?? '/images/Default.jpg',
-                'car' => $request->car,
-                'address' => $request->address,
-                'birthday' => $request->birthday,
-                'blood_type' => $request->blood_type ?? null,
-                'marital_status' => $request->marital_status ?? 'Single',
-                'shift' => $request->shift ?? 'Full Time',
-                'whish_number' => $request->whish_number ?? null,
-                'where_can_work' => isset($request->where_can_work) ? implode(',', (array) $request->where_can_work) : null,
-                'left_date' => $request->left_date ?? null,
-                'left_reason' => $request->left_reason ?? null,
-                'give_notice' => $request->give_notice ?? null,
-                'is_good_performer' => $request->is_good_performer ?? null,
-                'is_positive_person' => $request->is_positive_person ?? null,
-                'exit_interview_remarks' => $request->exit_interview_remarks ?? null,
-                'is_recommended_to_back' => $request->is_recommended_to_back ?? null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
 
         // ✅ Handle image upload
         $storedImagePath = null;
@@ -227,7 +200,7 @@ class EmployeesController extends Controller
             'marital_status' => $request->marital_status ?? 'Single',
             'shift' => $request->shift ?? 'Full Time',
             'whish_number' => $request->whish_number ?? null,
-            'where_can_work' => isset($request->where_can_work) ? implode(',', (array) $request->where_can_work) : null,
+            'where_can_work' => $request->where_can_work ?? [],
             'left_date' => $request->left_date ?? null,
             'left_reason' => $request->left_reason ?? null,
             'give_notice' => $request->give_notice ? 1 : 0,
@@ -235,6 +208,7 @@ class EmployeesController extends Controller
             'is_positive_person' => $request->is_positive_person ? 1 : 0,
             'exit_interview_remarks' => $request->exit_interview_remarks ?? null,
             'is_recommended_to_back' => $request->is_recommended_to_back ? 1 : 0,
+            'belongs_to' => $request->belongs_to ?? null,
         ]);
 
         // Create folder for employee in employees-data
@@ -279,7 +253,7 @@ class EmployeesController extends Controller
             'password' => bcrypt($defaultPassword),
             'pin_code' => $validatedData['pin_code'] ?? null,
             'image' => $storedImagePath ?? null, // Use the stored image path
-            'status' => $validatedData['status'] ?? null,
+            'status' => 'active',
             'job' => $validatedData['job'] ?? null,
             'branch_id' => $validatedData['branch_id'] ?? null,
             'must_change_password' => 1,
@@ -293,9 +267,10 @@ class EmployeesController extends Controller
         $branches = Branch::orderBy('branch_name', 'asc')->get();
         $titles = Title::pluck('name');
         $jobs = Job::all();
+        $departments = Department::all();
         $employee = Employee::findOrFail($id);
 
-        return view('employees.edit', compact('branches', 'employee', 'titles', 'jobs'));
+        return view('employees.edit', compact('branches', 'employee', 'titles', 'jobs', 'departments'));
     }
 
     public function update(Request $request, Employee $employee)
@@ -306,22 +281,23 @@ class EmployeesController extends Controller
         // Ensure $employee is defined before validation (especially in update scenarios)
 
         $validatedData = $request->validate([
-            'name'             => 'required|string|max:255',
-            'branch_id'        => 'required|exists:branches,id',
-            'title'            => 'required|string|max:255',
-            'status'           => 'required|in:on,off',
-            'date_hired'       => ['required', 'date', 'before_or_equal:today'],
-            'pin_code'         => 'required|string|digits:4|unique:employee_info,pin_code,' . $employee->id . ',id',
-            'email'            => 'nullable|email|unique:employee_info,email,' . $employee->id . ',id',
-            'phone'            => 'nullable|string|max:15|unique:employee_info,phone,' . $employee->id . ',id',
-            'image'            => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'job'              => 'required|string|max:255',
-            'blood_type'       => 'nullable|string|max:10',
-            'marital_status'   => 'nullable|in:Single,Married,Divorced',
-            'shift'            => 'required|in:Full Time,Part Time',
-            'whish_number'     => 'nullable|string|max:255',
-            'where_can_work'   => 'nullable|string|max:500', // comma-separated IDs
-            'left_date'        => [
+            'name' => 'required|string|max:255',
+            'branch_id' => 'required|exists:branches,id',
+            'title' => 'required|string|max:255',
+            'status' => 'required|in:on,off',
+            'date_hired' => ['required', 'date', 'before_or_equal:today'],
+            'pin_code' => 'required|string|min:3|unique:employee_info,pin_code,' . $employee->id . ',id',
+            'email' => 'nullable|email|unique:employee_info,email,' . $employee->id . ',id',
+            'phone' => 'nullable|string|max:15|unique:employee_info,phone,' . $employee->id . ',id',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'job' => 'required|string|max:255',
+            'blood_type' => 'nullable|string|max:10',
+            'marital_status' => 'nullable|in:Single,Married,Divorced',
+            'shift' => 'required|in:Full Time,Part Time',
+            'whish_number' => 'nullable|string|max:255',
+            'where_can_work' => 'nullable|array',
+            'where_can_work.*' => 'exists:branches,id',
+            'left_date' => [
                 'nullable',
                 'date',
                 'after_or_equal:date_hired',
@@ -331,15 +307,16 @@ class EmployeesController extends Controller
                     }
                 },
             ],
-            'left_reason'            => 'nullable|string|max:255',
-            'give_notice'            => 'nullable|boolean',
-            'is_good_performer'      => 'nullable|boolean',
-            'is_positive_person'     => 'nullable|boolean',
+            'left_reason' => 'nullable|string|max:255',
+            'give_notice' => 'nullable|boolean',
+            'is_good_performer' => 'nullable|boolean',
+            'is_positive_person' => 'nullable|boolean',
             'exit_interview_remarks' => 'nullable|string|max:500',
             'is_recommended_to_back' => 'nullable|boolean',
-            'address'                => 'nullable|string|max:255',
-            'car'                  => 'nullable|string|max:255',
-            'birthday'             => 'nullable|date',
+            'address' => 'nullable|string|max:255',
+            'car' => 'nullable|string|max:255',
+            'birthday' => 'nullable|date',
+            'belongs_to' => 'nullable|exists:departments,id',
         ]);
 
         Log::info('Validated data: ', $validatedData);
@@ -368,88 +345,77 @@ class EmployeesController extends Controller
 
                 $manager = new ImageManager(new Driver());
                 $image = $request->file('image');
-                $filename = $employee->image_path
-                    ? basename($employee->image_path)
-                    : uniqid() . '.' . $image->getClientOriginalExtension();
-                $img = $manager->read($image);
-                $img = $img->resize(370, 370);
-                $savePath = storage_path('app/public/images/' . $filename);
-                $img->toJpeg(80)->save($savePath);
 
-                // Update the stored image path
+                // Get the existing filename from the database (without query parameters)
+                if ($employee->image_path) {
+                    $filename = basename(parse_url($employee->image_path, PHP_URL_PATH)); // Ensures only the filename is extracted
+                    $oldPath = 'images/' . $filename;
+
+                    // Delete old image before saving the new one
+                    if (Storage::disk('public')->exists($oldPath)) {
+                        Storage::disk('public')->delete($oldPath);
+                        Log::info('Old image deleted: ' . $oldPath);
+                    } else {
+                        Log::warning('Old image not found: ' . $oldPath);
+                    }
+                } else {
+                    // If no previous image, generate a new filename
+                    $filename = uniqid() . '.' . $image->getClientOriginalExtension();
+                }
+
+                // Resize and save the new image (forcing overwrite)
+                $img = $manager->read($image)->resize(370, 370);
+                Storage::disk('public')->put('images/' . $filename, (string) $img->toJpeg(80), 'public');
+
+                // 🔥 Save the correct image path in the database (ensuring no `?time()`)
                 $employee->image_path = 'images/' . $filename;
+                $employee->save();
+
+                Log::info('New image saved: images/' . $filename);
             } catch (\Exception $e) {
                 Log::error('Image processing failed: ' . $e->getMessage());
                 return redirect()->back()->withErrors('Image upload failed. Please try again.');
             }
         }
 
-        // Log data before saving to the database
-        Log::info('Data to be updated: ', [
-            'name'               => $validatedData['name'],
-            'branch_id'          => $validatedData['branch_id'],
-            'title'              => $validatedData['title'],
-            'status'             => $validatedData['status'] === 'on',
-            'date_hired'         => $validatedData['date_hired'],
-            'pin_code'           => $validatedData['pin_code'],
-            'email'              => $validatedData['email'] ?? null,
-            'phone'              => $validatedData['phone'] ?? null,
-            'image_path'         => $employee->image_path,
-            'job'                => $validatedData['job'],
-            'blood_type'         => $validatedData['blood_type'] ?? null,
-            'marital_status'     => $validatedData['marital_status'] ?? 'Single',
-            'shift'              => $validatedData['shift'] ?? 'Full Time',
-            'whish_number'       => $validatedData['whish_number'] ?? null,
-            'where_can_work'     => $validatedData['where_can_work'] ?? null,
-            'left_date'          => $validatedData['status'] === 'on' ? null : $validatedData['left_date'],
-            'left_reason'        => $validatedData['left_reason'] ?? null,
-            'give_notice'        => $validatedData['give_notice'] ?? null,
-            'is_good_performer'  => $validatedData['is_good_performer'] ?? null,
-            'is_positive_person' => $validatedData['is_positive_person'] ?? null,
-            'exit_interview_remarks' => $validatedData['exit_interview_remarks'] ?? null,
-            'is_recommended_to_back' => $validatedData['is_recommended_to_back'] ?? null,
-            'address'            => $validatedData['address'] ?? null,
-            'car'                => $validatedData['car'] ?? null,
-            'birthday'         => $validatedData['birthday'] ?? null,
-        ]);
-
         // Update the employee record
         $employee->update([
-            'name'               => $validatedData['name'],
-            'branch_id'          => $validatedData['branch_id'],
-            'title'              => $validatedData['title'],
-            'status'             => $validatedData['status'] === 'on',
-            'date_hired'         => $validatedData['date_hired'],
-            'pin_code'           => $validatedData['pin_code'],
-            'email'              => $validatedData['email'] ?? null,
-            'phone'              => $validatedData['phone'] ?? null,
-            'image_path'         => $employee->image_path,
-            'job'                => $validatedData['job'],
-            'blood_type'         => $validatedData['blood_type'] ?? null,
-            'marital_status'     => $validatedData['marital_status'] ?? 'Single',
-            'shift'              => $validatedData['shift'] ?? 'Full Time',
-            'whish_number'       => $validatedData['whish_number'] ?? null,
-            'where_can_work'     => $validatedData['where_can_work'] ?? null,
-            'left_date'          => $validatedData['status'] === 'on' ? null : $validatedData['left_date'],
-            'left_reason'        => $validatedData['left_reason'] ?? null,
-            'give_notice'        => $validatedData['give_notice'] ?? null,
-            'is_good_performer'  => $validatedData['is_good_performer'] ?? null,
+            'name' => $validatedData['name'],
+            'branch_id' => $validatedData['branch_id'],
+            'title' => $validatedData['title'],
+            'status' => $validatedData['status'] === 'on',
+            'date_hired' => $validatedData['date_hired'],
+            'pin_code' => $validatedData['pin_code'],
+            'email' => $validatedData['email'] ?? null,
+            'phone' => $validatedData['phone'] ?? null,
+            'image_path' => $employee->image_path,
+            'job' => $validatedData['job'],
+            'blood_type' => $validatedData['blood_type'] ?? null,
+            'marital_status' => $validatedData['marital_status'] ?? 'Single',
+            'shift' => $validatedData['shift'] ?? 'Full Time',
+            'whish_number' => $validatedData['whish_number'] ?? null,
+            'where_can_work' => $request->where_can_work ?? [],
+            'left_date' => $validatedData['status'] === 'on' ? null : $validatedData['left_date'],
+            'left_reason' => $validatedData['left_reason'] ?? null,
+            'give_notice' => $validatedData['give_notice'] ?? null,
+            'is_good_performer' => $validatedData['is_good_performer'] ?? null,
             'is_positive_person' => $validatedData['is_positive_person'] ?? null,
             'exit_interview_remarks' => $validatedData['exit_interview_remarks'] ?? null,
             'is_recommended_to_back' => $validatedData['is_recommended_to_back'] ?? null,
-            'address'            => $validatedData['address'] ?? null,
-            'car'                => $validatedData['car'] ?? null,
-            'birthday'         => $validatedData['birthday'] ?? null,
+            'address' => $validatedData['address'] ?? null,
+            'car' => $validatedData['car'] ?? null,
+            'birthday' => $validatedData['birthday'] ?? null,
+            'belongs_to' => $validatedData['belongs_to'] ?? null,
         ]);
 
         if ($employee->user) {
             $employee->user->update([
-                'name'      => $validatedData['name'],
-                'email'     => $validatedData['email'] ?? null,
-                'image'     => $employee->image_path,
-                'status'    => $validatedData['status'] === 'on' ? 'active' : 'inactive',
-                'job'       => $validatedData['job'],
-                'pin_code'  => $validatedData['pin_code'],
+                'name' => $validatedData['name'],
+                'email' => $validatedData['email'] ?? null,
+                'image' => $employee->image_path,
+                'status' => $validatedData['status'] === 'on' ? 'active' : 'inactive',
+                'job' => $validatedData['job'],
+                'pin_code' => $validatedData['pin_code'],
                 'branch_id' => $validatedData['branch_id'],
             ]);
         }
@@ -538,25 +504,73 @@ class EmployeesController extends Controller
 
     public function getEmployeeInfo()
     {
-        $employees = Employee::with('branch')->get();
+        $employees = Employee::with('branch', 'jobRelation')->get();
 
-        // Transform data to include branch_name
+        // Map each employee's where_can_work IDs to branch names
         $employees = $employees->map(function ($employee) {
+            $branchIds = is_array($employee->where_can_work) ? $employee->where_can_work : explode(',', $employee->where_can_work ?? '');
+
+            $branches = Branch::whereIn('id', $branchIds)->pluck('branch_name')->toArray();
+
             return [
                 'id' => $employee->id,
                 'name' => $employee->name,
                 'branch_name' => $employee->branch->branch_name ?? 'N/A',
+                'branch_id' => $employee->branch_id,
                 'title' => $employee->title,
-                'phone' => $employee->phone,
-                'email' => $employee->email,
-                'date_hired' => $employee->date_hired,
-                'image_path' => $employee->image_path,
                 'status' => $employee->status,
+                'blood_type' => $employee->blood_type,
+                'marital_status' => $employee->marital_status,
+                'shift' => $employee->shift,
+                'whish_number' => $employee->whish_number,
+                'where_can_work' => implode(', ', $branches),
+                'date_hired' => $employee->date_hired,
                 'pin_code' => $employee->pin_code,
+                'email' => $employee->email,
+                'phone' => $employee->phone,
+                'car' => $employee->car,
+                'address' => $employee->address,
+                'image_path' => $employee->image_path,
+                'job' => $employee->jobRelation->name,
+                'left_date' => $employee->left_date,
+                'left_reason' => $employee->left_reason,
+                'give_notice' => $employee->give_notice,
+                'is_good_performer' => $employee->is_good_performer,
+                'is_positive_person' => $employee->is_positive_person,
+                'exit_interview_remarks' => $employee->exit_interview_remarks,
+                'is_recommended_to_back' => $employee->is_recommended_to_back,
+                'birthday' => $employee->birthday,
             ];
         });
 
         return response()->json($employees);
+    }
+
+    public function downloadCoverLetter(Employee $employee)
+    {
+        // Ensure dates are Carbon instances
+        $dateHired = Carbon::parse($employee->date_hired);
+        $leftDate = Carbon::parse($employee->left_date);
+
+        $data = [
+            'employee' => $employee,
+            'time' => $dateHired->diff($leftDate)->format('%y years, %m months, %d days'),
+            'filled_by' => 'HR Team',
+            'filled_date' => today()->format('d/m/Y'),
+        ];
+
+        // Generate PDF
+        $pdf = Pdf::loadView('pdf.cover_letter', $data);
+
+        // Path according to your naming convention
+        $employeeFolder = "{$employee->name}-{$employee->pin_code}";
+        $storagePath = "employees-data/{$employeeFolder}/Cover Letter/{$employee->name}-cover-letter.pdf";
+
+        // Save and overwrite file
+        Storage::disk('public')->put($storagePath, $pdf->output());
+
+        // Trigger download
+        return $pdf->download("{$employee->name}-cover-letter.pdf");
     }
 
     public function getEmployeeFiles($employeeName, $pinCode)
@@ -572,15 +586,15 @@ class EmployeesController extends Controller
         }
 
         // Get all files in the folder
-        $files = Storage::disk('public')->files($folderPath);
+        $files = Storage::disk('public')->allFiles($folderPath);
 
         // Prepare file data
         $fileDetails = [];
         foreach ($files as $file) {
             $fileDetails[] = [
-                'name' => basename($file),
-                'size' => round(Storage::disk('public')->size($file) / 1024, 2) . ' KB', // File size in KB
-                'url' => asset('storage/' . $file), // Generate URL explicitly
+                'name' => str_replace("employees-data/$folderName/", '', $file), // keep subfolder path
+                'size' => round(Storage::disk('public')->size($file) / 1024, 2) . ' KB',
+                'url' => asset('storage/' . $file),
             ];
         }
 
@@ -589,51 +603,36 @@ class EmployeesController extends Controller
 
     public function downloadAllFiles($employeeName, $pinCode)
     {
-        $folderName = "$employeeName-$pinCode";
-        $folderPath = "employees-data/$folderName";
+        $folder = "{$employeeName}-{$pinCode}";
+        $path = "employees-data/{$folder}";
 
-        // Log the folder being checked
-        Log::info("Checking folder: $folderPath");
-
-        // Check if folder exists
-        if (!Storage::disk('public')->exists($folderPath)) {
-            Log::error("Folder not found: $folderPath");
-            return response()->json(['message' => "No files found for $folderName"], 404);
+        if (!Storage::disk('public')->exists($path)) {
+            return response()->json(['error' => 'Folder not found'], 404);
         }
 
-        $files = Storage::disk('public')->files($folderPath);
-
+        $files = Storage::disk('public')->allFiles($path);
         if (empty($files)) {
-            Log::info("No files found in: $folderPath");
-            return response()->json(['message' => "No files found for $folderName"], 404);
+            return response()->json(['files' => [], 'message' => "No files found for {$folder}-download-all"]);
         }
 
-        $zipFileName = "$folderName.zip";
-        $zipFilePath = storage_path("app/public/temp/$zipFileName");
+        $zipFileName = "{$folder}.zip";
+        $zipPath = storage_path("app/public/temp/{$zipFileName}");
 
-        // Ensure the temp directory exists
-        if (!file_exists(storage_path('app/public/temp'))) {
+        if (!is_dir(storage_path('app/public/temp'))) {
             mkdir(storage_path('app/public/temp'), 0755, true);
         }
 
         $zip = new ZipArchive();
-
-        if ($zip->open($zipFilePath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
+        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
             foreach ($files as $file) {
-                $absolutePath = storage_path("app/public/$file"); // Full path for the file
-                $relativeName = basename($file); // Add only the file name to the zip
-                $zip->addFile($absolutePath, $relativeName);
+                $relativeName = str_replace("{$path}/", '', $file);
+                $zip->addFile(storage_path("app/public/{$file}"), $relativeName);
             }
             $zip->close();
-        } else {
-            Log::error("Failed to create ZIP file: $zipFilePath");
-            return response()->json(['message' => 'Failed to create ZIP file'], 500);
         }
 
-        // Return the zip file for download
-        return response()->download($zipFilePath)->deleteFileAfterSend();
+        return response()->download($zipPath)->deleteFileAfterSend(true);
     }
-
     public function uploadFiles(Request $request)
     {
         Log::info('Upload request received', ['request' => $request->all()]);
@@ -642,6 +641,11 @@ class EmployeesController extends Controller
         $pinCode = $request->input('pinCode');
         $folderName = "$employeeName-$pinCode";
         $folderPath = "employees-data/$folderName";
+
+        $subfolder = $request->input('subfolder');
+        if ($subfolder) {
+            $folderPath .= '/' . trim($subfolder); // Now it goes inside subfolder
+        }
 
         if (!$request->hasFile('files')) {
             Log::error('No files provided in request');
@@ -665,6 +669,24 @@ class EmployeesController extends Controller
         Log::info('All files uploaded successfully');
         return response()->json(['message' => 'Files uploaded successfully'], 200);
     }
+
+    public function getSubfolders($employeeName, $pinCode)
+    {
+        $folderName = "$employeeName-$pinCode";
+        $path = "employees-data/$folderName";
+
+        if (!Storage::disk('public')->exists($path)) {
+            return response()->json(['subfolders' => []]);
+        }
+
+        $all = Storage::disk('public')->directories($path);
+        $names = array_map(function ($dir) use ($path) {
+            return str_replace("$path/", '', $dir);
+        }, $all);
+
+        return response()->json(['subfolders' => $names]);
+    }
+
     public function delete(Request $request)
     {
         $validated = $request->validate([
@@ -679,18 +701,23 @@ class EmployeesController extends Controller
         if (Storage::disk('public')->exists($filePath)) {
             Storage::disk('public')->delete($filePath);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'File deleted successfully.'
-            ], 200);
+            return response()->json(
+                [
+                    'success' => true,
+                    'message' => 'File deleted successfully.',
+                ],
+                200,
+            );
         }
 
-        return response()->json([
-            'success' => false,
-            'message' => 'File not found.'
-        ], 404);
+        return response()->json(
+            [
+                'success' => false,
+                'message' => 'File not found.',
+            ],
+            404,
+        );
     }
-
     public function countEmp(Request $request)
     {
         $sixMonthsAgo = Carbon::now()->subMonths(6);
@@ -762,7 +789,7 @@ class EmployeesController extends Controller
         $probationPeriodStart = 90;
         $probationPeriodEnd = 120;
 
-        Log::info("Running probation check for today: " . $today->toDateString());
+        Log::info('Running probation check for today: ' . $today->toDateString());
 
         foreach ($employees as $employee) {
             // ✅ Fix Date Parsing
@@ -770,12 +797,12 @@ class EmployeesController extends Controller
             $daysPassed = floor($hiredDate->diffInDays($today));
 
             Log::info("Checking employee: {$employee->name}, Hired: {$hiredDate->toDateString()}, Days Passed: $daysPassed");
-            Log::info("Stored Image Path in DB: " . $employee->image_path);
+            Log::info('Stored Image Path in DB: ' . $employee->image_path);
 
             // ✅ Use the stored image path or default
             $userImage = !empty($employee->image_path) ? $employee->image_path : 'images/default.jpg';
 
-            Log::info("Final Employee Image Used: " . $userImage);
+            Log::info('Final Employee Image Used: ' . $userImage);
 
             // ✅ Notify Only Employees Between 90 - 120 Days
             if ($daysPassed >= $probationPeriodStart && $daysPassed <= $probationPeriodEnd) {
@@ -802,7 +829,7 @@ class EmployeesController extends Controller
 
                             Log::info("Notification sent to: {$user->name}");
                         } catch (\Exception $e) {
-                            Log::error("Failed to send notification", ['error' => $e->getMessage()]);
+                            Log::error('Failed to send notification', ['error' => $e->getMessage()]);
                         }
                     }
 

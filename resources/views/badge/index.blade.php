@@ -243,33 +243,35 @@
         document.getElementById("design").addEventListener("change", updatePreview);
 
         function downloadAsPDFAtTop() {
+            Swal.fire({
+                title: 'Generating badge...',
+                text: 'Please wait while we prepare your badge!',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
             const badgePreview = document.querySelector('.badge-preview');
-            const cmToPx = (cm) => cm * 37.795276; // Conversion factor: 1 cm = ~37.795276 px
-
-            const badgeWidth = cmToPx(7.5); // Badge width in pixels
-            const badgeHeight = cmToPx(3.1); // Badge height in pixels
-
-            const A4Width = 21; // A4 width in cm
-            const A4Height = 29.7; // A4 height in cm
+            const cmToPx = (cm) => cm * 37.795276;
 
             html2canvas(badgePreview, {
-                scale: 4, // Increase resolution for high-quality rendering
-                width: badgePreview.offsetWidth, // Match badge preview size
+                scale: 4,
+                width: badgePreview.offsetWidth,
                 height: badgePreview.offsetHeight,
             }).then((canvas) => {
                 const imgData = canvas.toDataURL('image/jpeg', 1.0);
                 const pdf = new jspdf.jsPDF({
-                    orientation: 'portrait', // A4 orientation
+                    orientation: 'portrait',
                     unit: 'cm',
-                    format: [A4Width, A4Height], // A4 dimensions
+                    format: [21, 29.7],
                 });
 
-                // Place the badge at the top-left corner (1 cm margin)
-                const xOffset = 1; // Horizontal margin
-                const yOffset = 1; // Vertical margin
-
-                pdf.addImage(imgData, 'JPEG', xOffset, yOffset, 7.5, 3.1);
+                pdf.addImage(imgData, 'JPEG', 1, 1, 7.5, 3.1);
+                Swal.close();
                 pdf.save('badge-A4.pdf');
+            }).catch((err) => {
+                Swal.close();
+                Swal.fire('Error', 'Something went wrong while generating your badge.', 'error');
+                console.error(err);
             });
         }
 
@@ -410,7 +412,7 @@
                         </div>
                         <div class="badge-preview-text">
                             <div class="name">${shortName}</div>
-                            <input style='width:125px !important;height: 20px !important;' class="title input-title" value="${emp.title}" >
+                           <div class="title">${emp.title}</div>
                         </div>
                     `;
 
@@ -432,84 +434,120 @@
             });
         });
 
-        document.getElementById("download-multiple-badges").addEventListener("click", function() {
-            const multiPreviewContainer = document.getElementById("multi-badge-preview");
-            if (!multiPreviewContainer.children.length) {
-                alert("No badges to download. Please select a branch first.");
+        document.getElementById("download-multiple-badges").addEventListener("click", async function() {
+            const badges = document.querySelectorAll(".badge-preview");
+            if (!badges.length) {
+                Swal.fire('No Badges', 'Please select a branch first.', 'info');
                 return;
             }
 
-            const A4Width = 21; // A4 width in cm
-            const A4Height = 29.7; // A4 height in cm
-            const badgeWidth = 7.5; // Each badge width in cm
-            const badgeHeight = 3.1; // Each badge height in cm
+            const A4Width = 21,
+                A4Height = 29.7;
+            const badgeWidth = 7.5,
+                badgeHeight = 3.1;
 
             const pdf = new jspdf.jsPDF({
                 orientation: "portrait",
                 unit: "cm",
-                format: [A4Width, A4Height],
+                format: [A4Width, A4Height]
             });
 
-            let xOffset = 1; // Start position X
-            let yOffset = 1; // Start position Y
-            let rowCount = 0; // Track badge positions
+            let xOffset = 1,
+                yOffset = 1,
+                rowCount = 0;
 
-            const badges = document.querySelectorAll(".badge-preview");
-
-            if (!badges.length) {
-                alert("No badges to export!");
-                return;
-            }
-
-            // Show SweetAlert loading spinner immediately when the download starts
             Swal.fire({
                 title: 'Generating PDF...',
-                text: 'Please wait while we generate the badges PDF.',
+                text: 'Please wait while we generate the badges.',
                 allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
+                didOpen: () => Swal.showLoading()
             });
 
-            let badgePromises = Array.from(badges).map((badge, index) => {
-                return html2canvas(badge, {
-                    scale: 3
-                }).then((badgeCanvas) => {
-                    const badgeImg = badgeCanvas.toDataURL("image/jpeg", 1.0);
-                    pdf.addImage(badgeImg, "JPEG", xOffset, yOffset, badgeWidth, badgeHeight);
+            try {
+                for (let i = 0; i < badges.length; i++) {
+                    const canvas = await html2canvas(badges[i], {
+                        scale: 3
+                    });
 
-                    xOffset += badgeWidth + 1; // Move right
+                    if (canvas.toBlob) {
+                        await new Promise((resolve, reject) => {
+                            canvas.toBlob(blob => {
+                                if (!blob) {
+                                    const fallbackImg = canvas.toDataURL("image/jpeg", 1.0);
+                                    pdf.addImage(fallbackImg, "JPEG", xOffset, yOffset,
+                                        badgeWidth, badgeHeight);
+                                    return resolve();
+                                }
+
+                                const reader = new FileReader();
+                                reader.onloadend = () => {
+                                    const img = reader.result;
+                                    pdf.addImage(img, "JPEG", xOffset, yOffset, badgeWidth,
+                                        badgeHeight);
+                                    resolve();
+                                };
+                                reader.onerror = reject;
+                                reader.readAsDataURL(blob);
+                            }, 'image/jpeg', 1.0);
+                        });
+                    } else {
+                        const fallbackImg = canvas.toDataURL("image/jpeg", 1.0);
+                        pdf.addImage(fallbackImg, "JPEG", xOffset, yOffset, badgeWidth, badgeHeight);
+                    }
+
+
+                    xOffset += badgeWidth + 1;
                     rowCount++;
 
-                    if (rowCount === 2) { // Two badges per row
+                    if (rowCount === 2) {
                         xOffset = 1;
-                        yOffset += badgeHeight + 1; // Move to next row
+                        yOffset += badgeHeight + 1;
                         rowCount = 0;
                     }
 
-                    // Check if we need to add a new page
                     if (yOffset + badgeHeight > A4Height) {
-                        pdf.addPage(); // Add new page
-                        yOffset = 1; // Reset Y position for the new page
+                        pdf.addPage();
+                        xOffset = 1;
+                        yOffset = 1;
+                        rowCount = 0;
                     }
-                });
-            });
+                }
 
-            Promise.all(badgePromises).then(() => {
-                // Close SweetAlert spinner and save the PDF once the process is complete
                 Swal.close();
                 pdf.save("branch-badges.pdf");
-            }).catch(error => {
+
+            } catch (err) {
                 Swal.close();
-                Swal.fire('Error!', 'An unexpected error occurred. Please try again later.', 'error');
-                console.error('Error generating PDF:', error);
-            });
+                Swal.fire('Error!', 'Could not generate badges.', 'error');
+                console.error(err);
+            }
         });
     </script>
 @endsection
 
 
 <style>
+    .badge-preview-text .title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+        max-width: 150px;
+        height: 16px !important;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+
+    .input-title {
+        font-size: 14px;
+        font-weight: 600;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        border: none;
+        background: transparent;
+    }
+
     .add {
         padding: 5px !important;
     }

@@ -22,11 +22,14 @@ class TrainingStepsController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'color' => 'required|string|max:7', // Validate color format (#RRGGBB)
+            'color' => 'required|string|max:7',
+            'type' => 'nullable|string',
+            'is_reference_step' => 'boolean',
         ]);
 
         $maxOrder = TrainingSteps::max('step_order') ?? 0;
         $validated['step_order'] = $maxOrder + 1;
+        $validated['is_rollbackable'] = $validated['step_order'] > 0;
 
         $step = TrainingSteps::create($validated);
 
@@ -37,6 +40,8 @@ class TrainingStepsController extends Controller
                 'name' => $step->name,
                 'step_order' => $step->step_order,
                 'color' => $step->color,
+                'type' => $step->type,
+                'is_reference_step' => $step->is_reference_step,
             ],
         ]);
     }
@@ -51,6 +56,8 @@ class TrainingStepsController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'color' => 'required|string|max:7',
+            'type' => 'nullable|string',
+            'is_reference_step' => 'boolean',
         ]);
 
         $step = TrainingSteps::findOrFail($id);
@@ -76,7 +83,10 @@ class TrainingStepsController extends Controller
         $steps = $request->steps;
 
         foreach ($steps as $rank => $id) {
-            TrainingSteps::where('id', $id)->update(['step_order' => $rank]);
+            TrainingSteps::where('id', $id)->update([
+                'step_order' => $rank,
+                'is_rollbackable' => $rank > 0,
+            ]);
         }
 
         return response()->json(['success' => 'Steps order updated successfully!']);
@@ -85,7 +95,7 @@ class TrainingStepsController extends Controller
     public function show($id)
     {
         $step = TrainingSteps::findOrFail($id);
-    
+
         return response()->json([
             'step' => $step,
         ]);

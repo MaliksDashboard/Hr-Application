@@ -1,136 +1,189 @@
 @extends('layouts.master')
 @section('title', 'Evaluation Management')
-@section('custom_title', 'My Evaluations to do')
 
 @section('main')
 
     <div class="main">
+        <h2 class="evaluation-title">Evaluations for {{ $currentYear }}</h2>
 
-        <div class="evaluations-header">
-            <input type="text" id="search" placeholder="Search Here">
-        </div>
+        <div class="evaluation-table-wrapper">
+            <table class="evaluation-table">
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @php use Carbon\Carbon; @endphp
 
-        <div class="evaluations-cards">
-            @php
-                use Carbon\Carbon;
+                    @for ($month = 1; $month <= 12; $month++)
+                        @php
+                            $evaluation = $evaluations->get($month);
+                            $monthName = date('F', mktime(0, 0, 0, $month, 1));
+                            $status = 'Not Started';
+                            $buttonText = null;
+                            $actionLink = '#';
+                            $buttonClass = 'evaluation-btn-disabled';
 
-                $currentMonth = Carbon::now()->month;
-                $currentYear = Carbon::now()->year;
-                $currentDay = Carbon::now()->day;
-            @endphp
-
-            @for ($month = 1; $month <= 12; $month++)
-                @php
-                    $evaluation = $evaluations->where('month', $month)->first();
-                    $monthName = date('F', mktime(0, 0, 0, $month, 1));
-                    $status = 'disabled';
-                    $buttonText = '-';
-                    $actionLink = '#';
-
-                    $employeesToEvaluate = \App\Models\User::where('branch_id', Auth::user()->branch_id)->count();
-                    $evaluatedEmployees = $evaluation
-                        ? \App\Models\EvaluationAnswers::where('evaluation_id', $evaluation->id)
-                            ->distinct('employee_id')
-                            ->count()
-                        : 0;
-
-                    if ($evaluation) {
-                        if (
-                            $evaluation->year < $currentYear ||
-                            ($evaluation->year == $currentYear && $evaluation->month < $currentMonth)
-                        ) {
-                            // Past month → View button, but may have no records
-                            $status = 'view';
-                            $buttonText = 'View';
-                            $actionLink = $evaluation ? route('evaluation.show', ['month' => $month]) : '#';
-                        } elseif ($evaluation->year == $currentYear && $evaluation->month == $currentMonth) {
-                            if ($currentDay >= 15 && $currentDay <= 25) {
-                                if ($evaluatedEmployees == 0) {
-                                    $status = 'start';
-                                    $buttonText = 'Start';
-                                    $actionLink = route('evaluation.show', ['month' => $month]);
-                                } elseif ($evaluatedEmployees > 0 && $evaluatedEmployees < $employeesToEvaluate) {
-                                    $status = 'resume';
-                                    $buttonText = 'Resume';
-                                    $actionLink = route('evaluation.resume', $evaluation->id);
+                            if ($month < $currentMonth) {
+                                // ✅ Past month → Always View
+                                $status =
+                                    $evaluation && $evaluation->total_score !== null ? 'Completed' : 'In Progress';
+                                $buttonText = 'View';
+                                $buttonClass = 'evaluation-btn-view';
+                                $actionLink = route('evaluation.show', ['month' => $month]);
+                            } elseif ($month == $currentMonth && $currentDay >= 15 && $currentDay <= 30) {
+                                // ✅ Current month (15-25)
+                                if ($evaluation) {
+                                    if ($evaluation->total_score !== null) {
+                                        $status = 'Completed';
+                                        $buttonText = 'View';
+                                        $buttonClass = 'evaluation-btn-view';
+                                        $actionLink = route('evaluation.show', ['month' => $month]);
+                                    } else {
+                                        $status = 'In Progress';
+                                        $buttonText = 'Continue';
+                                        $buttonClass = 'evaluation-btn-start';
+                                        $actionLink = route('evaluation.show', ['month' => $month]);
+                                    }
                                 } else {
-                                    $status = 'view';
-                                    $buttonText = 'View';
-                                    $actionLink =
-                                        !empty($evaluation) && !empty(Auth::user()->id)
-                                            ? route('evaluation.show', ['month' => $month])
-                                            : '#';
+                                    $status = 'Not Started';
+                                    $buttonText = 'Start';
+                                    $buttonClass = 'evaluation-btn-start';
+                                    $actionLink = route('evaluation.show', ['month' => $month]);
                                 }
+                            } else {
+                                // ❌ Future or current month outside allowed range
+                                $status = 'Locked';
+                                $buttonText = 'Locked';
+                                $buttonClass = 'evaluation-btn-disabled';
                             }
-                        }
-                    } elseif ($month < $currentMonth) {
-                        // Past month with no records → Show "No records available" instead of a broken View button
-                        $status = 'view';
-                        $buttonText = 'View';
-                        $actionLink =
-                            !empty($evaluation) && !empty($evaluation->id)
-                                ? route('evaluation.show', ['month' => $month])
-                                : '#';
-                    } elseif ($month == $currentMonth) {
-                        // Current month with no evaluation yet → Start
-                        $status = 'start';
-                        $buttonText = 'Start';
-                        $actionLink =
-                            !empty($evaluation) && !empty($evaluation->id)
-                                ? route('evaluation.show', ['month' => $month])
-                                : '#';
-                    }
-                @endphp
+                        @endphp
 
-                <div class="evaluations-card">
-                    <div class="evaluation-card-info">
-                        <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd" clip-rule="evenodd"
-                                d="m13.71 4.29-3-3L10 1H4L3 2v12l1 1h9l1-1V5zM13 14H4V2h5v4h4zm-3-9V2l3 3z" />
-                        </svg>
-                        <p>Evaluation of {{ $monthName }}</p>
-                    </div>
+                        <tr>
+                            <td>{{ $monthName }}</td>
+                            <td>
+                                <span
+                                    class="evaluation-status {{ strtolower(str_replace(' ', '-', $status)) }}">{{ $status }}</span>
+                            </td>
+                            <td>
+                                <a href="{{ $actionLink }}"
+                                    class="evaluation-btn {{ $buttonClass }}">{{ $buttonText }}</a>
+                            </td>
+                        </tr>
+                    @endfor
 
-                    <p class='progress'>
-                        @if ($status == 'view' && !empty($evaluation) && !empty($evaluation->id))
-                            <a class="view-evaluation" href="{{ route('evaluation.show', ['month' => $month]) }}">
-                                {{ $buttonText }}
-                            </a>
-                        @else
-                            <button class="disabled" disabled>No records available</button>
-                        @endif
-
-                    </p>
-
-                    @php
-                        Log::info('View Button Debug:', [
-                            'evaluation_id' => $evaluation->id ?? 'NULL',
-                            'employee_id' => Auth::user()->id ?? 'NULL',
-                        ]);
-                    @endphp
-
-                    @if ($status == 'start' || $status == 'resume')
-                        <form action="{{ route('evaluation.show', ['month' => $month]) }}" method="GET">
-                            <button type="submit" class="start-evaluation">{{ $buttonText }}</button>
-                        </form>
-                    @elseif ($status == 'view')
-                        <a class="view-evaluation" href="{{ $actionLink }}">{{ $buttonText }}</a>
-                    @else
-                        <button class="disabled" disabled>{{ $buttonText }}</button>
-                    @endif
-
-                </div>
-            @endfor
-
+                </tbody>
+            </table>
         </div>
-
     </div>
 
 @endsection
 
 <style>
-    .disabled {
-        pointer-events: none;
-        opacity: 0.5;
+    /* Container Styles */
+    .evaluation-container {
+        max-width: 850px;
+        margin: 40px auto;
+        background: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .evaluation-title {
+        text-align: center;
+        font-size: 22px;
+        font-weight: bold;
+        margin-bottom: 20px;
+    }
+
+    /* Table Wrapper */
+    .evaluation-table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    /* Table Styles */
+    .evaluation-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #f8f9fa;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .evaluation-table th,
+    .evaluation-table td {
+        padding: 12px 15px;
+        text-align: center;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .evaluation-table th {
+        background: #007bff;
+        text-transform: uppercase;
+        font-size: 14px;
+    }
+
+    .evaluation-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Status Column */
+    .evaluation-status {
+        padding: 6px 12px;
+        border-radius: 5px;
+        font-weight: bold;
+        text-transform: capitalize;
+    }
+
+    .not-started {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .in-progress {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .completed {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    /* Buttons */
+    .evaluation-btn {
+        display: inline-block;
+        padding: 8px 14px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: bold;
+        text-transform: uppercase;
+        text-decoration: none;
+        transition: 0.3s ease;
+    }
+
+    .evaluation-btn-start {
+        background: #28a745;
+        color: white;
+    }
+
+    .evaluation-btn-view {
+        background: #007bff;
+        color: white;
+    }
+
+    .evaluation-btn-disabled {
+        background: #ccc;
+        color: #666;
+        cursor: not-allowed;
+    }
+
+    .evaluation-btn:hover:not(.evaluation-btn-disabled) {
+        opacity: 0.85;
     }
 </style>

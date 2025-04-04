@@ -9,6 +9,7 @@ use App\Models\EvaluationForm;
 use App\Events\NewNotification;
 use App\Exports\EmployeesExport;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Route;
 use App\Models\EvaluationFormQuestions;
@@ -21,6 +22,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])
         ->name('dashboard')
         ->middleware('permission:Dashboard');
+
+    Route::get('/home', [HomeController::class, 'index'])->name('home')->middleware('permission:Settings');
+
 
     Route::get('/getVaccanciesData', [DashboardController::class, 'getVaccanciesData']);
     Route::post('/send-anniversary-email', [DashboardController::class, 'sendAniversaryEmail'])->name('send.anniversary.email');
@@ -36,6 +40,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/check-temp-pass', [UserController::class, 'checkTempPass'])->name('check.temp.pass');
     Route::get('/lock-screen', [UserController::class, 'lockScreen'])->name('users.lock');
     Route::post('/unlock-screen', [UserController::class, 'unlockScreen'])->name('users.unlock');
+    Route::post('/profile/upload-image', [UserController::class, 'uploadImage'])->name('profile.upload.image');
+
 
     //Employees Routes
     Route::delete('/delete-file', [EmployeesController::class, 'delete'])
@@ -48,7 +54,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/employees/search', [EmployeesController::class, 'searchEmployees'])->name('employees.search');
     Route::get('/get-employees-info', [EmployeesController::class, 'getEmployeeInfo'])->middleware('permission:Employees');
     Route::get('/employee-files/{employeeName}/{pinCode}', [EmployeesController::class, 'getEmployeeFiles'])->middleware('permission:Employees');
-    Route::get('/employee-files/{employeeName}/{pinCode}/download-all', [EmployeesController::class, 'downloadAllFiles'])->middleware('permission:Employees');
+    Route::get('/employee-files/{employeeName}/{pinCode}/download-all', [EmployeesController::class, 'downloadAllFiles']);
     Route::post('/upload-employee-files', [EmployeesController::class, 'uploadFiles'])
         ->name('employee.uploadFiles')
         ->middleware('permission:Employees');
@@ -58,6 +64,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/countEmp', [EmployeesController::class, 'countEmp'])->middleware('permission:Employees');
     Route::get('/export-employees', [EmployeesController::class, 'exportEmployees'])->name('export.employees');
     Route::get('/test-probation', [EmployeesController::class, 'checkProbationPeriod']);
+    Route::get('/get-subfolders/{employeeName}/{pinCode}', [EmployeesController::class, 'getSubfolders']);
+    Route::get('employees/{employee}/cover-letter', [EmployeesController::class, 'downloadCoverLetter'])->name('employees.cover-letter');
 
     //Branches Routes
     Route::resource('/branches', BranchController::class)->middleware('permission:Branches');
@@ -126,19 +134,6 @@ Route::middleware('auth')->group(function () {
         ->name('transfers.changeActionType')
         ->middleware('permission:Trasnfers/Rotation');
 
-    // //Chat Controller
-    // Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
-
-    // // Fetch messages
-    // Route::get('/chat/messages', [ChatController::class, 'fetchMessages'])->name('chat.fetch');
-
-    // // Send a message
-    // Route::post('/chat/messages', [ChatController::class, 'sendMessage'])->name('chat.messages');
-    // // Define the broadcast channel
-    // Broadcast::channel('chat.{userId}', function ($user, $userId) {
-    //     return (int) $user->id === (int) $userId;
-    // });
-
     //Promotions routes
     Route::delete('/promotions/{promotion}', [PromotionController::class, 'destroy'])
         ->name('promotions.destroy')
@@ -160,29 +155,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/getEmployeesByBranch/{branchId}', [BadgeController::class, 'getEmployeesByBranch'])->middleware('permission:Badge Maker');
 
     //New Joiners System Routes
-    Route::post('/new-joiners/reference', [NewJoinerController::class, 'storeReference']);
-    Route::get('/employee-progress/{id}', [NewJoinerController::class, 'getEmployeeProgress'])->middleware('permission:New Joiners');
-    Route::get('/new-joiners-data', [NewJoinerController::class, 'getNewJoinersData'])->middleware('permission:New Joiners');
-    Route::resource('new-joiners', NewJoinerController::class)
-        ->except(['show'])
-        ->middleware('permission:New Joiners');
-    Route::post('/save-phase-progress', [NewJoinerController::class, 'savePhaseProgress'])->middleware('permission:New Joiners');
-    Route::get('/progress/{newJoinerId}', [NewJoinerProgressController::class, 'showProgress'])->middleware('permission:New Joiners');
-    Route::post('/progress/complete', [NewJoinerProgressController::class, 'completeStep'])->middleware('permission:New Joiners');
-    Route::post('/progress/init/{newJoinerId}', [NewJoinerProgressController::class, 'initializeProgress'])->middleware('permission:New Joiners');
-    Route::get('/new-joiners/filter/{stepId}', [NewJoinerController::class, 'filterByStep'])->middleware('permission:New Joiners');
-    Route::delete('/new-joiners/{id}', [NewJoinerController::class, 'destroy'])->middleware('permission:New Joiners');
-    Route::get('/count-by-step', [NewJoinerController::class, 'countByStep'])->middleware('permission:New Joiners');
-    Route::put('/new-joiners-steps/{id}/update', [NewJoinerController::class, 'UpdateStepTime'])
-        ->name('update.step.time')
-        ->middleware('permission:New Joiners');
-    Route::get('/new-joiners-steps/{id}/edit', [NewJoinerController::class, 'EditStepTime'])
-        ->name('edit.step.time')
-        ->middleware('permission:New Joiners');
+    Route::get('/new-joiners/steps-with-count', [NewJoinerController::class, 'getStepsWithCount']);
+    Route::resource('new-joiners', NewJoinerController::class)->except(['show']);
+    Route::get('/new-joiners/data', [NewJoinerController::class, 'fetchJoiners']);
+    Route::get('/new-joiners/filter/{stepId}', [NewJoinerController::class, 'filterByStep']);
+    Route::get('/steps', [TrainingStepsController::class, 'index'])->name('new-joiners.steps');
+    Route::post('/new-joiners/mark-complete/{id}', [NewJoinerController::class, 'markStepComplete']);
+    Route::post('/new-joiners/rollback/{id}', [NewJoinerController::class, 'rollbackStep'])->name('new-joiners.rollback');
+    Route::get('/new-joiners/{id}/history', [NewJoinerController::class, 'getHistory']);
+    Route::get('/new-joiners/{id}/reference', [NewJoinerController::class, 'getReferenceData']);
+    Route::post('/new-joiners/complete-reference/{id}', [NewJoinerController::class, 'markReferenceComplete']);
+
 
     //Notification System
-    // Route::get('/notifications', [NotificationController::class, 'fetchNotifications']);
-    // Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
     Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
     Route::get('/notifications', [NotificationController::class, 'fetchNotifications']);
 
@@ -197,9 +182,6 @@ Route::middleware('auth')->group(function () {
     Route::get('add-permission', [RolesAndPermissionController::class, 'addPermissions'])->middleware('permission:Role And Permission');
     Route::resource('roles', RolesAndPermissionController::class)->middleware('permission:Role And Permission');
     Route::get('/getroles', [RolesAndPermissionController::class, 'getRoles'])->middleware('permission:Role And Permission');
-    // Route::put('/roles/{id}', [RolesAndPermissionController::class, 'update'])
-    //     ->name('roles.update')
-    //     ->middleware('permission:Role And Permission');
 
     //Sundays API:
     Route::get('/sundays', [SundaysController::class, 'index'])
@@ -225,18 +207,28 @@ Route::middleware('auth')->group(function () {
 
     //Evaluation Forms
     Route::resource('/evaluation-forms', EvaluationFormController::class);
+    //End Evaluation Forms
+
+    //Evaluation Chain
+    Route::resource('evaluation-chains', EvaluationChainController::class);
+    Route::get('/evaluation-chains-data', [EvaluationChainController::class, 'getData']);
+    //End Evaluation Chain
 
     //Evaluation Form Questions
     Route::resource('/evaluations-forms-questions', EvaluationFormQuestionsController::class);
+    //End Evaluation Form Questions
 
     //Evaluation over all API
-    Route::resource('/evaluation', EvaluationController::class);
-    Route::get('/evaluation/start/{month}', [EvaluationController::class, 'startEvaluation'])->name('evaluation.start');
-    Route::post('/evaluation/submit/{id}', [EvaluationController::class, 'submitEvaluation'])->name('evaluation.submit');
-    // Route::get('/evaluation/show/{month}', [EvaluationController::class, 'show'])->name('evaluation.show');
-    Route::get('/evaluation/{month}/employee/{employee_id}', [EvaluationController::class, 'evaluate'])->name('evaluation.evaluate');
+    Route::post('/evaluation/submit/{evaluation_id}/{employee_id}', [EvaluationController::class, 'submitEvaluation'])->name('evaluation.submit');
+    Route::put('/evaluation/update-score/{evaluation_id}/{employee_id}', [EvaluationController::class, 'updateEvaluation'])->name('evaluation.updateScore');
+    Route::get('/evaluation/edit-score/{evaluation_id}/{employee_id}', [EvaluationController::class, 'edit'])->name('evaluation.editScore');
+    Route::resource('/evaluation', EvaluationController::class)->except(['show']);
+    // Route::get('/evaluation/start/{month}', [EvaluationController::class, 'startEvaluation'])->name('evaluation.start');
+    Route::get('/evaluation/{month}', [EvaluationController::class, 'show'])->name('evaluation.show');
+    Route::get('/evaluation/{month}/employee/{employee_id}/{assigned_for}', [EvaluationController::class, 'evaluate'])
+        ->name('evaluation.evaluate');
     // Route::post('/evaluation/{evaluation_id}/employee/{employee_id}/submit', [EvaluationController::class, 'submitEvaluation'])->name('evaluation.submit');
-    Route::get('evaluation/{evaluation_id}/employee/{employee_id}/view', [EvaluationController::class, 'viewEvaluation'])->name('evaluation.view');
+    Route::get('evaluation/{month}/employee/{employee_id}/{assigned_for}/view', [EvaluationController::class, 'viewEvaluation'])->name('evaluation.view');
 });
 
 //Route for getting the user role
@@ -251,7 +243,7 @@ Route::get('/api/get-user-role', function () {
 
 //Routes for falling back if the page was not found
 Route::fallback(function () {
-    return Auth::check() ? redirect('/dashboard') : redirect('/login');
+    return Auth::check() ? redirect('/') : redirect('/login');
 });
 
 //Login

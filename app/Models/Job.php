@@ -38,5 +38,8 @@ class Job extends Model
         return $this->hasMany(Vacancy::class, 'job');
     }
 
-    
+    public function evaluationChains()
+    {
+        return $this->hasMany(EvaluationChain::class, 'job_id');
+    }
 }

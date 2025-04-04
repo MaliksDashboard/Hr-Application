@@ -12,7 +12,7 @@ class RolesAndPermissionController extends Controller
 {
     public function addPermissions(Request $request)
     {
-        $permissions = ['View Evaluation', 'Apply Evaluation', 'Dashboard', 'Users', 'Calendar & Tools', 'Vacancies', 'New Joiners', 'Trasnfers/Rotation', 'Promotions', 'Badge Maker', 'Employees', 'Branches', 'Titles', 'Settings', 'Edit', 'Download', 'Create', 'Delete', 'Role And Permission', 'HR Member', 'Sundays','Target Controller'];
+        $permissions = ['View Evaluation', 'Apply Evaluation', 'Dashboard', 'Users', 'Calendar & Tools', 'Vacancies', 'New Joiners', 'Trasnfers/Rotation', 'Promotions', 'Badge Maker', 'Employees', 'Branches', 'Titles', 'Settings', 'Edit', 'Download', 'Create', 'Delete', 'Role And Permission', 'HR Member', 'Sundays', 'Target Controller', 'Home'];
 
         foreach ($permissions as $permission) {
             Permission::create(['name' => $permission]);

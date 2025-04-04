@@ -17,23 +17,20 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use App\Models\EmployeePhaseProgress;
+use Carbon\Carbon;
 
 class NewJoinerController extends Controller
 {
+
     public function index()
     {
-        $newJoiners = NewJoiner::with('jobRelation')->orderBy('start_date', 'asc')->take(20)->get();
-        $steps = TrainingSteps::orderBy('step_order', 'asc')->get();
-        $progressSteps = NewJoinerProgress::all();
-
-        return view('new-joiner.index', compact('newJoiners', 'steps', 'progressSteps'));
+        return view('new-joiner.index');
     }
 
     public function create()
     {
-        $steps = TrainingSteps::orderBy('step_order', 'asc')->get();
         $jobs = Job::all();
-        return view('new-joiner.create', compact('steps', 'jobs'));
+        return view('new-joiner.create', compact('jobs'));
     }
 
     public function store(Request $request)
@@ -44,286 +41,430 @@ class NewJoinerController extends Controller
             'start_date' => 'required|date',
             'job' => 'required|string',
             'target_branch' => 'nullable|string',
+            'interview_time' => 'nullable|string',
         ]);
 
-        $newJoiner = NewJoiner::create($validated);
+        DB::beginTransaction();
 
-        $firstStep = TrainingSteps::orderBy('step_order')->first();
+        try {
+            // 1. Create New Joiner
+            $newJoiner = NewJoiner::create($validated);
 
-        if ($firstStep) {
-            DB::table('new_joiner_progress')->insert([
+            // 2. Get First Step in Training
+            $firstStep = TrainingSteps::orderBy('step_order')->first();
+
+            if (!$firstStep) {
+                DB::rollBack();
+                return redirect()->back()->with('error', '❌ No training steps found!');
+            }
+
+            // 3. Insert First Step as Pending
+            NewJoinerProgress::create([
                 'new_joiner_id' => $newJoiner->id,
                 'step_id' => $firstStep->id,
                 'status' => 'pending',
-                'created_at' => now(),
-                'updated_at' => now(),
                 'interview_time' => $request->interview_time,
             ]);
-            Log::info("✅ First Step Assigned: {$firstStep->id} - {$firstStep->name}");
-        } else {
-            Log::warning('❌ No Steps Found in TrainingSteps Table!');
-        }
 
-        $adminUsers = User::role('Admin')->get();
-        foreach ($adminUsers as $admin) {
-            // Skip sending notification to the logged-in admin
-            if ($admin->id == Auth::id()) {
-                continue; // Skip the current admin
+            // 4. Notify All Admins Except Self
+            $admins = User::role('Admin')->where('id', '!=', Auth::id())->get();
+            foreach ($admins as $admin) {
+                $notification = Notification::create([
+                    'user_id' => $admin->id,
+                    'type' => 'admin_alert',
+                    'message' => Auth::user()->name . " added {$newJoiner->name} as a New Joiner.",
+                    'notified_at' => now(),
+                    'is_read' => false,
+                    'user_image' => Auth::user()->image ?? null,
+                ]);
+
+                broadcast(new NewNotification($notification))->toOthers();
             }
 
-            $notification = Notification::create([
-                'user_id' => $admin->id,
-                'type' => 'admin_alert',
-                'message' => Auth::user()->name . " has added {$newJoiner->name} as a New Joiner Employee.",
-                'notified_at' => now(),
-                'is_read' => false,
-                'user_image' => Auth::user()->image,
-            ]);
+            DB::commit();
+
+            return redirect()->route('new-joiners.index')
+                ->with('success', '✅ New joiner created and first step initialized!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'An error occurred while saving the joiner.');
         }
-
-        broadcast(new NewNotification($notification))->toOthers();
-
-        return redirect()->route('new-joiners.index')->with('success', 'New joiner added and first step initialized!');
     }
 
     public function edit($id)
     {
         $newJoiner = NewJoiner::findOrFail($id);
-        $reference = NewJoinerReference::where('new_joiner_id', $id)->first();
         $jobs = Job::all();
 
-        return view('new-joiner.edit', compact('newJoiner', 'jobs', 'reference'));
+        return view('new-joiner.edit', compact('newJoiner', 'jobs'));
     }
 
     public function update(Request $request, $id)
     {
-        // Validate input
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'mode' => 'required|string',
             'start_date' => 'required|date',
             'job' => 'required|string',
             'target_branch' => 'nullable|string',
+            'interview_time' => 'nullable|string',
+            'company_name' => 'nullable|string',
+            'contact_name' => 'nullable|string',
+            'phone' => 'nullable|string',
+            'position' => 'nullable|string',
+            'have_recommendation_letter' => 'nullable|boolean',
+            'feedback' => 'nullable|string',
         ]);
 
-        // Find and update the new joiner
-        $newJoiner = NewJoiner::findOrFail($id);
-        $newJoiner->update($validated);
+        DB::beginTransaction();
 
-        // Check if 'Back to Silva' step is completed
-        $backToSilvaStep = TrainingSteps::where('name', 'Back to Silva')->first();
+        try {
+            // Update New Joiner Info
+            $newJoiner = NewJoiner::findOrFail($id);
+            $newJoiner->update($validated);
 
-        $isStepCompleted = NewJoinerProgress::where('new_joiner_id', $id)->where('step_id', $backToSilvaStep->id)->where('status', 'completed')->exists();
+            // Update Interview Time in current progress (if exists)
+            $progress = NewJoinerProgress::where('new_joiner_id', $newJoiner->id)
+                ->orderBy('id') // first step
+                ->first();
 
-        // Only create/update reference if the step is completed
-        if ($isStepCompleted) {
-            NewJoinerReference::updateOrCreate(['new_joiner_id' => $id], $request->only(['company_name', 'contact_name', 'phone', 'position', 'have_recommendation_letter', 'feedback']));
+            if ($progress) {
+                $progress->update([
+                    'interview_time' => $request->interview_time,
+                ]);
+            }
+
+            // Update or create reference record
+            $newJoiner->reference()->updateOrCreate(
+                ['new_joiner_id' => $newJoiner->id],
+                [
+                    'company_name' => $request->company_name,
+                    'contact_name' => $request->contact_name,
+                    'phone' => $request->phone,
+                    'position' => $request->position,
+                    'have_recommendation_letter' => $request->have_recommendation_letter,
+                    'feedback' => $request->feedback,
+                ]
+            );
+
+            DB::commit();
+
+            return redirect()->route('new-joiners.index')->with('success', '✅ New joiner updated successfully!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', '❌ Failed to update joiner.');
         }
-
-        return redirect()->route('new-joiners.index')->with('success', 'New joiner details updated successfully!');
     }
 
     public function destroy($id)
     {
-        $newJoiner = NewJoiner::findOrFail($id);
+        $joiner = NewJoiner::find($id);
 
-        // Delete progress records related to this joiner
-        $newJoiner->progress()->delete();
-
-        $adminUsers = User::role('Admin')->get();
-        foreach ($adminUsers as $admin) {
-            // Skip sending notification to the logged-in admin
-            if ($admin->id == Auth::id()) {
-                continue; // Skip the current admin
-            }
-
-            Log::info("Creating admin notification for {$admin->name}");
-            $notification = Notification::create([
-                'user_id' => $admin->id,
-                'type' => 'admin_alert',
-                'message' => Auth::user()->name . " has deleted {$newJoiner->name} From the New Joiner List.",
-                'notified_at' => now(),
-                'is_read' => false,
-                'user_image' => Auth::user()->image,
-            ]);
+        if (!$joiner) {
+            return response()->json(['error' => 'Joiner not found.'], 404);
         }
 
-        broadcast(new NewNotification($notification))->toOthers();
+        $joiner->delete();
 
-        // Delete the new joiner
-        $newJoiner->delete();
+        return response()->json(['success' => 'Joiner deleted successfully.']);
+    }
 
-        return response()->json(['success' => 'New joiner deleted successfully!']);
+    public function getStepsWithCount()
+    {
+        $steps = TrainingSteps::orderBy('step_order')->get();
+
+        // Get pending count per step (used for step filters)
+        $stepCounts = NewJoinerProgress::where('status', 'pending')
+            ->selectRaw('step_id, COUNT(*) as count')
+            ->groupBy('step_id')
+            ->pluck('count', 'step_id');
+
+        // Total joiners (even completed ones)
+
+        $totalJoiners = NewJoiner::count();
+        log::info($totalJoiners);
+
+        $response = $steps->map(function ($step) use ($stepCounts) {
+            return [
+                'id' => $step->id,
+                'name' => $step->name,
+                'count' => $stepCounts[$step->id] ?? 0,
+                'color' => $step->color,
+            ];
+        });
+
+        // Add "All" button first
+        $response->prepend([
+            'id' => 'all',
+            'name' => 'All',
+            'count' => $totalJoiners,
+            'color' => '#00B7F1',
+        ]);
+
+        return response()->json($response);
+    }
+
+    public function fetchJoiners()
+    {
+        $joiners = NewJoiner::with(['progress.step'])
+            ->get()
+            ->map(function ($joiner) {
+                $currentProgress = $joiner->progress->where('status', 'pending')->sortBy('step.step_order')->first();
+                $finalStep = TrainingSteps::orderBy('step_order', 'desc')->first();
+
+                return [
+                    'id' => $joiner->id,
+                    'name' => $joiner->name,
+                    'job' => $joiner->job ?? 'Unknown',
+                    'target_branch' => $joiner->target_branch,
+                    'start_date' => $joiner->start_date,
+                    'step_name' => $currentProgress?->step->name ?? 'Completed',
+                    'status' => $currentProgress?->status ?? 'completed',
+                    'step_color' => $currentProgress?->step->color ?? '#ccc',
+                    'is_first_step' => $joiner->progress->first()?->id === $currentProgress?->id,
+                ];
+            });
+
+        return response()->json($joiners);
     }
 
     public function filterByStep($stepId)
     {
-        if ($stepId == 'all') {
-            $newJoiners = NewJoiner::all();
+        if ($stepId === 'all') {
+            $joiners = NewJoiner::with(['progress.step'])
+                ->get()
+                ->map(function ($joiner) {
+                    $latest = $joiner->progress->sortByDesc('step.step_order')->first();
+
+                    return [
+                        'id' => $joiner->id,
+                        'name' => $joiner->name,
+                        'job' => $joiner->job ?? 'N/A',
+                        'target_branch' => $joiner->target_branch,
+                        'start_date' => $joiner->start_date,
+                        'current_step' => optional($latest->step)->name ?? 'N/A',
+                        'current_step_status' => $latest->status ?? 'pending',
+                        'current_step_id' => $latest->step_id ?? null,
+                        'is_rollbackable' => optional($latest->step)->is_rollbackable == 1,
+                        'is_reference_step' => optional($latest->step)->is_reference_step ?? false,
+                        'is_reference_exists' => NewJoinerReference::where('new_joiner_id', $joiner->id)->exists(),
+                    ];
+                });
         } else {
-            $newJoiners = NewJoiner::whereHas('progress', function ($query) use ($stepId) {
-                $query->where('step_id', $stepId)->where('status', 'pending');
-            })->get();
-        }
+            $joiners = NewJoiner::whereHas('progress', function ($q) use ($stepId) {
+                $q->where('step_id', $stepId)
+                    ->where('status', 'pending'); // ✅ Only get pending for that step
+            })
+                ->with(['progress.step'])->get()
+                ->map(function ($joiner) use ($stepId) {
+                    $progress = $joiner->progress->where('step_id', $stepId)->first();
 
-        $finalStep = TrainingSteps::orderBy('step_order', 'desc')->first();
-
-        $newJoiners->each(function ($joiner) use ($finalStep) {
-            $currentStepProgress = $joiner->progress->where('status', 'pending')->sortBy('step.step_order')->first();
-
-            if (!$currentStepProgress && $finalStep) {
-                $joiner->current_step = $finalStep->name;
-                $joiner->current_step_id = null; // No step ID if finished
-                $joiner->interview_time = null; // ✅ No interview time
-            } else {
-                $joiner->current_step = $currentStepProgress ? $currentStepProgress->step->name : 'Completed All Steps';
-                $joiner->current_step_id = $currentStepProgress ? $currentStepProgress->id : null; // ✅ ID taba3 l progress
-                $joiner->interview_time = $currentStepProgress ? $currentStepProgress->interview_time : null; // ✅ Add interview_time
-            }
-        });
-
-        return response()->json($newJoiners);
-    }
-
-    public function countByStep()
-    {
-        try {
-            // ✅ Fetch all steps sorted by step_order
-            $allSteps = DB::table('training_steps')
-                ->orderBy('step_order')
-                ->pluck('id') // Only fetch step IDs
-                ->toArray();
-
-            // ✅ Get pending progress for each step
-            $progressData = DB::table('new_joiner_progress')->where('status', 'pending')->orderBy('step_id')->get()->groupBy('new_joiner_id');
-
-            // ✅ Initialize counts dynamically with step_id as key
-            $stepCounts = array_fill_keys($allSteps, 0);
-
-            foreach ($progressData as $joinerProgress) {
-                foreach ($joinerProgress as $progress) {
-                    if (isset($stepCounts[$progress->step_id])) {
-                        $stepCounts[$progress->step_id]++;
+                    if ($progress->status === 'completed' && optional($progress->step)->is_rollbackable != 1) {
+                        return null; // 🔥 Skip completed steps that are NOT rollbackable
                     }
-                    break;
-                }
-            }
 
-            return response()->json($stepCounts);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+                    return [
+                        'id' => $joiner->id,
+                        'name' => $joiner->name,
+                        'job' => optional($joiner->jobRelation)->name ?? 'N/A',
+                        'target_branch' => $joiner->target_branch,
+                        'start_date' => $joiner->start_date,
+                        'current_step' => optional($progress->step)->name ?? 'N/A',
+                        'current_step_status' => $progress->status ?? 'pending',
+                        'current_step_id' => $progress->step_id ?? null,
+                        'is_rollbackable' => optional($progress->step)->is_rollbackable == 1,
+                        'is_reference_step' => optional($progress->step)->is_reference_step ?? 0,
+                        'is_reference_exists' => NewJoinerReference::where('new_joiner_id', $joiner->id)->exists(),
+                    ];
+                })->filter(); // ❗ remove nulls
         }
+
+        return response()->json($joiners);
     }
-
-    public function EditStepTime($id)
+    public function markStepComplete(Request $request, $id)
     {
-        $step = NewJoinerProgress::find($id);
-
-        if (!$step) {
-            return redirect()->back()->with('error', 'Record not found!');
-        }
-
-        return view('new-joiner.edit_step_time', compact('step'));
-    }
-
-    public function UpdateStepTime(Request $request)
-    {
-        $validateData = $request->validate([
-            'interview_time' => 'nullable|string',
-            'id' => 'required',
+        $request->validate([
+            'completion_date' => 'required|date',
+            'remarks' => 'nullable|string',
         ]);
 
-        $step = NewJoinerProgress::find($request->id);
-        if (!$step) {
-            return redirect()->back()->with('error', 'Record not found!');
-        }
-        $step->update($validateData);
+        $progress = NewJoinerProgress::where('new_joiner_id', $id)
+            ->where('status', 'pending')
+            ->first();
 
-        return redirect()->route('new-joiners.index')->with('success', 'Time Updated Successfully!');
-    }
-
-    public function storeReference(Request $request)
-    {
-        Log::info('Received Reference Form Data:', $request->all());
-
-        // ✅ Validate input
-        $validated = $request->validate([
-            'new_joiner_id' => 'required|exists:new_joiner,id',
-            'company_name' => 'required|string|max:255',
-            'contact_name' => 'required|string|max:255',
-            'phone' => 'required|string|max:50',
-            'position' => 'required|string|max:100',
-            'feedback' => 'nullable|string|max:500',
-            'have_recommendation_letter' => 'boolean',
-        ]);
-
-        // ✅ Insert reference data
-        DB::table('new_joiner_references')->insert([
-            'new_joiner_id' => $validated['new_joiner_id'],
-            'company_name' => $validated['company_name'],
-            'contact_name' => $validated['contact_name'],
-            'phone' => $validated['phone'],
-            'position' => $validated['position'],
-            'feedback' => $validated['feedback'],
-            'have_recommendation_letter' => $validated['have_recommendation_letter'],
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        // ✅ Fetch the new joiner
-        $newJoiner = NewJoiner::findOrFail($validated['new_joiner_id']);
-
-        // ✅ Fetch the current step
-        $currentProgress = NewJoinerProgress::where('new_joiner_id', $newJoiner->id)->where('status', 'pending')->first();
-
-        if ($currentProgress) {
-            // ✅ Mark current step as completed
-            $currentProgress->update([
-                'status' => 'completed',
-                'completed_at' => now(),
-            ]);
-
-            Log::info("Step '{$currentProgress->step->name}' completed for {$newJoiner->name}.");
+        if (!$progress) {
+            return response()->json(['success' => false, 'message' => 'No pending step found.']);
         }
 
-        // ✅ Get the next step
-        $nextStep = TrainingSteps::where('step_order', '>', $currentProgress->step->step_order)->orderBy('step_order', 'asc')->first();
+        // ✅ Mark current as completed
+        $progress->update([
+            'status' => 'completed',
+            'completion_date' => $request->completion_date,
+            'remarks' => $request->remarks,
+        ]);
+
+        // ✅ Find next step based on step_order
+        $currentStep = TrainingSteps::find($progress->step_id);
+        $nextStep = TrainingSteps::where('step_order', '>', $currentStep->step_order)
+            ->orderBy('step_order')
+            ->first();
 
         if ($nextStep) {
-            // ✅ Assign the next step to the new joiner
+            // ✅ Add next step as pending
             NewJoinerProgress::create([
-                'new_joiner_id' => $newJoiner->id,
+                'new_joiner_id' => $id,
                 'step_id' => $nextStep->id,
                 'status' => 'pending',
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
-
-            Log::info("Next step '{$nextStep->name}' assigned to {$newJoiner->name}.");
-        } else {
-            // ✅ No more steps, mark the new joiner as completed
-            $newJoiner->update(['status' => 'completed']);
-            Log::info("New joiner '{$newJoiner->name}' has completed all steps.");
         }
 
-        // ✅ Notify admins about progress update
-        $adminUsers = User::role('Admin')->get();
-        foreach ($adminUsers as $admin) {
-            if ($admin->id == Auth::id()) {
-                continue;
+        return response()->json(['success' => true]);
+    }
+
+    public function rollbackStep(Request $request, $id)
+    {
+        $stepId = $request->step_id;
+
+        $progress = NewJoinerProgress::where('new_joiner_id', $id)
+            ->where('step_id', $stepId)
+            ->where('status', 'pending')
+            ->first();
+
+        if (!$progress) {
+            return response()->json(['error' => 'Step is not pending or no progress found.'], 404);
+        }
+
+        // Store the deleted progress info
+        $deletedStepOrder = optional($progress->step)->step_order;
+
+        // Delete the progress
+        $progress->delete();
+
+        // Find and revert previous progress
+        $previous = NewJoinerProgress::where('new_joiner_id', $id)
+            ->where('created_at', '<', $progress->created_at)
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        if ($previous) {
+            $previous->update([
+                'status' => 'pending',
+                'completed_at' => null,
+                'remarks' => null,
+            ]);
+
+            // If rollback went to before or on reference step -> delete reference
+            $previousStepOrder = optional($previous->step)->step_order;
+
+            if ($previousStepOrder <= $deletedStepOrder) {
+                NewJoinerReference::where('new_joiner_id', $id)->delete();
             }
-
-            Log::info("Creating admin notification for {$admin->name}");
-            $notification = Notification::create([
-                'user_id' => $admin->id,
-                'type' => 'admin_alert',
-                'message' => Auth::user()->name . " marked step '{$currentProgress->step->name}' as completed for {$newJoiner->name}.",
-                'notified_at' => now(),
-                'is_read' => false,
-                'user_image' => Auth::user()->image,
-            ]);
-
-            broadcast(new NewNotification($notification))->toOthers();
         }
 
-        return response()->json(['success' => 'Reference saved & next step assigned successfully!']);
+        return response()->json(['success' => 'Rolled back to previous step.']);
+    }
+
+
+    public function getHistory($id)
+    {
+        $joiner = NewJoiner::with('jobRelation')->findOrFail($id);
+        $progress = NewJoinerProgress::where('new_joiner_id', $id)
+            ->with('step')
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        $history = $progress->map(function ($p) use ($joiner) {
+            return [
+                'step' => $p->step->name ?? 'Unknown',
+                'status' => $p->status,
+                'completed_at' => $p->completed_at,
+                'remarks' => $p->remarks,
+                'name' => $joiner->name,
+                'job' => $joiner->job ?? 'No Job',
+                'target_branch' => $joiner->target_branch ?? '-',
+                'start_date' => $joiner->start_date,
+            ];
+        });
+
+        return response()->json($history);
+    }
+
+    public function getReferenceData($id)
+    {
+        $joiner = NewJoiner::with('reference')->findOrFail($id);
+
+        return response()->json([
+            'company_name' => $joiner->reference->company_name ?? '',
+            'contact_name' => $joiner->reference->contact_name ?? '',
+            'phone' => $joiner->reference->phone ?? '',
+            'position' => $joiner->reference->position ?? '',
+            'feedback' => $joiner->reference->feedback ?? '',
+            'have_recommendation_letter' => $joiner->reference->have_recommendation_letter ?? false,
+            'has_sejel' => $joiner->has_sejel ?? false,
+        ]);
+    }
+    public function markReferenceComplete(Request $request, $id)
+    {
+        $request->validate([
+            'completion_date' => 'required|date',
+            'remarks' => 'nullable|string|max:500',
+            'company_name' => 'nullable|string|max:255',
+            'contact_name' => 'nullable|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'position' => 'nullable|string|max:255',
+            'feedback' => 'nullable|string',
+            'have_recommendation_letter' => 'boolean',
+            'has_sejel' => 'boolean',
+        ]);
+
+        $joiner = NewJoiner::findOrFail($id);
+        $progress = $joiner->progress()->latest('created_at')->first();
+
+        if (!$progress || $progress->status === 'completed') {
+            return response()->json(['error' => 'Invalid or already completed step'], 400);
+        }
+
+        // ✅ Use Carbon
+        $progress->update([
+            'status' => 'completed',
+            'completed_at' => Carbon::parse($request->completion_date),
+            'remarks' => $request->remarks,
+        ]);
+
+        NewJoinerReference::updateOrCreate(
+            ['new_joiner_id' => $joiner->id],
+            [
+                'company_name' => $request->company_name,
+                'contact_name' => $request->contact_name,
+                'phone' => $request->phone,
+                'position' => $request->position,
+                'feedback' => $request->feedback,
+                'have_recommendation_letter' => $request->have_recommendation_letter,
+            ]
+        );
+
+        $joiner->update([
+            'has_sejel' => $request->has_sejel ? 1 : 0,
+        ]);
+
+        // ✅ Now auto-create the next step
+        $currentStep = TrainingSteps::find($progress->step_id);
+        $nextStep = TrainingSteps::where('step_order', '>', $currentStep->step_order)
+            ->orderBy('step_order')
+            ->first();
+
+        if ($nextStep) {
+            NewJoinerProgress::create([
+                'new_joiner_id' => $id,
+                'step_id' => $nextStep->id,
+                'status' => 'pending',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        return response()->json(['success' => 'Reference step completed and next step created.']);
     }
 }

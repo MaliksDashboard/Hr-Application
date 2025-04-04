@@ -15,31 +15,36 @@ use Illuminate\Support\Facades\Auth;
 
 class VacancyController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // ✅ Ensure jobRelation is loaded
+        $area = $request->input('area'); // From ?area=Shar2iye or Gharbiye
+    
+        // To Do vacancies
         $vacancies = Vacancy::with(['branch', 'jobRelation'])
             ->where(function ($query) {
                 $query->where('is_finished', 0)->orWhereNull('is_finished');
             })
+            ->when($area, function ($query, $area) {
+                $query->where('area', $area);
+            })
             ->orderBy('created_at', 'desc')
             ->get();
-
+    
+        // Completed vacancies
         $vacanciesCompleted = Vacancy::with(['branch', 'jobRelation'])
             ->where('is_finished', 1)
+            ->when($area, function ($query, $area) {
+                $query->where('area', $area);
+            })
             ->orderBy('updated_at', 'desc')
             ->limit(20)
             ->get();
-
+    
         $jobs = Job::all();
-
-        // ✅ Debugging: Log vacancy data
-        foreach ($vacancies as $vacancy) {
-            Log::info("Vacancy ID: {$vacancy->id}, Job ID: {$vacancy->job_id}, Job Name: " . ($vacancy->jobRelation->name ?? 'No Job Assigned'));
-        }
-
+    
         return view('vacancy.index', compact('vacancies', 'vacanciesCompleted', 'jobs'));
     }
+    
 
     public function create()
     {
@@ -58,6 +63,8 @@ class VacancyController extends Controller
                 'status' => 'required|in:low,medium,high',
                 'asked_date' => 'required|date',
                 'remarks' => 'nullable|string|max:1000',
+                'shift' => 'nullable|string|max:255',
+                'area'=>'nullable|string|max:255',
             ]);
 
             // Create the vacancy
@@ -120,6 +127,8 @@ class VacancyController extends Controller
             'is_finished' => 'required|boolean',
             'employee_id' => 'nullable|exists:employee_info,id',
             'remarks' => 'nullable|string|max:1000',
+            'shift' => 'nullable|string|max:255',
+            'area'=>'nullable|string|max:255',
         ]);
 
         $vacancy = Vacancy::findOrFail($id);
@@ -134,6 +143,8 @@ class VacancyController extends Controller
             'employee_id' => $request->employee_id,
             'image_path' => $request->employee_id ? DB::table('employee_info')->where('id', $request->employee_id)->value('image_path') : null,
             'remarks' => $request->remarks,
+            'shift' => $request->shift,
+            'area'=>$request->area,
         ]);
 
         return redirect()->route('vacancies.index')->with('success', 'Vacancy updated successfully!');

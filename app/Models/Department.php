@@ -15,15 +15,26 @@ class Department extends Model
 
     public function headOfDept()
     {
-        return $this->belongsTo(Employee::class,'head_of_dept_id');
+        return $this->belongsTo(Employee::class, 'head_of_dept_id');
     }
 
     public function jobs()
     {
-        return $this->belongsTo(Job::class,'dept_id');
+        return $this->belongsTo(Job::class, 'dept_id');
     }
 
-    public function evaluationForm(){
-        return $this->belongsTo(EvaluationForm::class,'dept_id');
+    public function evaluationForm()
+    {
+        return $this->belongsTo(EvaluationForm::class, 'dept_id');
+    }
+
+    public function employees()
+    {
+        return $this->hasMany(Employee::class, 'belongs_to');
+    }
+
+    public function evaluationChains()
+    {
+        return $this->hasMany(EvaluationChain::class, 'department_id');
     }
 }

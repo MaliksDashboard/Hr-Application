@@ -31,12 +31,46 @@
 
 <body>
 
+    @if (session('success'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const notyf = new Notyf({
+                    duration: 4000, // Notification duration (ms)
+                    position: {
+                        x: 'right',
+                        y: 'top'
+                    }, // Position of notifications
+                });
+
+                notyf.success('{{ session('success') }}'); // Display success message
+            });
+        </script>
+    @endif
+
+    @if (session('error'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const notyf = new Notyf({
+                    duration: 4000,
+                    position: {
+                        x: 'right',
+                        y: 'top'
+                    }
+                });
+                notyf.error('{{ session('error') }}');
+            });
+        </script>
+    @endif
+
     @include('layouts.nav')
 
     @yield('main')
 
-    @vite(['resources/js/app.js'])
+    @vite(['resources/js/app.js', 'resources/css/app.css'])
 
+    <div id="loadingSpinner" class="loading-spinner" style="display: none;">
+        <span class="loader"></span>
+    </div>
 
     @stack('scripts')
 
@@ -47,7 +81,6 @@
     <script defer src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
 
 
 </body>
@@ -76,12 +109,38 @@
     // Optionally update third-color dynamically if session values are changed without page reload
     document.addEventListener('DOMContentLoaded', function() {
         const thirdColor = "{{ session('third_color', '#ff5733') }}";
-        const font = "{{ session('font', 'Arial') }}";
+        const font = "{{ session('font', 'Play') }}";
 
         // Update the root CSS variable
         document.documentElement.style.setProperty('--third-color', thirdColor);
 
         // Update font-family
         document.body.style.fontFamily = font;
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const spinner = document.getElementById('loadingSpinner');
+
+        // Show spinner on AJAX start
+        document.addEventListener('ajaxStart', () => spinner.style.display = 'flex');
+
+        // Hide spinner on AJAX end
+        document.addEventListener('ajaxComplete', () => spinner.style.display = 'none');
+
+        // Example usage with fetch:
+        async function fetchWithSpinner(url, options) {
+            spinner.style.display = 'flex';
+            try {
+                const response = await fetch(url, options);
+                return response;
+            } catch (err) {
+                console.error(err);
+            } finally {
+                spinner.style.display = 'none';
+            }
+        }
+
+        // Usage:
+        fetchWithSpinner('/some-api-endpoint');
     });
 </script>

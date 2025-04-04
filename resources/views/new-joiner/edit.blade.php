@@ -72,7 +72,8 @@
                         <div class="input-group">
                             <label for="start_date">Start Date <b style="color:red;">*</b></label>
                             <input type="date" name="start_date" id="start_date"
-                                value="{{ old('start_date', $newJoiner->start_date) }}" required>
+                                value="{{ old('start_date', isset($newJoiner->start_date) ? \Carbon\Carbon::parse($newJoiner->start_date)->format('Y-m-d') : '') }}"
+                                required>
                             @error('start_date')
                                 <span class="error-message" style="color:red;">{{ $message }}</span>
                             @enderror
@@ -88,7 +89,6 @@
                                 <span class="error-message" style="color:red;">{{ $message }}</span>
                             @enderror
                         </div>
-
                     </div>
                 </div>
 

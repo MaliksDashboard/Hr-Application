@@ -32,4 +32,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(Employee::class, 'id', 'employee_id');
     }
+
+    public function jobRelation()
+    {
+        return $this->belongsTo(Job::class, 'job', 'id');
+    }
 }

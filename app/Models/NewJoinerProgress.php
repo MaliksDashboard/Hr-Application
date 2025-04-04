@@ -11,6 +11,10 @@ class NewJoinerProgress extends Model
 
     protected $table = 'new_joiner_progress';
 
+    protected $casts = [
+        'completed_at' => 'datetime',
+    ];
+
     protected $fillable = ['new_joiner_id', 'step_id', 'status', 'completed_at', 'remarks', 'interview_time'];
 
     // Relationship with NewJoiner

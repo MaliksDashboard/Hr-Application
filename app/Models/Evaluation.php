@@ -11,7 +11,7 @@ class Evaluation extends Model
 
     protected $table = 'evaluations';
 
-    protected $fillable = ['form_id', 'total_score', 'month', 'year', 'branch_id', 'employee_id'];
+    protected $fillable = ['form_id', 'total_score', 'month', 'year', 'branch_id', 'employee_id', 'assigned_by','assigned_for'];
 
     public function answers()
     {
@@ -28,8 +28,9 @@ class Evaluation extends Model
         return $this->belongsTo(Branch::class, 'branch_id');
     }
 
-    public function employee()
+    public function assignedByUser()
     {
-        return $this->belongsTo(User::class, 'employee_id');
+        return $this->belongsTo(User::class, 'assigned_by', 'pin_code');
     }
+    
 }

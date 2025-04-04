@@ -163,6 +163,7 @@
                             @enderror
                         </div>
 
+
                     </div>
 
                     <div style="display: flex; justify-content: space-between; width: 100%; gap: 20px;">
@@ -220,6 +221,21 @@
                                 <span class="error-message" style="color:red;">{{ $message }}</span>
                             @enderror
                         </div>
+
+                        <div class="input-group" style="display: none">
+                            <label for="belongs_to">Belongs to<b style="color:red;">*</b></label>
+                            <select id="belongs_to" name="belongs_to" class="form-control" required>
+                                @foreach ($departments as $department)
+                                    <option value="{{ $department->id }}"
+                                        {{ old('belongs_to') == $department->id ? 'selected' : '' }}>
+                                        {{ $department->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('belongs_to')
+                                <span class="error-message" style="color:red;">{{ $message }}</span>
+                            @enderror
+                        </div>
                     </div>
                 </div>
 
@@ -248,8 +264,13 @@
 
                         <div class="input-group">
                             <label for="where_can_work">Where Can Work?</label>
-                            <input type="text" name="where_can_work" id="where_can_work"
-                                value="{{ old('where_can_work') }}">
+                            <select class="form-control" id="where-can-work" name="where_can_work[]" multiple>
+                                @foreach ($branches as $branch)
+                                    <option value="{{ $branch->id }}" @if (in_array($branch->id, old('where_can_work', $employee->where_can_work ?? []))) selected @endif>
+                                        {{ $branch->branch_name }}
+                                    </option>
+                                @endforeach
+                            </select>
                             @error('where_can_work')
                                 <span class="error-message" style="color:red;">{{ $message }}</span>
                             @enderror
@@ -421,6 +442,18 @@
             },
         });
 
+        const deptInput = new Choices('#belongs_to', {
+            removeItemButton: false,
+            addItems: true,
+            duplicateItemsAllowed: false,
+            searchEnabled: true,
+            placeholderValue: 'Select a department...',
+            noResultsText: 'No results found',
+            noChoicesText: 'No choices available',
+            addItemFilter: function(value) {
+                return value.trim() !== ''; // Prevent adding empty items
+            },
+        })
 
         const jobInput = new Choices('#job', {
             removeItemButton: false,
@@ -593,6 +626,43 @@
             imgPreview.style.display = "none"; // Hide preview if no file selected
         }
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const branchChoices = new Choices('#where-can-work', {
+            removeItemButton: true,
+            searchEnabled: true,
+            placeholderValue: 'Select branches...',
+            noResultsText: 'No branches found',
+            noChoicesText: 'No branches available',
+            shouldSort: true,
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const branchSelect = document.getElementById('branch_id');
+        const belongsToGroup = document.querySelector('[for="belongs_to"]').parentElement;
+        const belongsToSelect = document.getElementById('belongs_to');
+
+        function toggleBelongsTo() {
+            const selectedOption = branchSelect.options[branchSelect.selectedIndex];
+            const selectedText = selectedOption ? selectedOption.text : "";
+
+            if (selectedText.trim() === "Head Office") {
+                belongsToGroup.style.display = 'flex';
+                belongsToSelect.setAttribute('required', 'required');
+            } else {
+                belongsToGroup.style.display = 'none';
+                belongsToSelect.removeAttribute('required');
+                belongsToSelect.value = ""; // clear selection
+            }
+        }
+
+        // Initial check (for when editing an old form with old value)
+        toggleBelongsTo();
+
+        // Trigger check on change
+        branchSelect.addEventListener('change', toggleBelongsTo);
+    });
 </script>
 
 
@@ -649,5 +719,10 @@
         color: red;
         margin-left: 5px;
         display: none;
+    }
+
+
+    .choices__inner input {
+        width: 100% !important;
     }
 </style>

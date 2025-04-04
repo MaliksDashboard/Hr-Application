@@ -3,12 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Image;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Intervention\Image\ImageManager;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Drivers\Gd\Driver;
 
 class UserController extends Controller
 {
@@ -164,7 +169,11 @@ class UserController extends Controller
 
     public function profile()
     {
-        $user = Auth::user();
+        $user = auth()->user()->load([
+            'employee',
+            'employee.branch',
+            'employee.jobRelation',
+        ]);
 
         return view('users.profile', compact('user'));
     }
@@ -228,5 +237,65 @@ class UserController extends Controller
 
         // Redirect to the profile page
         return redirect()->route('users.profile')->with('success', 'Welcome back! We Missed You ❤️');
+    }
+
+    public function uploadImage(Request $request)
+    {
+        Log::info('🔥 uploadImage hit');
+        Log::info('Request method: ' . $request->method());
+        Log::info('Request files: ', $request->allFiles());
+
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
+        ]);
+
+        $user = auth()->user();
+
+        if ($request->hasFile('image')) {
+            try {
+                $manager = new ImageManager(new Driver());
+                $image = $request->file('image');
+
+                // ✅ Fixed filename to overwrite always
+                $filename = 'user_' . $user->id . '.jpg';
+                $relativePath = 'user-images/' . $filename;
+                $absolutePath = storage_path('app/public/' . $relativePath);
+
+                Log::info('📂 Saving image to: ' . $absolutePath);
+
+                $img = $manager->read($image)
+                    ->resize(300, 300, function ($constraint) {
+                        $constraint->aspectRatio();
+                        $constraint->upsize();
+                    })
+                    ->toJpeg(60)
+                    ->save($absolutePath);
+
+                // ✅ No need to delete old image, it gets overwritten
+
+                $user->image = $relativePath;
+                $user->save();
+
+                Log::info('✅ Image overwritten and path saved: ' . $relativePath);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Profile picture updated!',
+                    'image_url' => asset('storage/' . $relativePath),
+                ]);
+            } catch (\Exception $e) {
+                Log::error('❌ Image processing error: ' . $e->getMessage());
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Image processing failed. Try again.',
+                ], 500);
+            }
+        }
+
+        Log::warning('⚠️ No image file found in request.');
+        return response()->json([
+            'success' => false,
+            'message' => 'No image uploaded.',
+        ], 400);
     }
 }

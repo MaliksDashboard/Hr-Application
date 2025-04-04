@@ -12,7 +12,17 @@ class Employee extends Model
 
     protected $table = 'employee_info';
 
-    protected $fillable = ['name', 'branch_id', 'title', 'status', 'blood_type', 'marital_status', 'shift', 'whish_number', 'where_can_work', 'date_hired', 'pin_code', 'email', 'phone', 'car', 'address', 'image_path', 'job', 'left_date', 'left_reason', 'give_notice', 'is_good_performer', 'is_positive_person', 'exit_interview_remarks', 'is_recommended_to_back', 'birthday'];
+    protected $fillable = ['name', 'branch_id', 'title', 'status', 'blood_type', 'marital_status', 'shift', 'whish_number', 'where_can_work', 'date_hired', 'pin_code', 'email', 'phone', 'car', 'address', 'image_path', 'job', 'left_date', 'left_reason', 'give_notice', 'is_good_performer', 'is_positive_person', 'exit_interview_remarks', 'is_recommended_to_back', 'birthday', 'belongs_to'];
+
+    protected $casts = [
+        'where_can_work' => 'array',
+    ];
+
+    public function title()
+    {
+        return $this->belongsTo(Title::class, 'title');
+    }
+
 
     public function branch()
     {
@@ -49,4 +59,8 @@ class Employee extends Model
         return $this->hasMany(EvaluationAnswers::class, 'employee_id');
     }
 
+    public function FromDept()
+    {
+        return $this->belongsTo(Department::class, 'belongs_to');
+    }
 }

@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Department;
-use App\Models\EvaluationForm;
-use App\Models\EvaluationFormQuestions;
 use App\Models\Job;
+use App\Models\Department;
 use Illuminate\Http\Request;
+use App\Models\EvaluationForm;
+use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Log;
+use App\Models\EvaluationFormQuestions;
 
 class EvaluationFormController extends Controller
 {
@@ -21,7 +22,8 @@ class EvaluationFormController extends Controller
     {
         $departments = Department::orderBy('name', 'asc')->get();
         $jobs = Job::orderBy('name', 'asc')->get();
-        return view('evaluationForms.create', compact('departments', 'jobs'));
+        $roles = Role::pluck('name'); // fetch all role names
+        return view('evaluationForms.create', compact('departments', 'jobs','roles'));
     }
 
     public function store(Request $request)
@@ -67,9 +69,10 @@ class EvaluationFormController extends Controller
     {
         $form = EvaluationForm::with('questions')->findOrFail($id);
         $departments = Department::all();
+        $roles = Role::pluck('name'); // fetch all role names
         $jobs = Job::all();
 
-        return view('evaluationForms.edit', compact('form', 'departments', 'jobs'));
+        return view('evaluationForms.edit', compact('form', 'departments', 'jobs','roles'));
     }
 
 

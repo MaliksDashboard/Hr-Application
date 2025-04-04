@@ -11,10 +11,17 @@ class TrainingSteps extends Model
 
     protected $table = 'training_steps';
 
+    protected $casts = [
+        'is_reference_step' => 'boolean',
+    ];
+
     protected $fillable = [
         'name',
         'step_order',
         'color',
+        'type',
+        'is_reference_step',
+        'is_rollbackable',
     ];
 
     // Relationship: A step can be assigned to many new joiners in progress

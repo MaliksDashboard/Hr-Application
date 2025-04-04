@@ -426,7 +426,7 @@
                     <div class="chart-title-left">
                         <h2>${branchName}</h2>
                         <h3>Meet our Team</h3>
-                        <span class="border"></span>
+                        <span class="border-c"></span>
                     </div>
                     <div class="chart-title-right">
                         <img id="branchLogo" src="/logos/maliks.png" alt="">

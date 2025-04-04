@@ -36,6 +36,7 @@ class DashboardController extends Controller
         $noticeEmployees = DB::table('employees_probation_period')
             ->join('employee_info', 'employees_probation_period.employee_id', '=', 'employee_info.id')
             ->join('branches', 'employee_info.branch_id', '=', 'branches.id')
+            ->where('employee_info.status', 1)
             ->where('employees_probation_period.is_checked', 0) // ✅ Fetch ONLY employees where is_checked = 0
             ->select('employee_info.id', 'employee_info.name', 'employee_info.image_path', 'employee_info.date_hired', 'employees_probation_period.probation_period_end', 'employees_probation_period.is_checked', 'branches.branch_name', 'branches.manager_email')
             ->orderBy('employees_probation_period.probation_period_end', 'asc') // ✅ Sort by probation end date (earliest first)
@@ -60,6 +61,7 @@ class DashboardController extends Controller
         // Fetch employees whose anniversary is in the current month
         $workAnniversaries = Employee::whereMonth('date_hired', $today->month)
             ->select('id', 'name', 'date_hired', 'image_path', 'email') // Ensure email is selected
+            ->where('status', 1) // ✅ Only include active employees
             ->get()
             ->map(function ($employee) use ($today) {
                 $years = $today->year - Carbon::parse($employee->date_hired)->year;
@@ -97,6 +99,7 @@ class DashboardController extends Controller
         $birthdays = Employee::select('employee_info.id', 'employee_info.name', 'employee_info.birthday', 'employee_info.image_path', 'employee_info.email', 'branches.branch_name')
             ->whereNotNull('employee_info.birthday') // Ensure birthday exists
             ->leftJoin('branches', 'employee_info.branch_id', '=', 'branches.id') // Join branches
+            ->where('employee_info.status', 1) // ✅ Only include active employees
             ->get()
             ->map(function ($emp) use ($today) {
                 $birthday = Carbon::parse($emp->birthday)->setYear($today->year); // Adjust to this year

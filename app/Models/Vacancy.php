@@ -17,6 +17,8 @@ class Vacancy extends Model
         'employee_id',
         'image_path',
         'remarks',
+        'shift',
+        'area',
     ];
 
     public function branch()

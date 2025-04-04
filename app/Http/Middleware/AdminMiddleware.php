@@ -14,6 +14,6 @@ class AdminMiddleware
         }
 
         // Redirect non-admin users to /dashboard
-        return redirect('/dashboard');
+        return redirect('/');
     }
 }

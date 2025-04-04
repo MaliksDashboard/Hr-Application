@@ -32,9 +32,20 @@
             </div>
             <form id="add-step-form">
                 <input type="text" id="name" placeholder="Step Name" required>
+
+                <select id="type" required>
+                    <option value="">Select Step Type</option>
+                    <option value="interview">Interview</option>
+                    <option value="reference">Reference</option>
+                    <option value="training">Training</option>
+                </select>
+
+                <label style="font-size:14px; color:#444;">
+                    <input type="checkbox" id="is_reference_step" />
+                    Is Reference Step?
+                </label>
                 <div class="color-picker-container">
                     <input type="color" id="color" class="color-input" value="#FFFFFF" required>
-                    <button type="button" class="color-preview" id="color-preview-add"></button>
                 </div>
                 @can('Create')
                     <button class="add-titlles" type="submit">Add Step</button>
@@ -80,6 +91,18 @@
                 <input type="hidden" id="edit-id">
                 <label for="edit-name">Step Name:</label>
                 <input type="text" id="edit-name" required>
+                <select id="edit-type" required>
+                    <option value="">Select Step Type</option>
+                    <option value="interview">Interview</option>
+                    <option value="reference">Reference</option>
+                    <option value="training">Training</option>
+                </select>
+
+                <label style="font-size:14px; color:#444;">
+                    <input type="checkbox" id="edit-is-reference-step" />
+                    Is Reference Step?
+                </label>
+
                 <div class="color-picker-container">
                     <input type="color" id="edit-color" class="color-input" required>
                     <button type="button" class="color-preview" id="color-preview-edit"></button>
@@ -131,6 +154,8 @@
                 e.preventDefault();
                 const name = document.getElementById('name').value;
                 const color = document.getElementById('color').value;
+                const type = document.getElementById('type').value;
+                const is_reference_step = document.getElementById('is_reference_step').checked ? 1 : 0;
 
                 fetch('/steps', {
                         method: 'POST',
@@ -141,7 +166,9 @@
                         },
                         body: JSON.stringify({
                             name,
-                            color
+                            color,
+                            type,
+                            is_reference_step
                         }),
                     })
                     .then(response => response.json())
@@ -188,6 +215,9 @@
             const id = document.getElementById('edit-id').value;
             const name = document.getElementById('edit-name').value;
             const color = document.getElementById('edit-color').value;
+            const type = document.getElementById('edit-type').value;
+            const is_reference_step = document.getElementById('edit-is-reference-step').checked ? 1 : 0;
+
 
             fetch(`/steps/${id}`, {
                     method: 'PUT',
@@ -198,7 +228,9 @@
                     },
                     body: JSON.stringify({
                         name,
-                        color
+                        color,
+                        type,
+                        is_reference_step
                     }),
                 })
                 .then(response => response.json())
@@ -276,7 +308,6 @@
 
     document.addEventListener('DOMContentLoaded', function() {
         const colorInputAdd = document.getElementById('color');
-        const colorPreviewAdd = document.getElementById('color-preview-add');
         const colorInputEdit = document.getElementById('edit-color');
         const colorPreviewEdit = document.getElementById('color-preview-edit');
 
@@ -285,13 +316,13 @@
             preview.style.backgroundColor = input.value;
         }
 
-        // Update preview on color change (Add form)
-        if (colorInputAdd) {
-            updatePreview(colorInputAdd, colorPreviewAdd);
-            colorInputAdd.addEventListener('input', function() {
-                updatePreview(colorInputAdd, colorPreviewAdd);
-            });
-        }
+        // // Update preview on color change (Add form)
+        // if (colorInputAdd) {
+        //     updatePreview(colorInputAdd, colorPreviewAdd);
+        //     colorInputAdd.addEventListener('input', function() {
+        //         updatePreview(colorInputAdd, colorPreviewAdd);
+        //     });
+        // }
 
         // Update preview on color change (Edit form)
         if (colorInputEdit) {
@@ -315,13 +346,16 @@
                         updatePreview(colorInputEdit, colorPreviewEdit); // Update preview
                         document.getElementById('edit-step-popup').style.display = 'block';
                         document.getElementById('popup-overlay').style.display = 'block';
+                        document.getElementById('edit-type').value = data.step.type || "";
+                        document.getElementById('edit-is-reference-step').checked = data.step
+                            .is_reference_step == 1;
+
                     })
                     .catch(() => console.error("Failed to fetch step."));
             }
         });
     });
 </script>
-
 
 <style>
     #popup-overlay {
@@ -330,7 +364,7 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.5);
+        background: rgba(0, 0, 0, 0.4);
         z-index: 1000;
         display: none;
     }
@@ -340,23 +374,60 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        /* Centering */
-        background: white;
-        padding: 20px;
-        border-radius: 10px;
-        z-index: 11000000000000000000000000;
-        /* Make sure it's above the overlay */
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        background: #ffffff;
+        padding: 25px 30px;
+        border-radius: 16px;
+        z-index: 11000000000;
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        width: 400px;
+        max-width: 90vw;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        font-family: 'Segoe UI', sans-serif;
     }
 
-    .color-picker-container {
+    #edit-step-popup h3 {
+        font-size: 20px;
+        color: #333;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+
+    #edit-step-popup input[type="text"],
+    #edit-step-popup input[type="color"],
+    #edit-step-popup select {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        font-size: 14px;
+        box-sizing: border-box;
+        background: #f9f9f9;
+    }
+
+    #edit-step-popup input[type="checkbox"] {
+        transform: scale(1.2);
+        margin-right: 6px;
+    }
+
+    #edit-step-popup label {
+        font-size: 14px;
+        color: #444;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    #edit-step-popup .color-picker-container {
         display: flex;
         align-items: center;
         gap: 10px;
         margin-top: 5px;
+        width: 100%;
     }
 
-    .color-input {
+    #edit-step-popup .color-input {
         width: 40px;
         height: 40px;
         border: none;
@@ -364,7 +435,7 @@
         background: transparent;
     }
 
-    .color-preview {
+    #edit-step-popup .color-preview {
         width: 40px;
         height: 40px;
         border: 2px solid #ccc;
@@ -372,7 +443,39 @@
         cursor: pointer;
     }
 
-    .color-preview:hover {
+    #edit-step-popup .color-preview:hover {
         border-color: #666;
+    }
+
+    #edit-step-popup button {
+        padding: 10px 15px;
+        background-color: var(--third-color, #007bff);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+    }
+
+    #edit-step-popup button:hover {
+        background-color: #0056b3;
+    }
+
+    #edit-step-form {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+    }
+
+    #name {
+        width: 300px !important;
+    }
+
+    .titles form {
+        justify-content: space-between !important;
     }
 </style>

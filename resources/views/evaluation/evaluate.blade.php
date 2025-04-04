@@ -1,198 +1,317 @@
 @extends('layouts.master')
-
-@section('title', 'Evaluate Employee')
+@section('title', 'Evaluate ' . $employee->name)
 
 @section('main')
+
     <div class="main">
-        <div class="evaluation-container">
-            <h2>Evaluation for <span class="highlight">{{ $employee->name }}</span></h2>
+        <div class="evaluation-wrapper">
+            <div class="evaluation-container">
+                <h2 class="evaluation-title">Evaluating {{ $employee->name }}</h2>
 
-            <form
-                action="{{ route('evaluation.submit', ['evaluation_id' => $evaluation->id, 'employee_id' => $employee->id]) }}"
-                method="POST" id="evaluationForm">
-                @csrf
+                <div class="employee-info">
+                    <div class="avatar">
+                        <img src="{{ asset('storage/' . $employee->image) }}" alt="">
+                    </div>
+                    <h3 class="employee-name">{{ $employee->name }}</h3>
+                    <p class="employee-job">{{ $employee->jobRelation->name ?? 'Unknown Position' }}</p>
+                    <div id="score-display" style="margin-top: 20px; font-weight: bold; font-size: 18px;">
+                        Total Score: <span id="score">0</span>/100
+                    </div>
+                    <div id="grading-label" style="margin-top: 5px; font-size: 14px;"></div>
+                </div>
 
-                <div class="questions-container">
-                    @foreach ($questions->chunk(2) as $questionPair)
-                        <div class="question-row">
-                            @foreach ($questionPair as $question)
-                                <div class="question-card">
-                                    <p class="question-text">{{ $question->question }}</p>
-                                    <div class="options">
-                                        @for ($i = 1; $i <= 4; $i++)
-                                            <label class="option-label">
-                                                <input type="radio" name="answers[{{ $question->id }}]"
-                                                    value="{{ $i }}" class="answer-input" required>
-                                                <span class="option-circle">{{ $i }}</span>
-                                            </label>
-                                        @endfor
-                                    </div>
+                <form method="POST" action="/evaluation/submit/{{ $evaluation->id }}/{{ $employee->id }}">
+                    @csrf
+                    <input type="hidden" name="assigned_for" value="{{ $evaluation->assigned_for }}">
+
+                    <div class="question-list">
+                        @foreach ($questions as $question)
+                            <div class="question-card">
+                                <p class="question-text">{{ $question->question }}</p>
+                                <div class="rating-options">
+                                    <label class="rating-circle">
+                                        <input type="radio" name="answers[{{ $question->id }}]" value="0" required>
+                                        <span>0</span>
+                                    </label>
+                                    <label class="rating-circle">
+                                        <input type="radio" name="answers[{{ $question->id }}]" value="1" required>
+                                        <span>1</span>
+                                    </label>
+                                    <label class="rating-circle">
+                                        <input type="radio" name="answers[{{ $question->id }}]" value="2">
+                                        <span>2</span>
+                                    </label>
+                                    <label class="rating-circle">
+                                        <input type="radio" name="answers[{{ $question->id }}]" value="3">
+                                        <span>3</span>
+                                    </label>
+                                    <label class="rating-circle">
+                                        <input type="radio" name="answers[{{ $question->id }}]" value="4">
+                                        <span>4</span>
+                                    </label>
                                 </div>
-                            @endforeach
-                        </div>
-                    @endforeach
-                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                    <div class="buttons">
+                        @if ($prevEmployee && $prevEmployee->evaluation)
+                            <a href="{{ route('evaluation.evaluate', [
+                                'month' => $month,
+                                'employee_id' => $prevEmployee->id,
+                                'assigned_for' => $evaluation->assigned_for,
+                            ]) }}"
+                                class="evaluation-btn prev-btn">
+                                <svg viewBox="-8.5 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M15.281 7.188v17.594L0 16.001z" />
+                                </svg>
+                            </a>
+                        @endif
 
-                <div class="score-container">
-                    <p>Total Score: <span id="totalScore">0</span> / 100</p>
-                </div>
+                        @if (!$evaluation->total_score)
+                            <button type="submit" class="evaluation-btn submit-btn">Submit</button>
+                        @endif
 
-                <button type="submit" id="submitBtn" disabled>Submit Evaluation</button>
-            </form>
+                        @if ($nextEmployee && $nextEmployee->evaluation === null)
+                            <a href="{{ route('evaluation.evaluate', [
+                                'month' => $month,
+                                'employee_id' => $nextEmployee->id,
+                                'assigned_for' => $evaluation->assigned_for,
+                            ]) }}"
+                                class="next-btn">
+                                <svg viewBox="0 0 24 24" data-name="Flat Color" xmlns="http://www.w3.org/2000/svg"
+                                    class="icon flat-color">
+                                    <path
+                                        d="m18.6 11.2-12-9A1 1 0 0 0 5 3v18a1 1 0 0 0 .55.89 1 1 0 0 0 1-.09l12-9a1 1 0 0 0 0-1.6Z"
+                                        style="fill:#fff" />
+                                </svg>
+                            </a>
+                        @endif
+
+                        <a href="{{ route('evaluation.show', ['month' => $month]) }}" class="prev-btn">Back</a>
+                    </div>
+
+
+                </form>
+
+            </div>
         </div>
+
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            const form = document.getElementById("evaluationForm");
-            const totalScoreDisplay = document.getElementById("totalScore");
-            const submitBtn = document.getElementById("submitBtn");
+            const radios = document.querySelectorAll('input[type="radio"]');
+            const scoreEl = document.getElementById('score');
+            const totalQuestions = {{ $questions->count() }};
+            const maxPerQuestion = 4;
 
             function calculateScore() {
-                let total = 0;
-                let answeredQuestions = 0;
-                const allInputs = document.querySelectorAll(".answer-input:checked");
+                let totalScore = 0;
 
-                allInputs.forEach(input => {
-                    total += parseInt(input.value);
-                    answeredQuestions++;
+                document.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
+                    totalScore += parseInt(radio.value);
                 });
 
-                // Convert score to percentage over 100
-                let maxScore = {{ count($questions) }} * 4;
-                let normalizedScore = (total / maxScore) * 100;
-                totalScoreDisplay.textContent = normalizedScore.toFixed(1);
-
-                // Enable submit button only if all questions are answered
-                submitBtn.disabled = allInputs.length < {{ count($questions) }};
+                // Normalize to 100
+                const normalized = ((totalScore / (totalQuestions * maxPerQuestion)) * 100).toFixed(2);
+                scoreEl.textContent = normalized;
             }
 
-            document.querySelectorAll(".answer-input").forEach(input => {
-                input.addEventListener("change", calculateScore);
+            radios.forEach(radio => {
+                radio.addEventListener('change', calculateScore);
             });
+
+            calculateScore(); // initial calculation if some are pre-checked
         });
+
+        const gradeEl = document.getElementById('grading-label');
+        if (normalized >= 90) gradeEl.textContent = 'Excellent';
+        else if (normalized >= 70) gradeEl.textContent = 'Good';
+        else gradeEl.textContent = 'Needs Improvement';
     </script>
 
-    <style>
-        .main {
-            align-items: center;
-        }
 
-        .evaluation-container {
-            max-width: 800px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            background: #fff;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
-            text-align: center;
-            margin-top: 40px;
-        }
-
-        h2 {
-            color: #333;
-            font-size: 24px;
-            margin-bottom: 20px;
-        }
-
-        .highlight {
-            color: var(--third-color);
-            font-weight: bold;
-        }
-
-        .questions-container {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .question-row {
-            display: flex;
-            gap: 20px;
-            justify-content: space-between;
-        }
-
-        .question-card {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-            text-align: left;
-            width: 48%;
-        }
-
-        .question-text {
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .options {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-        }
-
-        .option-label {
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-        }
-
-        .option-circle {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #ddd;
-            border-radius: 50%;
-            font-size: 18px;
-            font-weight: bold;
-            transition: 0.3s;
-        }
-
-        .answer-input {
-            display: none;
-        }
-
-        .answer-input:checked+.option-circle {
-            background: var(--third-color);
-            color: white;
-            transform: scale(1.1);
-        }
-
-        .score-container {
-            margin-top: 20px;
-            font-size: 18px;
-            font-weight: bold;
-            color: #333;
-        }
-
-        #submitBtn {
-            margin-top: 20px;
-            padding: 12px 25px;
-            font-size: 18px;
-            font-weight: bold;
-            color: white;
-            background: var(--third-color);
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: 0.3s;
-            opacity: 0.5;
-        }
-
-        #submitBtn:not(:disabled) {
-            opacity: 1;
-            transform: scale(1.05);
-        }
-
-        #submitBtn:hover {
-            filter: brightness(0.9)
-        }
-    </style>
 @endsection
+
+<style>
+    /* Page Wrapper */
+    .evaluation-wrapper {
+        display: flex;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    /* Evaluation Box */
+    .evaluation-container {
+        max-width: 900px;
+        width: 100%;
+        background: #fff;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    .evaluation-title {
+        font-size: 22px;
+        font-weight: bold;
+        margin-bottom: 20px;
+    }
+
+    /* Employee Info */
+    .employee-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+
+    .avatar {
+        width: 80px;
+        height: 80px;
+        background: white;
+        color: white;
+        font-size: 32px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        margin-bottom: 10px;
+    }
+
+    .employee-name {
+        font-size: 18px;
+        font-weight: bold;
+        margin: 5px 0;
+    }
+
+    .employee-job {
+        font-size: 14px;
+        color: #666;
+    }
+
+    /* Questions */
+    .question-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .question-card {
+        background: #f8f9fa;
+        padding: 15px;
+        min-width: 400px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    .question-text {
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    /* Rating Circles */
+    .rating-options {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+    }
+
+    .rating-circle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #ddd;
+        color: #333;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.3s ease;
+        position: relative;
+    }
+
+    .rating-circle input {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+    }
+
+    .rating-circle span {
+        position: relative;
+        z-index: 2;
+    }
+
+    .rating-circle:hover {
+        background: var(--third-color);
+        color: white;
+    }
+
+    .rating-circle input:checked+span {
+        background: var(--third-color);
+        color: white;
+        border-radius: 50%;
+        padding: 8px 12px;
+    }
+
+    /* Buttons */
+    .buttons {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+        margin-top: 20px;
+    }
+
+    .evaluation-btn {
+        padding: 10px 16px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: bold;
+        text-transform: uppercase;
+        text-decoration: none;
+        transition: 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .submit-btn {
+        background: var(--third-color);
+        color: white;
+    }
+
+    .submit-btn:hover {
+        filter: brightness(.9)
+    }
+
+    .prev-btn {
+        background: #0974e0;
+        color: white;
+        fill: white;
+        padding: 5px;
+        border-radius: 5px;
+    }
+
+    .next-btn {
+        background: #28a745;
+        color: white;
+        fill: white;
+        padding: 5px;
+        border-radius: 5px;
+    }
+
+    .prev-btn:hover {
+        filter: brightness(.9)
+    }
+
+    .next-btn:hover {
+        filter: brightness(.9)
+    }
+</style>

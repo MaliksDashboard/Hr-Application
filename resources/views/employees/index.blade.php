@@ -8,37 +8,6 @@
 @section('main')
     <div class="main">
 
-        @if (session('success'))
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    const notyf = new Notyf({
-                        duration: 4000, // Notification duration (ms)
-                        position: {
-                            x: 'right',
-                            y: 'top'
-                        }, // Position of notifications
-                    });
-
-                    notyf.success('{{ session('success') }}'); // Display success message
-                });
-            </script>
-        @endif
-
-        @if (session('error'))
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    const notyf = new Notyf({
-                        duration: 4000,
-                        position: {
-                            x: 'right',
-                            y: 'top'
-                        }
-                    });
-                    notyf.error('{{ session('error') }}');
-                });
-            </script>
-        @endif
-
         <div class="header">
             <div class="search">
                 <form action="{{ route('employees.index') }}" method="GET" style="display: flex; width: 100%;">
@@ -63,6 +32,7 @@
                             </option>
                         @endforeach
                     </select>
+
                 </form>
 
             </div>
@@ -203,11 +173,6 @@
 
         {{ $employees->links('pagination::bootstrap-4') }}
 
-
-        {{-- <div id="loading" style="display: none; text-align: center; margin-top: 20px;">
-            <img src="{{ asset('loading.gif') }}" width="50px" alt="Loading..." />
-        </div> --}}
-
         <div id="popupWrapper" class="popup-wrapper" style="display: none;">
             <div class="filesPopup" id="filesPopup">
                 <div class="file-name">
@@ -215,25 +180,78 @@
                     <p></p>
                 </div>
                 <input type="text" name="search" id="search-file" placeholder="Search Here...">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Icon</th>
-                            <th>Name</th>
-                            <th>File Size</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- File items will be dynamically added here -->
-                    </tbody>
-                </table>
+                <div id="fileTreeView" class="file-tree-view"></div>
                 <button class="close-popup">Close</button>
             </div>
         </div>
 
-
+        <div id="subfolderPopup" class="popup-wrapper" style="display:none;">
+            <div class="filesPopup">
+                <h3>Select or Create Subfolder</h3>
+                <select id="existingSubfolder">
+                    <option value="">-- Select Existing Subfolder --</option>
+                    <!-- options will be added dynamically -->
+                </select>
+                <input type="text" id="newSubfolder" placeholder="Or type new folder name"
+                    title="Leave this empty if selecting from list">
+                <button id="confirmSubfolder">Browse</button>
+                <button onclick="document.getElementById('subfolderPopup').style.display='none';">Cancel</button>
+            </div>
+        </div>
     </div>
+
+    <div id="sidebarOverlay" class="sidebar-overlay">
+
+        <div id="employeeSidebar">
+            <div class="sidebar-header">
+                <button class="close-sidebar">&times;</button>
+                <img id="employeeImage" src="/default.jpg" alt="Employee">
+                <h2 id="sidebarName">Employee Name</h2>
+                <p id="sidebarCodeJob">1234 - Developer</p>
+                <p id="workingSince">2 years and 3 months</p>
+            </div>
+
+            <div id="sidebarTabs">
+                <button data-tab="personal" class="active">Personal Info</button>
+                <button data-tab="job">Job Details</button>
+                <button data-tab="left" id="leftTabBtn" style="display: none;">Left Reason</button>
+            </div>
+
+
+            <div class="sidebar-content">
+
+                <div id="section-personal" class="sidebar-section active">
+                    <p><strong>Email:</strong> <span id="empEmail"></span></p>
+                    <p><strong>Phone:</strong> <span id="empPhone"></span></p>
+                    <p><strong>Birthday:</strong> <span id="empBirthday"></span></p>
+                    <p><strong>Blood Type:</strong> <span id="empBlood"></span></p>
+                    <p><strong>Address:</strong> <span id="empAddress"></span></p>
+                    <p><strong>Car:</strong> <span id="empCar"></span></p>
+                </div>
+
+                <div id="section-job" class="sidebar-section">
+                    <p><strong>Branch:</strong> <span id="empBranch"></span></p>
+                    <p><strong>Status:</strong> <span id="empStatus"></span></p>
+                    <p><strong>Title:</strong> <span id="empTitle"></span></p>
+                    <p><strong>Start Date:</strong> <span id="startDate"></span></p>
+                    <p><strong>Shift:</strong> <span id="empShift"></span></p>
+                    <p><strong>Job:</strong> <span id="empJob"></span></p>
+                    <p><strong>Where Can Work:</strong> <span id="empWhere"></span></p>
+                </div>
+
+                <div id="section-left" class="sidebar-section">
+                    <p><strong>Left Date:</strong> <span id="empLeftDate"></span></p>
+                    <p><strong>Reason:</strong> <span id="empLeftReason"></span></p>
+                    <p><strong>Notice Given:</strong> <span id="empNotice"></span></p>
+                    <p><strong>Good Performer:</strong> <span id="empPerformer"></span></p>
+                    <p><strong>Positive Person:</strong> <span id="empPositive"></span></p>
+                    <p><strong>Recommended to Return:</strong> <span id="empReturn"></span></p>
+                    <p><strong>Exit Remarks:</strong> <span id="empRemarks"></span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="imagePopup" class="popup-overlay" style="display: none;">
         <div class="popup-content">
             <div style="display: flex; justify-content: space-between;align-items: center; margin-bottom: 5px;">
@@ -409,6 +427,7 @@
 
         });
         //sweetalert2
+
         document.addEventListener('DOMContentLoaded', () => {
             // Bulk Delete Confirmation
             document.querySelector('.bulk-delete-btn').addEventListener('click', (e) => {
@@ -513,69 +532,113 @@
                             popup.querySelector('.file-name h1').innerText =
                                 `${employeeName} (${pinCode})`;
                             popup.querySelector('.file-name p').innerText =
-                                `${files.length} items`;
+                                `${files.length} Files`;
 
-                            const tbody = popup.querySelector('tbody');
-                            tbody.innerHTML = ''; // Clear previous content
+                            const treeContainer = document.getElementById('fileTreeView');
+                            treeContainer.innerHTML = '';
 
                             if (files.length === 0) {
-                                const row = document.createElement('tr');
-                                row.innerHTML = `
-                            <td colspan="4" style="text-align: center;">No files found</td>
-                        `;
-                                tbody.appendChild(row);
+                                const noFilesMsg = document.createElement('div');
+                                noFilesMsg.style.textAlign = 'center';
+                                noFilesMsg.style.color = 'var(--second-color)';
+                                noFilesMsg.textContent = 'No files found';
+                                treeContainer.appendChild(noFilesMsg);
                             } else {
+                                const treeContainer = document.getElementById('fileTreeView');
+                                treeContainer.innerHTML = '';
+
+                                // Group files by folders (subfolder => [files])
+                                const folders = {};
+
                                 files.forEach(file => {
-                                    const maxLength =
-                                        10;
-                                    const fileName = file.name;
-                                    const truncatedFileName = fileName.length >
-                                        maxLength ?
-                                        `${fileName.substring(0, maxLength)}...${fileName.substring(fileName.lastIndexOf('.') + 1)}` :
-                                        fileName;
+                                    const parts = file.name.split('/');
+                                    const folder = parts.length > 1 ? parts[0] : 'Root';
+                                    const filename = parts.length > 1 ? parts.slice(1)
+                                        .join('/') : parts[0];
 
-                                    // ✅ Ensure `row` is declared once
-                                    let row = document.createElement('tr');
-                                    row.classList.add(
-                                        'file-row'); // Add class to make it removable
-
-                                    row.innerHTML = `
-    <td>
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="icon">
-            <path d="M19.41 7L15 2.59A2 2 0 0 0 13.59 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8.41A2 2 0 0 0 19.41 7"/>
-        </svg>
-    </td>
-    <td>${truncatedFileName}</td>
-    <td>${file.size}</td>
-    <td style="display:flex; justify-content:center; align-items:center; gap:5px;cursor:pointer;">
-        <a href="${file.url}" download>
-            <svg class="download-file" viewBox="-5 -5 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="m8 6.641 1.121-1.12a1 1 0 0 1 1.415 1.413L7.707 9.763a.997.997 0 0 1-1.414 0L3.464 6.934A1 1 0 1 1 4.88 5.52L6 6.641V1a1 1 0 1 1 2 0zM1 12h12a1 1 0 0 1 0 2H1a1 1 0 0 1 0-2"/>
-            </svg>
-        </a>
-
-        <a href="javascript:void(0)" 
-            class="delete-file" 
-            data-employee-name="${employeeName}" 
-            data-pin-code="${pinCode}" 
-            data-file-name="${file.name}">
-            <svg class="delete-file-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path fill-rule="evenodd" d="M17 8a1 1 0 0 1 1 1v10a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3V9a1 1 0 0 1 1-1zm-1 2H8v9a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1zM9 3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1h4a1 1 0 0 1 0 2H5a1 1 0 1 1 0-2h4z"/>
-            </svg>
-        </a>
-    </td>
-`;
-
-                                    tbody.appendChild(row);
+                                    if (!folders[folder]) folders[folder] = [];
+                                    folders[folder].push({
+                                        ...file,
+                                        displayName: filename
+                                    });
                                 });
 
-                                const downloadAllRow = document.createElement('tr');
-                                downloadAllRow.innerHTML = `
-                            <td colspan="4" style="text-align: center;">
-                                <button id="downloadAll" class="download-all-btn"><svg viewBox="-5 -5 24 24" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin" class="jam jam-download"><path d="m8 6.641 1.121-1.12a1 1 0 0 1 1.415 1.413L7.707 9.763a.997.997 0 0 1-1.414 0L3.464 6.934A1 1 0 1 1 4.88 5.52L6 6.641V1a1 1 0 1 1 2 0zM1 12h12a1 1 0 0 1 0 2H1a1 1 0 0 1 0-2"/></svg> Download All</button>
-                            </td>
-                        `;
-                                tbody.appendChild(downloadAllRow);
+                                // Build UI
+                                // Build all folders first
+                                Object.entries(folders).forEach(([folderName, folderFiles]) => {
+                                    const folder = document.createElement('div');
+                                    folder.className = 'folder-block';
+                                    folder.innerHTML = `
+                                            <div class="folder-header" data-toggle>
+                                                <span class="folder-icon">
+                                                    <svg width="16" height="16" viewBox="0 0 16 16" stroke="#333" stroke-width="1.5" fill="none">
+                                                        <path d="M4.75 2.25v8h9.5v-6.5h-5l-1.5-1.5z"/>
+                                                        <path d="M4.75 5.25h-3v8h9.5v-3"/>
+                                                    </svg>
+                                                </span>
+                                                <span class="folder-name">${folderName}</span>
+                                            </div>
+                                            <div class="file-list" style="display:none;"></div>
+                                             `;
+
+                                    const fileList = folder.querySelector('.file-list');
+                                    folderFiles.forEach(file => {
+                                        const fileItem = document.createElement(
+                                            'div');
+                                        fileItem.className = 'file-item';
+                                        fileItem.innerHTML = `
+                                                 <div class="file-entry">
+                                                     <span class="file-icon">
+                                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="#000" stroke-width="2" viewBox="0 0 24 24">
+                                                             <path d="M15.5 2H8.6c-.4 0-.8.2-1.1.5S7 3.2 7 3.6v12.8c0 .4.2.8.5 1.1s.7.5 1.1.5h9.8c.4 0 .8-.2.1-.5s.5-.7.5-1.1V6.5z"/>
+                                                             <path d="M3 7.6v12.8c0 .4.2.8.5 1.1s.7.5 1.1.5h9.8M15 2v5h5"/>
+                                                         </svg>
+                                                     </span>
+                                                        <span class="file-name" title="${file.displayName}">
+                                                            ${file.displayName.length > 20 ? file.displayName.slice(0, 18) + '...' : file.displayName}
+                                                        </span>
+                                                 </div>
+                                                 <div class="file-actions">
+                                                     <a href="${file.url}" download title="Download">
+
+                                                        <svg fill="#9da3af" class="files-download"  viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><path d="M232 64h48v150l-3 56 23-28 56-53 32 32-132 132-132-132 32-32 56 53 23 28-3-56zM64 400h384v48H64z"/></svg>
+                                                        
+                                                        </a>
+                                                     <a href="javascript:void(0)" class="delete-file" 
+                                                        data-employee-name="${employeeName}" 
+                                                        data-pin-code="${pinCode}" 
+                                                        data-file-name="${file.name}" 
+                                                        title="Delete">
+                                                        
+                                                        <svg class="files-delete" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2h4a1 1 0 1 1 0 2h-1.069l-.867 12.142A2 2 0 0 1 17.069 22H6.93a2 2 0 0 1-1.995-1.858L4.07 8H3a1 1 0 0 1 0-2h4zm2 2h6V4H9zM6.074 8l.857 12H17.07l.857-12zM10 10a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1m4 0a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1" fill="#9da3af"/></svg>
+
+                                                        </a>
+                                                 </div>
+                                             `;
+                                        fileList.appendChild(fileItem);
+                                    });
+
+                                    treeContainer.appendChild(folder);
+                                });
+
+                                // ✅ Now bind expand/collapse AFTER tree is rendered
+                                treeContainer.querySelectorAll('[data-toggle]').forEach(
+                                    toggle => {
+                                        toggle.addEventListener('click', () => {
+                                            const list = toggle.nextElementSibling;
+                                            list.style.display = list.style
+                                                .display === 'none' ? 'flex' :
+                                                'none';
+                                        });
+                                    });
+
+
+                                const downloadAllBtn = document.createElement('button');
+                                downloadAllBtn.id = 'downloadAll';
+                                downloadAllBtn.className = 'download-all-btn';
+                                downloadAllBtn.innerHTML = 'Download All';
+                                downloadAllBtn.style.marginTop = '10px';
+                                treeContainer.appendChild(downloadAllBtn);
 
                                 // Add event listener to "Download All" button
                                 document.getElementById('downloadAll').addEventListener('click',
@@ -614,14 +677,17 @@
                             console.error(error);
                             popup.querySelector('.file-name h1').innerText =
                                 `${employeeName} (${pinCode})`;
-                            popup.querySelector('.file-name p').innerText = `0 items`;
-                            const tbody = popup.querySelector('tbody');
-                            tbody.innerHTML = `
-                        <tr>
-                            <td colspan="4" style="text-align: center;">No files found</td>
-                        </tr>
-                    `;
+                            popup.querySelector('.file-name p').innerText = `0 Files`;
+                            popup.querySelector('.file-name h1').innerText =
+                                `${employeeName} (${pinCode})`;
+                            popup.querySelector('.file-name p').innerText = `0 Files`;
+
+                            const treeContainer = document.getElementById('fileTreeView');
+                            treeContainer.innerHTML =
+                                `<div style="text-align:center;">No files found</div>`;
+
                             popupWrapper.style.display = 'flex';
+
                         }
                     }
                 });
@@ -670,7 +736,54 @@
                         fileInput.dataset.employeeName = employeeName;
                         fileInput.dataset.pinCode = pinCode;
 
-                        fileInput.click();
+                        document.getElementById('subfolderPopup').style.display = 'flex';
+                        fileInput.dataset.employeeName = employeeName;
+                        fileInput.dataset.pinCode = pinCode;
+
+                        // Load existing subfolders
+                        fetch(`/get-subfolders/${employeeName}/${pinCode}`)
+                            .then(res => res.json())
+                            .then(data => {
+                                const select = document.getElementById('existingSubfolder');
+                                select.innerHTML =
+                                    `<option value="">-- Select Existing Subfolder --</option>`;
+                                data.subfolders.forEach(sub => {
+                                    const option = document.createElement('option');
+                                    option.value = sub;
+                                    option.textContent = sub;
+                                    select.appendChild(option);
+                                });
+                            });
+
+                        document.getElementById('existingSubfolder').addEventListener('change',
+                            function() {
+                                const newFolderInput = document.getElementById('newSubfolder');
+                                if (this.value.trim() !== "") {
+                                    newFolderInput.value = "";
+                                    newFolderInput.setAttribute("readonly", "readonly");
+                                } else {
+                                    newFolderInput.removeAttribute("readonly");
+                                }
+                            });
+
+                        document.getElementById('confirmSubfolder').addEventListener('click',
+                            () => {
+                                const selectVal = document.getElementById('existingSubfolder')
+                                    .value.trim();
+                                const newVal = document.getElementById('newSubfolder').value
+                                    .trim();
+
+                                let chosenFolder = newVal !== '' ? newVal : selectVal;
+                                if (!chosenFolder) return alert(
+                                    'Please choose or type a folder name');
+
+                                fileInput.dataset.subfolder =
+                                    chosenFolder; // ✅ save folder to dataset
+                                document.getElementById('subfolderPopup').style.display =
+                                    'none';
+                                fileInput.click(); // trigger file select
+                            });
+
                     } else {
                         alert('Employee card not found.');
                     }
@@ -692,6 +805,8 @@
                 const formData = new FormData();
                 formData.append('employeeName', employeeName);
                 formData.append('pinCode', pinCode);
+                formData.append('subfolder', this.dataset.subfolder); // <== add this
+
 
                 for (const file of files) {
                     if (file.name.endsWith('.zip')) {
@@ -721,6 +836,8 @@
                     });
 
                     Swal.close(); // Close SweetAlert Spinner
+                    document.getElementById('newSubfolder').value = '';
+                    document.getElementById('existingSubfolder').selectedIndex = 0;
 
                     const contentType = response.headers.get('Content-Type');
                     if (!contentType.includes('application/json')) {
@@ -797,13 +914,19 @@
                         if (response.ok) {
                             alert(result.message || 'File deleted successfully.');
 
-                            // ✅ Find the correct file row and remove it
-                            const fileRow = button.closest('.file-row'); // Adjust this if needed
-                            if (fileRow) {
-                                fileRow.remove(); // ✅ Removes the deleted file row from the UI
+                            const fileItem = button.closest('.file-item');
+                            if (fileItem) {
+                                const folderBlock = fileItem.closest('.folder-block');
+                                fileItem.remove();
+
+                                const remaining = folderBlock.querySelectorAll('.file-item');
+                                if (remaining.length === 0) {
+                                    folderBlock.remove(); // Remove empty folder
+                                }
                             } else {
-                                console.error('Error: Could not find the file row to remove.');
+                                console.error('Error: Could not find the file item to remove.');
                             }
+
                         } else {
                             alert(result.message || 'Failed to delete file.');
                         }
@@ -815,115 +938,36 @@
             });
         });
 
-
         //Search Functionality inside the files popup
         document.addEventListener('DOMContentLoaded', function() {
             const searchInput = document.getElementById('search-file');
-            const fileTableBody = document.querySelector('#filesPopup tbody');
 
-            if (!searchInput || !fileTableBody) return;
+            if (!searchInput) return;
 
             searchInput.addEventListener('input', function() {
                 const searchValue = searchInput.value.toLowerCase().trim();
 
-                // Loop through each row in the table body
-                fileTableBody.querySelectorAll('tr').forEach(row => {
-                    const fileNameCell = row.querySelector(
-                        'td:nth-child(2)'); // Assuming the name is in the 2nd column
+                // Loop through all folders
+                document.querySelectorAll('.folder-block').forEach(folder => {
+                    let matchFound = false;
+                    const fileList = folder.querySelector('.file-list');
 
-                    if (fileNameCell) {
-                        const fileName = fileNameCell.textContent.toLowerCase();
-                        if (fileName.includes(searchValue)) {
-                            row.style.display = ''; // Show the row
-                        } else {
-                            row.style.display = 'none'; // Hide the row
-                        }
-                    }
+                    // Loop through all file items inside this folder
+                    fileList.querySelectorAll('.file-item').forEach(fileItem => {
+                        const fileName = fileItem.querySelector('.file-name')?.textContent
+                            .toLowerCase() || '';
+                        const match = fileName.includes(searchValue);
+                        fileItem.style.display = match ? '' : 'none';
+                        if (match) matchFound = true;
+                    });
+
+                    // Show folder if it contains at least one match
+                    folder.style.display = matchFound ? '' : 'none';
                 });
             });
         });
 
-        //Function to Print the chart:
-        function printEmployees() {
-            fetch('/get-employees-info')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(employees => {
-                    // Build the printable table
-                    let printableContent = `
-                <html>
-                <head>
-                    <title>Employees List</title>
-                    <style>
-                        table {
-                            width: 100%;
-                            border-collapse: collapse;
-                        }
-                        th, td {
-                            border: 1px solid black;
-                            padding: 8px;
-                            text-align: left;
-                        }
-                        th {
-                            background-color: #f2f2f2;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <h1>Employees List</h1>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Branch</th>
-                                <th>Title</th>
-                                <th>Status</th>
-                                <th>Date Hired</th>
-                                <th>Email</th>
-                                <th>Phone</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-            `;
 
-                    employees.forEach(employee => {
-                        const status = employee.status === 1 ? 'Active' : 'Left';
-                        printableContent += `
-                    <tr>
-                        <td>${employee.name}</td>
-                        <td>${employee.branch_name}</td>
-                        <td>${employee.title}</td>
-                        <td>${status}</td>
-                        <td>${employee.date_hired}</td>
-                        <td>${employee.email}</td>
-                        <td>${employee.phone}</td>
-                    </tr>
-                `;
-                    });
-
-                    printableContent += `
-                        </tbody>
-                    </table>
-                </body>
-                </html>
-            `;
-
-                    // Open a new window for printing
-                    const printWindow = window.open('', '', 'width=800,height=600');
-                    printWindow.document.write(printableContent);
-                    printWindow.document.close();
-                    printWindow.focus();
-                    printWindow.print();
-                    printWindow.close();
-                })
-                .catch(error => {
-                    console.error('Error fetching employees:', error);
-                });
-        }
 
         document.addEventListener('DOMContentLoaded', () => {
             const filterSearch = document.getElementById('filter-search');
@@ -1025,6 +1069,188 @@
                 },
             });
         });
+
+        document.addEventListener('DOMContentLoaded', function() {
+
+            // Handle View button
+            document.querySelectorAll('.card-more-action').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    if (btn.closest('a[href]')) return; // Skip if the button is inside a link
+                    const card = btn.closest('.card');
+                    const empId = card.getAttribute('data-id');
+
+                    const res = await fetch('/get-employees-info');
+                    const data = await res.json();
+                    const emp = data.find(e => e.id == empId);
+
+                    document.getElementById('employeeImage').src = emp.image_path ? 'storage/' +
+                        emp.image_path : '/default.jpg';
+                    document.getElementById('sidebarName').textContent = emp.name;
+                    document.getElementById('sidebarCodeJob').textContent =
+                        `${emp.pin_code} - ${emp.job}`;
+
+                    const hiredDate = new Date(emp.date_hired);
+                    const now = new Date();
+                    let years = now.getFullYear() - hiredDate.getFullYear();
+                    let months = now.getMonth() - hiredDate.getMonth();
+                    if (months < 0) {
+                        years--;
+                        months += 12;
+                    }
+
+                    console.log(emp.status);
+                    console.log(emp.name);
+
+                    if (emp.left_date) {
+                        document.getElementById('workingSince').textContent =
+                            `Left on ${emp.left_date}`;
+                    } else {
+                        document.getElementById('workingSince').textContent =
+                            `${years} year(s) and ${months} month(s)`;
+                    }
+                    // Personal Info
+                    document.getElementById('empEmail').textContent = emp.email;
+                    document.getElementById('empPhone').textContent = emp.phone;
+                    const dateBirth = new Date(emp.birthday);
+                    const BirthformattedDate = ('0' + dateBirth.getDate()).slice(-2) + '-' +
+                        ('0' + (dateBirth.getMonth() + 1)).slice(-2) + '-' +
+                        dateBirth.getFullYear();
+
+                    document.getElementById('empBirthday').textContent = BirthformattedDate;
+                    document.getElementById('empBlood').textContent = emp.blood_type;
+                    document.getElementById('empAddress').textContent = emp.address;
+                    document.getElementById('empCar').textContent = emp.car;
+
+                    // Job Info
+                    document.getElementById('empBranch').textContent = emp.branch_name;
+                    document.getElementById('empStatus').textContent = emp.status == 1 ?
+                        'Active' : 'Inactive';
+                    document.getElementById('empTitle').textContent = emp.title;
+                    const date = new Date(emp.date_hired);
+                    const formattedDate = ('0' + date.getDate()).slice(-2) + '-' +
+                        ('0' + (date.getMonth() + 1)).slice(-2) + '-' +
+                        date.getFullYear();
+
+                    document.getElementById('startDate').textContent = formattedDate;
+                    document.getElementById('empShift').textContent = emp.shift;
+                    document.getElementById('empJob').textContent = emp.job;
+                    document.getElementById('empWhere').textContent = emp.where_can_work;
+
+                    // Left Info (ONLY if inactive)
+                    const leftSection = document.getElementById('section-left');
+                    const leftTabBtn = document.getElementById('leftTabBtn');
+
+                    if (emp.status == 0) {
+                        document.getElementById('section-left').innerHTML += `
+                     <a href="/employees/${emp.id}/cover-letter" class="download-btn">Save and Get Cover Letter</a>`;
+
+                        leftTabBtn.style.display = '';
+                        leftSection.style.display = '';
+                        leftTabBtn.classList.remove('hidden');
+                        leftSection.classList.remove('hidden');
+
+                        document.getElementById('empLeftDate').textContent = emp.left_date;
+                        document.getElementById('empLeftReason').textContent = emp.left_reason;
+                        document.getElementById('empNotice').textContent = emp.give_notice ?
+                            'Yes' :
+                            'No';
+                        document.getElementById('empPerformer').textContent = emp
+                            .is_good_performer ? 'Yes' : 'No';
+                        document.getElementById('empPositive').textContent = emp
+                            .is_positive_person ? 'Yes' : 'No';
+                        document.getElementById('empReturn').textContent = emp
+                            .is_recommended_to_back ? 'Yes' : 'No';
+                        document.getElementById('empRemarks').textContent = emp
+                            .exit_interview_remarks;
+                    } else {
+                        leftTabBtn.classList.add('hidden');
+                        leftSection.classList.add('hidden');
+                    }
+
+                    // Always activate Personal Info tab first
+                    document.querySelectorAll('#sidebarTabs button').forEach(btn => btn
+                        .classList.remove('active'));
+                    document.querySelector('#sidebarTabs button[data-tab="personal"]').classList
+                        .add('active');
+
+                    document.querySelectorAll('.sidebar-section').forEach(sec => sec.classList
+                        .remove('active'));
+                    document.getElementById('section-personal').classList.add('active');
+
+                    const overlay = document.getElementById('sidebarOverlay');
+                    if (overlay) {
+                        overlay.classList.add('active');
+                    }
+                });
+            });
+
+            // Close sidebar
+            const closeBtn = document.querySelector('.close-sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => {
+                    sidebarOverlay?.classList.remove('active');
+                });
+            }
+
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', (e) => {
+                    if (e.target === sidebarOverlay) {
+                        sidebarOverlay.classList.remove('active');
+                    }
+                });
+            }
+
+
+            // Click outside to close
+            document.getElementById('sidebarOverlay').addEventListener('click', (e) => {
+                if (e.target.id === 'sidebarOverlay') {
+                    e.target.classList.remove('active');
+                }
+            });
+
+            // ✅ Tab switcher logic
+            const tabs = document.querySelectorAll('#sidebarTabs button');
+            const sections = document.querySelectorAll('.sidebar-section');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const selectedTab = tab.dataset.tab;
+
+                    document.querySelectorAll('.sidebar-section').forEach(section => {
+                        if (section.id === `section-${selectedTab}`) {
+                            section.classList.add('active');
+                        } else {
+                            section.classList.remove('active');
+                        }
+                    });
+
+                    document.querySelectorAll('#sidebarTabs button').forEach(btn => btn.classList
+                        .remove('active'));
+                    tab.classList.add('active');
+                });
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const closeBtn = document.querySelector('.close-sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => {
+                    sidebarOverlay?.classList.remove('active');
+                });
+            }
+
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', (e) => {
+                    if (e.target === sidebarOverlay) {
+                        sidebarOverlay.classList.remove('active');
+                    }
+                });
+            }
+        });
     </script>
 @endpush
 
@@ -1068,5 +1294,20 @@
 
     .choices[data-type*=select-one] .choices__inner {
         border-radius: 5px !important;
+    }
+
+    .download-btn {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 8px 15px;
+        background: var(--primary-color);
+        color: #fff;
+        border-radius: 5px;
+        text-decoration: none;
+        transition: background 0.3s ease;
+    }
+
+    .download-btn:hover {
+        background: var(--second-color);
     }
 </style>

@@ -67,6 +67,38 @@
                             <span class="error-message" style="color:red;">{{ $message }}</span>
                         @enderror
                     </div>
+
+                </div>
+
+                <div style="display: flex; justify-content: space-between; width: 100%; gap: 20px;">
+
+                    <div class="input-group">
+                        <label for="shift">Shift</label>
+                        <select id="shift" name="shift" class="form-control" required>
+                            <option value="" disabled selected>Select Shift</option>
+                            <option value="Full Time" {{ old('shift') == 'Full Time' ? 'selected' : '' }}>Full Time
+                            </option>
+                            <option value="Part Time" {{ old('shift') == 'Part Time' ? 'selected' : '' }}>Part Time
+                            </option>
+                        </select>
+                        @error('shift')
+                            <span class="error-message" style="color:red;">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="input-group">
+                        <label for="area">Area</b></label>
+                        <select id="area" name="area" class="form-control" required>
+                            <option value="" disabled selected>Select Area</option>
+                            <option value="Shar2iye" {{ old('area') == 'Shar2iye' ? 'selected' : '' }}>Shari2ye
+                            </option>
+                            <option value="Gharbiye" {{ old('area') == 'Gharbiye' ? 'selected' : '' }}>Gharbiye
+                            </option>
+                        </select>
+                        @error('area')
+                            <span class="error-message" style="color:red;">{{ $message }}</span>
+                        @enderror
+                    </div>
                 </div>
 
                 <div class="input-group">

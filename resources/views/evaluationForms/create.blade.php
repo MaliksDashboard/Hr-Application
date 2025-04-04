@@ -26,20 +26,17 @@
                     <div class="input-group">
                         <label for="assigned_for">Made By</label>
                         <select name="assigned_for" id="assigned_for">
-                            <option value="Branch Manager" {{ old('assigned_for') == 'branch' ? 'selected' : '' }}>Branch
-                                Manager
-                            </option>
-                            <option value="Department" {{ old('assigned_for') == 'department' ? 'selected' : '' }}>
-                                Department
-                            </option>
-                            <option value="Employee" {{ old('assigned_for') == 'employee' ? 'selected' : '' }}>
-                                Employee
-                            </option>
+                            @foreach ($roles as $role)
+                                <option value="{{ $role }}" {{ old('assigned_for') == $role ? 'selected' : '' }}>
+                                    {{ $role }}
+                                </option>
+                            @endforeach
                         </select>
                         @error('assigned_for')
                             <span class="error-message" style="color:red;">{{ $message }}</span>
                         @enderror
                     </div>
+
 
                 </div>
 

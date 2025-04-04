@@ -2,10 +2,6 @@
 @section('title', 'Dashboard')
 @section('custom_title', 'Dashboard')
 
-<!-- jsVectorMap -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsvectormap/dist/css/jsvectormap.min.css">
-<script src="https://cdn.jsdelivr.net/npm/jsvectormap/dist/js/jsvectormap.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jsvectormap/dist/maps/world.js"></script>
 
 @section('main')
 
@@ -23,7 +19,7 @@
                 <span class="dashboard-message">Consistency fuels success—keep going!
                 </span>
 
-                <div class="contents">
+                <div class="contents-dashboard">
 
                     <div class="first-card-content">
                         <span>

@@ -19,12 +19,13 @@ class NewJoinerProgressController extends Controller
     public function showProgress($newJoinerId)
     {
         $progress = NewJoinerProgress::where('new_joiner_id', $newJoinerId)
-            ->whereHas('step') // ✅ Ignore records with missing steps
-            ->with('step') // ✅ Load step relationship
+            ->whereHas('step')
+            ->with(['step:id,name,step_order'])
+            ->select('id', 'step_id', 'status', 'completed_at', 'remarks', 'new_joiner_id') // 👈 ADD THIS
             ->get()
-            ->sortBy('step.step_order') // ✅ Sort the results based on step_order
+            ->sortBy('step.step_order')
+            ->values();
 
-            ->values(); // ✅ Reset array keys to prevent issues
 
         return response()->json($progress);
     }

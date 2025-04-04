@@ -16,7 +16,6 @@ class AuthController extends Controller
         return view('auth.login'); // Create this view
     }
 
-    // Handle login
     public function login(Request $request)
     {
         $credentials = $request->validate([
@@ -26,12 +25,24 @@ class AuthController extends Controller
 
         $fieldType = filter_var($credentials['identifier'], FILTER_VALIDATE_EMAIL) ? 'email' : 'pin_code';
 
-        if (Auth::attempt([$fieldType => $credentials['identifier'], 'password' => $credentials['password']])) {
+        $user = User::where($fieldType, $credentials['identifier'])->first();
+
+        if ($user && $user->status == 'inactive') {
+            return back()->withErrors(['login' => 'Your username is inactive. Please contact admin.']);
+        }
+
+        if ($user && Auth::attempt([$fieldType => $credentials['identifier'], 'password' => $credentials['password']])) {
             $request->session()->regenerate();
 
-            // **Check if the user needs to change their password**
             if (Auth::user()->must_change_password) {
-                return redirect()->route('password.change'); // Redirect to password change page
+                return redirect()->route('password.change');
+            }
+
+            // ✅ Check role and redirect accordingly
+            $userRole = Auth::user()->getRoleNames()->first(); // Assuming Spatie Roles
+
+            if (!in_array($userRole, ['HR', 'Team Member', 'Admin'])) {
+                return redirect()->route('home');
             }
 
             return redirect()->intended('/');
@@ -39,6 +50,8 @@ class AuthController extends Controller
 
         return back()->withErrors(['login' => 'Invalid credentials.']);
     }
+
+
 
     // Handle logout
     public function logout(Request $request)

@@ -3,7 +3,7 @@
 @section('custom_title', 'Edit Vacancy')
 
 @section('main')
-    <div class="main edit-vacancy add-vacancy">
+    <div class="main add-emp edit-vacancy add-vacancy">
 
         <div class="container">
             <form action="{{ route('vacancies.update', $vacancy->id) }}" method="POST" enctype="multipart/form-data"
@@ -65,6 +65,50 @@
                             <option value="high" {{ $vacancy->status == 'high' ? 'selected' : '' }}>High</option>
                         </select>
                         @error('status')
+                            <span class="error-message" style="color:red;">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="input-group">
+                        <label for="shift">Shift<b style="color:red;">*</b></label>
+                        <select id="shift" name="shift" class="form-control" required>
+                            <option value="Full Time" {{ $vacancy->shift == 'Full Time' ? 'selected' : '' }}>Full Time
+                            </option>
+                            <option value="Part Time" {{ $vacancy->shift == 'Part Time' ? 'selected' : '' }}>Part Time
+                            </option>
+                        </select>
+                        @error('shift')
+                            <span class="error-message" style="color:red;">{{ $message }}</span>
+                        @enderror
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; width: 100%; gap: 20px;">
+
+                    <div class="input-group">
+                        <label for="shift">Shift<b style="color:red;">*</b></label>
+                        <select id="shift" name="shift" class="form-control" required>
+                            <option value="Full Time" {{ $vacancy->shift == 'Full Time' ? 'selected' : '' }}>Full Time
+                            </option>
+                            <option value="Part Time" {{ $vacancy->shift == 'Part Time' ? 'selected' : '' }}>Part Time
+                            </option>
+                        </select>
+                        @error('shift')
+                            <span class="error-message" style="color:red;">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+
+                    <div class="input-group">
+                        <label for="area">Area<b style="color:red;">*</b></label>
+                        <select id="area" name="area" class="form-control" required>
+                            <option value="" {{ $vacancy->area == '' ? 'selected' : '' }}>Select Area
+                            <option value="Shar2iye" {{ $vacancy->area == 'Shar2iye' ? 'selected' : '' }}>Shar2iye
+                            </option>
+                            <option value="Gharbiye" {{ $vacancy->area == 'Gharbiye' ? 'selected' : '' }}>Gharbiye
+                            </option>
+                        </select>
+                        @error('area')
                             <span class="error-message" style="color:red;">{{ $message }}</span>
                         @enderror
                     </div>
